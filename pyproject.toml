@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "syntangle"
+version = "0.0.1"
+description = "Constrained untangling of multispecies chromosome synteny layouts"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "SynTangle contributors"}]
+
+[project.scripts]
+syntangle = "syntangle.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
