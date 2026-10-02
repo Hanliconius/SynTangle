@@ -12,6 +12,22 @@ Synthetic cases have known answers by construction. They test representation, de
 
 These tests should run on every pull request and never require HPC resources.
 
+### Two complementary synthetic sources
+
+Tier A has two deliberately different kinds of synthetic truth:
+
+1. **Hand-constructed micro-fixtures** in `examples/fixtures/`. These isolate one logical property at a time and should stay small enough to understand by inspection.
+2. **Forward chromosome simulations** in `validation/simulator/`. These generate extant genomes from a known ancestor using logged fusion, fission and inversion events, then apply a second, separate presentation-only tangle step.
+
+The simulator therefore retains two hidden histories:
+
+- an **evolution log** describing biological structural mutations;
+- a **tangle log** describing whole-chromosome display permutations/reversals.
+
+Neither hidden log is solver input. SynTangle should receive only the extant chromosome/homology data and the deliberately tangled starting display state.
+
+Visual audit output is part of Tier A validation. Machine assertions alone are not enough: simulated chromosome structures must also be inspectable for biological and logical plausibility.
+
 ## Tier B — reduced real-data smoke tests
 
 **Location:** Git repository if genuinely small and redistributable; otherwise referenced externally  
