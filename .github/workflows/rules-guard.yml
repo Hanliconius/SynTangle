@@ -1,0 +1,61 @@
+name: Protect normative rules
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "RULES.md"
+      - "RULES_CHANGELOG.md"
+      - ".github/workflows/rules-guard.yml"
+  pull_request:
+    paths:
+      - "RULES.md"
+      - "RULES_CHANGELOG.md"
+      - ".github/workflows/rules-guard.yml"
+
+jobs:
+  rules-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require explicit rules amendment
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base="$BASE_SHA"
+            authorisation="$PR_TITLE $PR_BODY"
+          else
+            base="$BEFORE_SHA"
+            authorisation="$COMMIT_MESSAGE"
+          fi
+
+          if [[ -z "${base:-}" || "$base" =~ ^0+$ ]] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            base="$(git rev-list --max-parents=0 HEAD)"
+          fi
+
+          changed="$(git diff --name-only "$base" HEAD || true)"
+
+          if grep -qx "RULES.md" <<< "$changed"; then
+            if [[ "$authorisation" != *"[RULES-CHANGE]"* ]]; then
+              echo "ERROR: RULES.md changed without explicit [RULES-CHANGE] authorisation."
+              exit 1
+            fi
+            if ! grep -qx "RULES_CHANGELOG.md" <<< "$changed"; then
+              echo "ERROR: RULES.md changed but RULES_CHANGELOG.md was not updated."
+              exit 1
+            fi
+          fi
+
+          echo "Normative-rule guard passed."
