@@ -39,6 +39,11 @@ class FixtureAnalysis:
     hard_kernel_count: int
     incidence_vertex_count: int
     incidence_edge_count: int
+    bridge_count: int
+    articulation_point_count: int
+    incidence_core_vertex_count: int
+    incidence_core_edge_count: int
+    biconnected_block_count: int
     components: tuple[ComponentSummary, ...]
 
     def to_dict(self) -> dict[str, object]:
@@ -50,6 +55,11 @@ class FixtureAnalysis:
             "hard_kernel_count": self.hard_kernel_count,
             "incidence_vertex_count": self.incidence_vertex_count,
             "incidence_edge_count": self.incidence_edge_count,
+            "bridge_count": self.bridge_count,
+            "articulation_point_count": self.articulation_point_count,
+            "incidence_core_vertex_count": self.incidence_core_vertex_count,
+            "incidence_core_edge_count": self.incidence_core_edge_count,
+            "biconnected_block_count": self.biconnected_block_count,
             "components": [
                 {
                     "chromosomes": [ref.label for ref in component.chromosome_refs],
@@ -108,6 +118,17 @@ class IncidenceGraph:
     @property
     def edge_count(self) -> int:
         return len(self.edges)
+
+    @property
+    def node_ids(self) -> tuple[str, ...]:
+        return tuple(sorted(self._adjacency))
+
+    @property
+    def edge_endpoints(self) -> tuple[tuple[str, str], ...]:
+        return tuple(
+            (edge.chromosome_node, edge.homology_node)
+            for edge in self.edges
+        )
 
     def connected_components(self) -> tuple[frozenset[str], ...]:
         unseen = set(self._adjacency)
@@ -185,6 +206,10 @@ def build_incidence_graph(fixture: Fixture) -> IncidenceGraph:
 
 
 def analyze_fixture(fixture: Fixture) -> FixtureAnalysis:
+    # Imported here to avoid a module-level circular import:
+    # decomposition depends on IncidenceGraph.
+    from .decomposition import decompose_incidence_graph
+
     graph = build_incidence_graph(fixture)
     component_summaries = tuple(
         graph.summarize_component(component) for component in graph.connected_components()
@@ -197,19 +222,20 @@ def analyze_fixture(fixture: Fixture) -> FixtureAnalysis:
         sorted(len(component.chromosome_refs) for component in chromosome_components)
     )
     cycle_rank_total = sum(component.cycle_rank for component in component_summaries)
-
-    # Stage-1 definition: a hard kernel is any connected incidence component
-    # with non-zero cycle rank. Later decomposition will refine this via 2-core
-    # and biconnected analysis without changing the fixture-level baseline.
-    hard_kernel_count = sum(component.cycle_rank > 0 for component in component_summaries)
+    decomposition = decompose_incidence_graph(graph)
 
     return FixtureAnalysis(
         fixture_id=fixture.fixture_id,
         chromosome_component_count=len(chromosome_components),
         chromosome_component_sizes=chromosome_component_sizes,
         incidence_cycle_rank_total=cycle_rank_total,
-        hard_kernel_count=hard_kernel_count,
+        hard_kernel_count=len(decomposition.hard_kernels),
         incidence_vertex_count=graph.vertex_count,
         incidence_edge_count=graph.edge_count,
+        bridge_count=len(decomposition.bridge_edge_ids),
+        articulation_point_count=len(decomposition.articulation_points),
+        incidence_core_vertex_count=len(decomposition.core_node_ids),
+        incidence_core_edge_count=len(decomposition.core_edge_ids),
+        biconnected_block_count=len(decomposition.biconnected_blocks),
         components=component_summaries,
     )
