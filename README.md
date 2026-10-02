@@ -8,9 +8,9 @@ SynTangle separates those two things. It treats whole chromosomes as the movable
 
 ## Current status
 
-Implementation has begun with **executable validation infrastructure**: machine-readable ground-truth fixtures plus a recovered/cleaned forward chromosome simulator for fusion, fission and inversion, deliberate whole-chromosome tangle induction, and visual audit output.
+SynTangle now has an executable core for the small synthetic benchmark regime: canonical fixture parsing, chromosome↔homology incidence graphs, connected/core decomposition, GF(2) orientation propagation, a fundamental cycle basis, reversible-chain order constraints, exact tiny-kernel crossing minimization, and auditable initial-vs-optimized visualization. The forward chromosome simulator remains separate validation machinery.
 
-The SynTangle solver itself is still being built from the specification outward. No solver should be implemented in a way that contradicts [RULES.md](RULES.md).
+The next implementation work is to scale the admissible-order representation and optimizer beyond tiny exact kernels without weakening the biological constraints. No solver should be implemented in a way that contradicts [RULES.md](RULES.md).
 
 ## Core formulation
 
