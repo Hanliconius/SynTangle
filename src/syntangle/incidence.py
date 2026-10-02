@@ -44,6 +44,7 @@ class FixtureAnalysis:
     incidence_core_vertex_count: int
     incidence_core_edge_count: int
     biconnected_block_count: int
+    cycle_basis_size: int
     components: tuple[ComponentSummary, ...]
 
     def to_dict(self) -> dict[str, object]:
@@ -60,6 +61,7 @@ class FixtureAnalysis:
             "incidence_core_vertex_count": self.incidence_core_vertex_count,
             "incidence_core_edge_count": self.incidence_core_edge_count,
             "biconnected_block_count": self.biconnected_block_count,
+            "cycle_basis_size": self.cycle_basis_size,
             "components": [
                 {
                     "chromosomes": [ref.label for ref in component.chromosome_refs],
@@ -237,5 +239,6 @@ def analyze_fixture(fixture: Fixture) -> FixtureAnalysis:
         incidence_core_vertex_count=len(decomposition.core_node_ids),
         incidence_core_edge_count=len(decomposition.core_edge_ids),
         biconnected_block_count=len(decomposition.biconnected_blocks),
+        cycle_basis_size=len(decomposition.cycle_basis),
         components=component_summaries,
     )

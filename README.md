@@ -60,6 +60,7 @@ metrics + visualization
 - **[docs/concepts.md](docs/concepts.md)** — mathematical concepts, with status and purpose.
 - **[examples/README.md](examples/README.md)** — executable synthetic invariance fixtures.
 - **[validation/simulator/README.md](validation/simulator/README.md)** — forward chromosome-evolution simulator, deliberate display-tangle induction, and visual validation.
+- **[docs/secondary_ancestral_inference.md](docs/secondary_ancestral_inference.md)** — post-core benchmark plan for ancestral fusion/fission/inversion history inference.
 
 ## Design principle
 
