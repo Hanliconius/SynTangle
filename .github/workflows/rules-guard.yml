@@ -3,18 +3,12 @@ name: Protect normative rules
 on:
   push:
     branches: ["main"]
-    paths:
-      - "RULES.md"
-      - "RULES_CHANGELOG.md"
-      - ".github/workflows/rules-guard.yml"
   pull_request:
-    paths:
-      - "RULES.md"
-      - "RULES_CHANGELOG.md"
-      - ".github/workflows/rules-guard.yml"
+    branches: ["main"]
 
 jobs:
   rules-guard:
+    name: rules-guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
