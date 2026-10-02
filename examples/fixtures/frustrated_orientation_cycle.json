@@ -1,0 +1,89 @@
+{
+  "fixture_version": 1,
+  "id": "frustrated_orientation_cycle",
+  "title": "Frustrated whole-chromosome orientation cycle",
+  "purpose": "Tests detection of an inconsistent signed cycle without permitting a subchromosomal fix.",
+  "species": [
+    {
+      "id": "sp1",
+      "chromosomes": [
+        {
+          "id": "A",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:A:1",
+              "homology_id": "H",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    },
+    {
+      "id": "sp2",
+      "chromosomes": [
+        {
+          "id": "B",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:B:1",
+              "homology_id": "H",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    },
+    {
+      "id": "sp3",
+      "chromosomes": [
+        {
+          "id": "C",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:C:1",
+              "homology_id": "H",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    }
+  ],
+  "orientation_constraints": [
+    {
+      "a": "sp1:A",
+      "b": "sp2:B",
+      "xor": 0
+    },
+    {
+      "a": "sp2:B",
+      "b": "sp3:C",
+      "xor": 0
+    },
+    {
+      "a": "sp3:C",
+      "b": "sp1:A",
+      "xor": 1
+    }
+  ],
+  "expected": {
+    "chromosome_component_count": 1,
+    "orientation_balanced": false,
+    "frustration_index": 1,
+    "subchromosomal_flip_allowed": false,
+    "notes": "The XOR around the cycle is 1. At least one orientation constraint must remain unsatisfied/flagged; no internal chromosome reversal may be introduced."
+  }
+}

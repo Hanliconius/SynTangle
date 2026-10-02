@@ -1,0 +1,89 @@
+{
+  "fixture_version": 1,
+  "id": "balanced_orientation_cycle",
+  "title": "Balanced whole-chromosome orientation cycle",
+  "purpose": "Tests GF(2) orientation propagation when the signed cycle is consistent.",
+  "species": [
+    {
+      "id": "sp1",
+      "chromosomes": [
+        {
+          "id": "A",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:A:1",
+              "homology_id": "H",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    },
+    {
+      "id": "sp2",
+      "chromosomes": [
+        {
+          "id": "B",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:B:1",
+              "homology_id": "H",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    },
+    {
+      "id": "sp3",
+      "chromosomes": [
+        {
+          "id": "C",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:C:1",
+              "homology_id": "H",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    }
+  ],
+  "orientation_constraints": [
+    {
+      "a": "sp1:A",
+      "b": "sp2:B",
+      "xor": 0
+    },
+    {
+      "a": "sp2:B",
+      "b": "sp3:C",
+      "xor": 0
+    },
+    {
+      "a": "sp3:C",
+      "b": "sp1:A",
+      "xor": 0
+    }
+  ],
+  "expected": {
+    "chromosome_component_count": 1,
+    "orientation_balanced": true,
+    "frustration_index": 0,
+    "orientation_free_bits": 1,
+    "notes": "Fixing any one whole chromosome orientation determines the other two; the remaining bit is the global reversal symmetry."
+  }
+}
