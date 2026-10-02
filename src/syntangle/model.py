@@ -53,6 +53,16 @@ class Fixture:
     expected: Mapping[str, Any]
 
     @property
+    def species_ids(self) -> tuple[str, ...]:
+        seen: set[str] = set()
+        ordered: list[str] = []
+        for chromosome in self.chromosomes:
+            if chromosome.ref.species_id not in seen:
+                seen.add(chromosome.ref.species_id)
+                ordered.append(chromosome.ref.species_id)
+        return tuple(ordered)
+
+    @property
     def chromosome_refs(self) -> tuple[ChromosomeRef, ...]:
         return tuple(chrom.ref for chrom in self.chromosomes)
 
