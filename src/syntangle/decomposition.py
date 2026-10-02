@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .cycles import CycleBasisElement, fundamental_cycle_basis
 from .incidence import IncidenceGraph
 
 
@@ -23,6 +24,7 @@ class GraphDecomposition:
     core_edge_ids: tuple[int, ...]
     biconnected_blocks: tuple[BiconnectedBlock, ...]
     hard_kernels: tuple[frozenset[str], ...]
+    cycle_basis: tuple[CycleBasisElement, ...]
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -39,6 +41,7 @@ class GraphDecomposition:
                 for block in self.biconnected_blocks
             ],
             "hard_kernels": [sorted(kernel) for kernel in self.hard_kernels],
+            "cycle_basis": [cycle.to_dict() for cycle in self.cycle_basis],
         }
 
 
@@ -190,6 +193,9 @@ def decompose_incidence_graph(graph: IncidenceGraph) -> GraphDecomposition:
     bridges, articulation, blocks = _tarjan_blocks(graph)
     core_nodes, core_edges = _two_core(graph)
     hard_kernels = _induced_components(graph, core_nodes, core_edges)
+    cycle_basis = fundamental_cycle_basis(
+        graph, node_ids=core_nodes, edge_ids=core_edges
+    ) if core_nodes else ()
     return GraphDecomposition(
         bridge_edge_ids=bridges,
         articulation_points=articulation,
@@ -197,4 +203,5 @@ def decompose_incidence_graph(graph: IncidenceGraph) -> GraphDecomposition:
         core_edge_ids=core_edges,
         biconnected_blocks=blocks,
         hard_kernels=hard_kernels,
+        cycle_basis=cycle_basis,
     )
