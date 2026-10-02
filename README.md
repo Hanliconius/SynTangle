@@ -8,9 +8,9 @@ SynTangle separates those two things. It treats whole chromosomes as the movable
 
 ## Current status
 
-This repository is currently a **design and specification repository**. The mathematical model, invariants, decomposition strategy, optimization objective, metrics, and synthetic test cases are being fixed before implementation begins.
+Implementation has begun with **executable validation infrastructure**: machine-readable ground-truth fixtures plus a recovered/cleaned forward chromosome simulator for fusion, fission and inversion, deliberate whole-chromosome tangle induction, and visual audit output.
 
-No solver should be implemented in a way that contradicts [RULES.md](RULES.md).
+The SynTangle solver itself is still being built from the specification outward. No solver should be implemented in a way that contradicts [RULES.md](RULES.md).
 
 ## Core formulation
 
@@ -58,7 +58,8 @@ metrics + visualization
 - **[docs/data_model.md](docs/data_model.md)** — canonical input objects and representations.
 - **[docs/pipeline_manifest.md](docs/pipeline_manifest.md)** — stepwise computational plan.
 - **[docs/concepts.md](docs/concepts.md)** — mathematical concepts, with status and purpose.
-- **[examples/README.md](examples/README.md)** — synthetic cases that will become executable invariance tests.
+- **[examples/README.md](examples/README.md)** — executable synthetic invariance fixtures.
+- **[validation/simulator/README.md](validation/simulator/README.md)** — forward chromosome-evolution simulator, deliberate display-tangle induction, and visual validation.
 
 ## Design principle
 
