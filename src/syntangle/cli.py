@@ -6,6 +6,7 @@ import json
 from .decomposition import decompose_incidence_graph
 from .fixtures import load_fixture
 from .incidence import analyze_fixture, build_incidence_graph
+from .layout import exact_optimize_small
 from .ordering import derive_ordering_constraints
 from .orientation import solve_orientation_constraints
 
@@ -20,6 +21,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     analyze.add_argument("fixture")
     analyze.add_argument("--pretty", action="store_true")
+
+    optimize = subparsers.add_parser(
+        "optimize-fixture",
+        help="prove a minimum crossing layout for a small unambiguous fixture",
+    )
+    optimize.add_argument("fixture")
+    optimize.add_argument("--state-cap-per-component", type=int, default=250000)
+    optimize.add_argument("--pretty", action="store_true")
     return parser
 
 
@@ -34,4 +43,14 @@ def main(argv: list[str] | None = None) -> int:
         output["ordering_constraints"] = derive_ordering_constraints(fixture).to_dict()
         print(json.dumps(output, indent=2 if args.pretty else None, sort_keys=True))
         return 0
+
+    if args.command == "optimize-fixture":
+        fixture = load_fixture(args.fixture)
+        result = exact_optimize_small(
+            fixture,
+            state_cap_per_component=args.state_cap_per_component,
+        )
+        print(json.dumps(result.to_dict(), indent=2 if args.pretty else None, sort_keys=True))
+        return 0
+
     raise AssertionError(f"Unhandled command: {args.command}")
