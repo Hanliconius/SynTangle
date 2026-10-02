@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
+from .audit import build_layout_audit
 from .decomposition import decompose_incidence_graph
 from .fixtures import load_fixture
 from .incidence import analyze_fixture, build_incidence_graph
 from .layout import exact_optimize_small
 from .ordering import derive_ordering_constraints
 from .orientation import solve_orientation_constraints
+from .visualize import write_layout_comparison_svg
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -28,6 +31,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     optimize.add_argument("fixture")
     optimize.add_argument("--state-cap-per-component", type=int, default=250000)
+    optimize.add_argument("--audit-json")
+    optimize.add_argument("--svg")
     optimize.add_argument("--pretty", action="store_true")
     return parser
 
@@ -50,7 +55,19 @@ def main(argv: list[str] | None = None) -> int:
             fixture,
             state_cap_per_component=args.state_cap_per_component,
         )
-        print(json.dumps(result.to_dict(), indent=2 if args.pretty else None, sort_keys=True))
+        audit = build_layout_audit(fixture, result)
+
+        if args.audit_json:
+            Path(args.audit_json).write_text(
+                json.dumps(audit.to_dict(), indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        if args.svg:
+            write_layout_comparison_svg(fixture, result, args.svg)
+
+        output = result.to_dict()
+        output["audit"] = audit.to_dict()
+        print(json.dumps(output, indent=2 if args.pretty else None, sort_keys=True))
         return 0
 
     raise AssertionError(f"Unhandled command: {args.command}")
