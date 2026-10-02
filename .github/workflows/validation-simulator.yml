@@ -1,0 +1,25 @@
+name: Validation simulator
+
+on:
+  push:
+    paths:
+      - "validation/simulator/**"
+      - ".github/workflows/validation-simulator.yml"
+  pull_request:
+    paths:
+      - "validation/simulator/**"
+      - ".github/workflows/validation-simulator.yml"
+
+jobs:
+  simulator-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Run simulator smoke test
+        run: Rscript validation/simulator/smoke_test.R
