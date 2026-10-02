@@ -1,0 +1,1323 @@
+{
+  "fixture_version": 1,
+  "id": "perfect_1to1_30x3",
+  "title": "Perfect 1:1:1 chromosome correspondence",
+  "purpose": "Baseline case in which every chromosome belongs to an independent three-species homology component.",
+  "species": [
+    {
+      "id": "sp1",
+      "chromosomes": [
+        {
+          "id": "1",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:1:1",
+              "homology_id": "H1",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        },
+        {
+          "id": "2",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:2:1",
+              "homology_id": "H2",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 2
+        },
+        {
+          "id": "3",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:3:1",
+              "homology_id": "H3",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 3
+        },
+        {
+          "id": "4",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:4:1",
+              "homology_id": "H4",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 4
+        },
+        {
+          "id": "5",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:5:1",
+              "homology_id": "H5",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 5
+        },
+        {
+          "id": "6",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:6:1",
+              "homology_id": "H6",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 6
+        },
+        {
+          "id": "7",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:7:1",
+              "homology_id": "H7",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 7
+        },
+        {
+          "id": "8",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:8:1",
+              "homology_id": "H8",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 8
+        },
+        {
+          "id": "9",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:9:1",
+              "homology_id": "H9",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 9
+        },
+        {
+          "id": "10",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:10:1",
+              "homology_id": "H10",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 10
+        },
+        {
+          "id": "11",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:11:1",
+              "homology_id": "H11",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 11
+        },
+        {
+          "id": "12",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:12:1",
+              "homology_id": "H12",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 12
+        },
+        {
+          "id": "13",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:13:1",
+              "homology_id": "H13",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 13
+        },
+        {
+          "id": "14",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:14:1",
+              "homology_id": "H14",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 14
+        },
+        {
+          "id": "15",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:15:1",
+              "homology_id": "H15",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 15
+        },
+        {
+          "id": "16",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:16:1",
+              "homology_id": "H16",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 16
+        },
+        {
+          "id": "17",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:17:1",
+              "homology_id": "H17",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 17
+        },
+        {
+          "id": "18",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:18:1",
+              "homology_id": "H18",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 18
+        },
+        {
+          "id": "19",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:19:1",
+              "homology_id": "H19",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 19
+        },
+        {
+          "id": "20",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:20:1",
+              "homology_id": "H20",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 20
+        },
+        {
+          "id": "21",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:21:1",
+              "homology_id": "H21",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 21
+        },
+        {
+          "id": "22",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:22:1",
+              "homology_id": "H22",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 22
+        },
+        {
+          "id": "23",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:23:1",
+              "homology_id": "H23",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 23
+        },
+        {
+          "id": "24",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:24:1",
+              "homology_id": "H24",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 24
+        },
+        {
+          "id": "25",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:25:1",
+              "homology_id": "H25",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 25
+        },
+        {
+          "id": "26",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:26:1",
+              "homology_id": "H26",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 26
+        },
+        {
+          "id": "27",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:27:1",
+              "homology_id": "H27",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 27
+        },
+        {
+          "id": "28",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:28:1",
+              "homology_id": "H28",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 28
+        },
+        {
+          "id": "29",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:29:1",
+              "homology_id": "H29",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 29
+        },
+        {
+          "id": "30",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:30:1",
+              "homology_id": "H30",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 30
+        }
+      ]
+    },
+    {
+      "id": "sp2",
+      "chromosomes": [
+        {
+          "id": "1",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:1:1",
+              "homology_id": "H1",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        },
+        {
+          "id": "2",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:2:1",
+              "homology_id": "H2",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 2
+        },
+        {
+          "id": "3",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:3:1",
+              "homology_id": "H3",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 3
+        },
+        {
+          "id": "4",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:4:1",
+              "homology_id": "H4",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 4
+        },
+        {
+          "id": "5",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:5:1",
+              "homology_id": "H5",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 5
+        },
+        {
+          "id": "6",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:6:1",
+              "homology_id": "H6",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 6
+        },
+        {
+          "id": "7",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:7:1",
+              "homology_id": "H7",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 7
+        },
+        {
+          "id": "8",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:8:1",
+              "homology_id": "H8",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 8
+        },
+        {
+          "id": "9",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:9:1",
+              "homology_id": "H9",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 9
+        },
+        {
+          "id": "10",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:10:1",
+              "homology_id": "H10",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 10
+        },
+        {
+          "id": "11",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:11:1",
+              "homology_id": "H11",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 11
+        },
+        {
+          "id": "12",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:12:1",
+              "homology_id": "H12",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 12
+        },
+        {
+          "id": "13",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:13:1",
+              "homology_id": "H13",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 13
+        },
+        {
+          "id": "14",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:14:1",
+              "homology_id": "H14",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 14
+        },
+        {
+          "id": "15",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:15:1",
+              "homology_id": "H15",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 15
+        },
+        {
+          "id": "16",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:16:1",
+              "homology_id": "H16",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 16
+        },
+        {
+          "id": "17",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:17:1",
+              "homology_id": "H17",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 17
+        },
+        {
+          "id": "18",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:18:1",
+              "homology_id": "H18",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 18
+        },
+        {
+          "id": "19",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:19:1",
+              "homology_id": "H19",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 19
+        },
+        {
+          "id": "20",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:20:1",
+              "homology_id": "H20",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 20
+        },
+        {
+          "id": "21",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:21:1",
+              "homology_id": "H21",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 21
+        },
+        {
+          "id": "22",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:22:1",
+              "homology_id": "H22",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 22
+        },
+        {
+          "id": "23",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:23:1",
+              "homology_id": "H23",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 23
+        },
+        {
+          "id": "24",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:24:1",
+              "homology_id": "H24",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 24
+        },
+        {
+          "id": "25",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:25:1",
+              "homology_id": "H25",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 25
+        },
+        {
+          "id": "26",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:26:1",
+              "homology_id": "H26",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 26
+        },
+        {
+          "id": "27",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:27:1",
+              "homology_id": "H27",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 27
+        },
+        {
+          "id": "28",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:28:1",
+              "homology_id": "H28",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 28
+        },
+        {
+          "id": "29",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:29:1",
+              "homology_id": "H29",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 29
+        },
+        {
+          "id": "30",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:30:1",
+              "homology_id": "H30",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 30
+        }
+      ]
+    },
+    {
+      "id": "sp3",
+      "chromosomes": [
+        {
+          "id": "1",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:1:1",
+              "homology_id": "H1",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        },
+        {
+          "id": "2",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:2:1",
+              "homology_id": "H2",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 2
+        },
+        {
+          "id": "3",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:3:1",
+              "homology_id": "H3",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 3
+        },
+        {
+          "id": "4",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:4:1",
+              "homology_id": "H4",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 4
+        },
+        {
+          "id": "5",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:5:1",
+              "homology_id": "H5",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 5
+        },
+        {
+          "id": "6",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:6:1",
+              "homology_id": "H6",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 6
+        },
+        {
+          "id": "7",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:7:1",
+              "homology_id": "H7",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 7
+        },
+        {
+          "id": "8",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:8:1",
+              "homology_id": "H8",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 8
+        },
+        {
+          "id": "9",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:9:1",
+              "homology_id": "H9",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 9
+        },
+        {
+          "id": "10",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:10:1",
+              "homology_id": "H10",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 10
+        },
+        {
+          "id": "11",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:11:1",
+              "homology_id": "H11",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 11
+        },
+        {
+          "id": "12",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:12:1",
+              "homology_id": "H12",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 12
+        },
+        {
+          "id": "13",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:13:1",
+              "homology_id": "H13",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 13
+        },
+        {
+          "id": "14",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:14:1",
+              "homology_id": "H14",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 14
+        },
+        {
+          "id": "15",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:15:1",
+              "homology_id": "H15",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 15
+        },
+        {
+          "id": "16",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:16:1",
+              "homology_id": "H16",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 16
+        },
+        {
+          "id": "17",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:17:1",
+              "homology_id": "H17",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 17
+        },
+        {
+          "id": "18",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:18:1",
+              "homology_id": "H18",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 18
+        },
+        {
+          "id": "19",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:19:1",
+              "homology_id": "H19",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 19
+        },
+        {
+          "id": "20",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:20:1",
+              "homology_id": "H20",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 20
+        },
+        {
+          "id": "21",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:21:1",
+              "homology_id": "H21",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 21
+        },
+        {
+          "id": "22",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:22:1",
+              "homology_id": "H22",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 22
+        },
+        {
+          "id": "23",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:23:1",
+              "homology_id": "H23",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 23
+        },
+        {
+          "id": "24",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:24:1",
+              "homology_id": "H24",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 24
+        },
+        {
+          "id": "25",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:25:1",
+              "homology_id": "H25",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 25
+        },
+        {
+          "id": "26",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:26:1",
+              "homology_id": "H26",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 26
+        },
+        {
+          "id": "27",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:27:1",
+              "homology_id": "H27",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 27
+        },
+        {
+          "id": "28",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:28:1",
+              "homology_id": "H28",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 28
+        },
+        {
+          "id": "29",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:29:1",
+              "homology_id": "H29",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 29
+        },
+        {
+          "id": "30",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:30:1",
+              "homology_id": "H30",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 30
+        }
+      ]
+    }
+  ],
+  "orientation_constraints": [],
+  "expected": {
+    "chromosome_component_count": 30,
+    "chromosome_component_sizes": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "incidence_cycle_rank_total": 0,
+    "hard_kernel_count": 0,
+    "subchromosomal_reordering_required": false,
+    "notes": "A common ordering of the 30 independent components gives zero layout crossings. Component order is otherwise representation-equivalent."
+  }
+}

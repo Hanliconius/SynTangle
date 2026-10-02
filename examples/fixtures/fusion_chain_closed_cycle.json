@@ -1,0 +1,179 @@
+{
+  "fixture_version": 1,
+  "id": "fusion_chain_closed_cycle",
+  "title": "Fusion chain with one closed cycle",
+  "purpose": "Adds one chromosome linking H9 and H18, creating one independent incidence cycle.",
+  "species": [
+    {
+      "id": "sp1",
+      "chromosomes": [
+        {
+          "id": "A",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:A:1",
+              "homology_id": "H1",
+              "start": 0,
+              "end": 50,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp1:A:2",
+              "homology_id": "H30",
+              "start": 50,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    },
+    {
+      "id": "sp2",
+      "chromosomes": [
+        {
+          "id": "B",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:B:1",
+              "homology_id": "H30",
+              "start": 0,
+              "end": 50,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp2:B:2",
+              "homology_id": "H18",
+              "start": 50,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        },
+        {
+          "id": "C",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:C:1",
+              "homology_id": "H9",
+              "start": 0,
+              "end": 50,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp2:C:2",
+              "homology_id": "H1",
+              "start": 50,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 2
+        }
+      ]
+    },
+    {
+      "id": "sp3",
+      "chromosomes": [
+        {
+          "id": "1",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:1:1",
+              "homology_id": "H1",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        },
+        {
+          "id": "9",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:9:1",
+              "homology_id": "H9",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 2
+        },
+        {
+          "id": "18",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:18:1",
+              "homology_id": "H18",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 3
+        },
+        {
+          "id": "30",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp3:30:1",
+              "homology_id": "H30",
+              "start": 0,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 4
+        }
+      ]
+    },
+    {
+      "id": "sp4",
+      "chromosomes": [
+        {
+          "id": "D",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp4:D:1",
+              "homology_id": "H9",
+              "start": 0,
+              "end": 50,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp4:D:2",
+              "homology_id": "H18",
+              "start": 50,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    }
+  ],
+  "orientation_constraints": [],
+  "expected": {
+    "chromosome_component_count": 1,
+    "chromosome_component_sizes": [
+      8
+    ],
+    "incidence_cycle_rank_total": 1,
+    "hard_kernel_count": 1,
+    "subchromosomal_reordering_required": false,
+    "notes": "Adding sp4:D contributes one chromosome vertex and two incidences to the existing tree, closing exactly one independent cycle."
+  }
+}

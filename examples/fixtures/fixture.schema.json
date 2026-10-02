@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Hanliconius/SynTangle/examples/fixtures/fixture.schema.json",
+  "title": "SynTangle synthetic fixture",
+  "type": "object",
+  "required": [
+    "fixture_version",
+    "id",
+    "title",
+    "purpose",
+    "species",
+    "expected"
+  ],
+  "properties": {
+    "fixture_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "species": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "chromosomes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "chromosomes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "length",
+                "blocks"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "length": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "display_rank": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "blocks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "occurrence_id",
+                      "homology_id",
+                      "start",
+                      "end",
+                      "strand"
+                    ],
+                    "properties": {
+                      "occurrence_id": {
+                        "type": "string"
+                      },
+                      "homology_id": {
+                        "type": "string"
+                      },
+                      "start": {
+                        "type": "number"
+                      },
+                      "end": {
+                        "type": "number"
+                      },
+                      "strand": {
+                        "enum": [
+                          "+",
+                          "-",
+                          "?"
+                        ]
+                      }
+                    },
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "orientation_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "a",
+          "b",
+          "xor"
+        ],
+        "properties": {
+          "a": {
+            "type": "string"
+          },
+          "b": {
+            "type": "string"
+          },
+          "xor": {
+            "enum": [
+              0,
+              1
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "expected": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

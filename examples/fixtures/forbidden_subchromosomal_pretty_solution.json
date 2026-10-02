@@ -1,0 +1,134 @@
+{
+  "fixture_version": 1,
+  "id": "forbidden_subchromosomal_pretty_solution",
+  "title": "Cleaner drawing would require an illegal internal swap",
+  "purpose": "Makes R1–R4 executable: chromosome interiors may reverse only as complete units.",
+  "species": [
+    {
+      "id": "sp1",
+      "chromosomes": [
+        {
+          "id": "X",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp1:X:1",
+              "homology_id": "HA",
+              "start": 0,
+              "end": 25,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp1:X:2",
+              "homology_id": "HB",
+              "start": 25,
+              "end": 50,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp1:X:3",
+              "homology_id": "HC",
+              "start": 50,
+              "end": 75,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp1:X:4",
+              "homology_id": "HD",
+              "start": 75,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    },
+    {
+      "id": "sp2",
+      "chromosomes": [
+        {
+          "id": "Y",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "sp2:Y:1",
+              "homology_id": "HA",
+              "start": 0,
+              "end": 25,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp2:Y:2",
+              "homology_id": "HC",
+              "start": 25,
+              "end": 50,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp2:Y:3",
+              "homology_id": "HB",
+              "start": 50,
+              "end": 75,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "sp2:Y:4",
+              "homology_id": "HD",
+              "start": 75,
+              "end": 100,
+              "strand": "+"
+            }
+          ],
+          "display_rank": 1
+        }
+      ]
+    }
+  ],
+  "orientation_constraints": [],
+  "expected": {
+    "legal_internal_homology_orders": {
+      "sp1:X": [
+        [
+          "HA",
+          "HB",
+          "HC",
+          "HD"
+        ],
+        [
+          "HD",
+          "HC",
+          "HB",
+          "HA"
+        ]
+      ],
+      "sp2:Y": [
+        [
+          "HA",
+          "HC",
+          "HB",
+          "HD"
+        ],
+        [
+          "HD",
+          "HB",
+          "HC",
+          "HA"
+        ]
+      ]
+    },
+    "forbidden_internal_homology_orders": {
+      "sp1:X": [
+        [
+          "HA",
+          "HC",
+          "HB",
+          "HD"
+        ]
+      ]
+    },
+    "subchromosomal_reordering_required_for_zero_crossing": true,
+    "subchromosomal_reordering_allowed": false,
+    "notes": "Any residual crossing caused by the real B/C order disagreement is intrinsic under SynTangle's legal move set."
+  }
+}
