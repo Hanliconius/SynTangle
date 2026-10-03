@@ -86,7 +86,10 @@ class ExactLayoutResult:
 
 def initial_layout_state(fixture: Fixture) -> LayoutState:
     order: dict[str, tuple[ChromosomeRef, ...]] = {}
-    orientation = {ref: 1 for ref in fixture.chromosome_refs}
+    orientation = {
+        chromosome.ref: chromosome.display_orientation
+        for chromosome in fixture.chromosomes
+    }
 
     for species in fixture.species_ids:
         chroms = [

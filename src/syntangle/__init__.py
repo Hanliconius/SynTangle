@@ -1,6 +1,7 @@
 """SynTangle core package."""
 
 from .audit import LayoutAudit, build_layout_audit, fixture_fingerprint
+from .bundle import load_validation_bundle
 from .cycles import CycleBasisElement, fundamental_cycle_basis
 from .decomposition import GraphDecomposition, decompose_incidence_graph
 from .fixtures import fixture_from_dict, load_fixture
@@ -50,6 +51,7 @@ __all__ = [
     "fundamental_cycle_basis",
     "initial_layout_state",
     "load_fixture",
+    "load_validation_bundle",
     "render_layout_comparison_svg",
     "score_crossings",
     "solve_orientation_constraints",

@@ -32,6 +32,7 @@ class Chromosome:
     ref: ChromosomeRef
     length: float
     display_rank: int | None
+    display_orientation: int
     blocks: tuple[BlockOccurrence, ...]
 
 
