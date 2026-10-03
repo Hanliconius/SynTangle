@@ -197,6 +197,7 @@ def run_case(
     transition_cap: int,
     branch_node_cap: int,
     local_restarts: int,
+    component_workers: int,
 ) -> dict[str, object]:
     case_dir = root / row["case_dir"]
     fixture = load_validation_bundle(case_dir)
@@ -220,6 +221,7 @@ def run_case(
         branch_node_cap_per_component=branch_node_cap,
         local_restarts=local_restarts,
         seed=int(row["seed"]),
+        component_workers=component_workers,
     )
     elapsed = perf_counter() - started
 
@@ -385,27 +387,90 @@ def main() -> int:
     parser.add_argument("--transition-cap", type=int, default=250000)
     parser.add_argument("--branch-node-cap", type=int, default=100000)
     parser.add_argument("--local-restarts", type=int, default=4)
+    parser.add_argument(
+        "--component-workers",
+        type=int,
+        default=1,
+        help=(
+            "Worker processes for independent incidence components inside "
+            "branch-and-bound. Use 1 for the historical serial baseline."
+        ),
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from completed cases already present in --output.",
+    )
     args = parser.parse_args()
+
+    if args.component_workers < 1:
+        raise SystemExit("--component-workers must be at least 1")
 
     root = Path(args.benchmark_root)
     manifest = read_tsv(root / "benchmark_manifest.tsv")
     if not manifest:
         raise SystemExit("Benchmark manifest is empty")
 
-    results = [
-        run_case(
+    output = Path(args.output)
+    summary_json = Path(args.summary_json)
+    summary_md = Path(args.summary_md)
+
+    completed: dict[str, dict[str, object]] = {}
+    if args.resume and output.is_file():
+        for saved in read_tsv(output):
+            case_id = saved.get("case_id", "")
+            if case_id:
+                completed[case_id] = dict(saved)
+
+    results: list[dict[str, object]] = []
+    total = len(manifest)
+
+    for index, row in enumerate(manifest, start=1):
+        case_id = row["case_id"]
+        if case_id in completed:
+            result = completed[case_id]
+            results.append(result)
+            print(
+                f"[{index}/{total}] SKIP {case_id} "
+                "(checkpoint already complete)",
+                flush=True,
+            )
+            continue
+
+        print(
+            f"[{index}/{total}] START {case_id}",
+            flush=True,
+        )
+        result = run_case(
             row,
             root,
             transition_cap=args.transition_cap,
             branch_node_cap=args.branch_node_cap,
             local_restarts=args.local_restarts,
+            component_workers=args.component_workers,
         )
-        for row in manifest
-    ]
+        results.append(result)
 
-    output = Path(args.output)
-    summary_json = Path(args.summary_json)
-    summary_md = Path(args.summary_md)
+        # Checkpoint immediately. If the next case is interrupted, every
+        # completed case remains available for --resume.
+        write_results(results, output)
+        write_summary(results, summary_json, summary_md)
+
+        print(
+            "[{}/{}] DONE  {}  C: {} -> {}  gap={}  {}  {:.3f}s".format(
+                index,
+                total,
+                case_id,
+                result["initial_crossings"],
+                result["optimized_crossings"],
+                result["optimality_gap"],
+                result["optimality_status"],
+                float(result["wall_seconds"]),
+            ),
+            flush=True,
+        )
+
+    # Re-write once in manifest order after a resumed run.
     write_results(results, output)
     write_summary(results, summary_json, summary_md)
 
