@@ -87,6 +87,9 @@ Each case records:
 - `proven optimum` versus `bounded best known`;
 - solver selected;
 - states/nodes evaluated;
+- for monotone branch-and-bound runs: implicit orientation-state count,
+  orientation nodes actually evaluated, order nodes evaluated, branches pruned,
+  groups forced by bounds, and memo/cache hits;
 - wall time.
 
 The hidden native presentation is a useful simulator baseline, not a claim about the uniquely correct biological layout. A different legal layout can have the same or lower crossing objective.
