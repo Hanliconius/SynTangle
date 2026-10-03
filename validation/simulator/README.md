@@ -24,7 +24,7 @@ tangled presentation supplied to SynTangle
 hidden tangle log
 ```
 
-The two histories are intentionally separate. Biological simulation may change chromosome membership and within-chromosome coordinates according to explicit structural mutations. Tangle induction may change only whole-chromosome display rank and display orientation.
+The two histories are intentionally separate. Biological simulation may change chromosome membership and within-chromosome coordinates according to explicit structural mutations. Tangle induction may change only whole-chromosome display rank and display orientation. Both rank and orientation are part of the public initial layout supplied to SynTangle; the operations that produced them remain hidden in the tangle log.
 
 ## Files
 
@@ -32,6 +32,9 @@ The two histories are intentionally separate. Biological simulation may change c
 - `tangle_induction.R` — seeded presentation-only permutation/reversal.
 - `visualize_simulation.R` — lightweight base-R PDF audit comparing native and deliberately tangled presentations.
 - `smoke_test.R` — tiny invariant test for CI.
+- `export_validation_bundle.R` — writes public extant-state TSVs plus separate hidden-truth logs.
+- `generate_integration_case.R` — deterministic fission/fusion/inversion case used by CI.
+- `check_integration_case.py` — imports only the public bundle, runs SynTangle, then reveals hidden history for benchmark checks.
 - `archive/reconstructed_2025_simulator.R` — provenance copy of the recovered 2025 logic; this is historical reference, not production validation code.
 
 ## Historical provenance
