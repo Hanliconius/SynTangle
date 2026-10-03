@@ -101,6 +101,11 @@ jobs:
           --title "SynTangle paired presentation smoke benchmark"
           --svg-dir /tmp/syntangle-paired/figures
 
+      - name: Generate high-complexity stress fixtures
+        run: >
+          Rscript validation/benchmark/generate_benchmark_cases.R
+          /tmp/syntangle-stress stress
+
       - name: Upload smoke benchmark outputs
         uses: actions/upload-artifact@v4
         with:
@@ -119,3 +124,4 @@ jobs:
             /tmp/syntangle-paired/paired_invariance.md
             /tmp/syntangle-paired/benchmark_report.html
             /tmp/syntangle-paired/figures/
+            /tmp/syntangle-stress/benchmark_manifest.tsv

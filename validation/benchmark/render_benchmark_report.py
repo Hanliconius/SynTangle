@@ -236,6 +236,139 @@ def paired_presentation_svg(rows: list[dict[str, str]]) -> str | None:
     )
 
 
+def complexity_ladder_svg(rows: list[dict[str, str]]) -> str | None:
+    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in rows:
+        biology_id = row.get("biology_id", "").strip()
+        if biology_id and row.get("events_per_branch", "") != "":
+            grouped[biology_id].append(row)
+
+    groups = []
+    for biology_id, group in grouped.items():
+        modes = {row.get("tangle_mode") for row in group}
+        if modes >= set(MODE_ORDER):
+            sample = group[0]
+            groups.append(
+                (
+                    integer(sample, "species_count"),
+                    integer(sample, "ancestor_chromosomes"),
+                    integer(sample, "events_per_branch"),
+                    biology_id,
+                    group,
+                )
+            )
+
+    if len(groups) < 2:
+        return None
+
+    groups.sort(key=lambda item: (item[0], item[1], item[2], item[3]))
+    width, height = 940, 500
+    left, right, top, bottom = 78, 28, 54, 95
+    plot_w = width - left - right
+    plot_h = height - top - bottom
+
+    ymax = max(
+        number(row, "wall_seconds")
+        for _, _, _, _, group in groups
+        for row in group
+    )
+    ymax = max(ymax, 0.001)
+
+    def sx(index: int) -> float:
+        if len(groups) == 1:
+            return left + plot_w / 2
+        return left + index / (len(groups) - 1) * plot_w
+
+    def sy(value: float) -> float:
+        return top + plot_h - math.log1p(value) / math.log1p(ymax) * plot_h
+
+    parts = [
+        f'<text x="{left}" y="27" font-size="20" font-weight="700">'
+        'Coupled complexity ladder</text>',
+        f'<text x="{left}" y="45" font-size="12" class="muted">'
+        'Species, chromosomes, and structural events per lineage step increase together; '
+        'vertical scale is log(1 + seconds).</text>',
+    ]
+
+    for frac in (0.0, 0.25, 0.5, 0.75, 1.0):
+        value = math.expm1(math.log1p(ymax) * frac)
+        y = sy(value)
+        parts.append(
+            f'<line x1="{left}" y1="{y:.2f}" x2="{left + plot_w}" '
+            f'y2="{y:.2f}" class="grid"/>'
+        )
+        parts.append(
+            f'<text x="{left - 9}" y="{y + 4:.2f}" text-anchor="end" '
+            f'font-size="11">{value:.2g}</text>'
+        )
+
+    mode_classes = {"mild": "exact", "strong": "bounded", "random": "mark"}
+    for mode in MODE_ORDER:
+        points = []
+        for index, (species, chroms, events, biology_id, group) in enumerate(groups):
+            row = next(item for item in group if item.get("tangle_mode") == mode)
+            x = sx(index)
+            y = sy(number(row, "wall_seconds"))
+            points.append((x, y, row))
+        if len(points) >= 2:
+            parts.append(
+                '<polyline fill="none" stroke="#6b7280" stroke-width="1.5" '
+                'stroke-opacity="0.55" points="{}"/>'.format(
+                    " ".join(f"{x:.2f},{y:.2f}" for x, y, _ in points)
+                )
+            )
+        for x, y, row in points:
+            cls = mode_classes[mode]
+            if mode == "random":
+                parts.append(
+                    f'<circle cx="{x:.2f}" cy="{y:.2f}" r="5" class="{cls}">'
+                    f'<title>{mode}: {number(row, "wall_seconds"):.4f}s</title></circle>'
+                )
+            else:
+                parts.append(
+                    f'<circle cx="{x:.2f}" cy="{y:.2f}" r="5" class="{cls}">'
+                    f'<title>{mode}: {number(row, "wall_seconds"):.4f}s</title></circle>'
+                )
+
+    for index, (species, chroms, events, biology_id, group) in enumerate(groups):
+        x = sx(index)
+        parts.append(
+            f'<line x1="{x:.2f}" y1="{top + plot_h}" x2="{x:.2f}" '
+            f'y2="{top + plot_h + 5}" class="axis"/>'
+        )
+        parts.append(
+            f'<text x="{x:.2f}" y="{top + plot_h + 23}" text-anchor="middle" '
+            f'font-size="11">{species} sp</text>'
+        )
+        parts.append(
+            f'<text x="{x:.2f}" y="{top + plot_h + 38}" text-anchor="middle" '
+            f'font-size="11">{chroms} chr</text>'
+        )
+        parts.append(
+            f'<text x="{x:.2f}" y="{top + plot_h + 53}" text-anchor="middle" '
+            f'font-size="11">{events} events/branch</text>'
+        )
+
+    parts.extend([
+        f'<line x1="{left}" y1="{top + plot_h}" x2="{left + plot_w}" '
+        f'y2="{top + plot_h}" class="axis"/>',
+        f'<line x1="{left}" y1="{top}" x2="{left}" '
+        f'y2="{top + plot_h}" class="axis"/>',
+        f'<text x="18" y="{top + plot_h / 2}" text-anchor="middle" '
+        f'font-size="12" transform="rotate(-90 18 {top + plot_h / 2})">'
+        'Wall seconds</text>',
+        f'<text x="{left + 12}" y="{height - 18}" font-size="11">'
+        'mild = blue · strong = orange · random = outlined</text>',
+    ])
+
+    return svg_shell(
+        width,
+        height,
+        "".join(parts),
+        "Coupled complexity ladder",
+    )
+
+
 def orientation_reduction_svg(rows: list[dict[str, str]]) -> str | None:
     branch_rows = [
         row
@@ -445,10 +578,13 @@ def stage_audit(rows: list[dict[str, str]]) -> list[tuple[str, str, str]]:
 def render_html(rows: list[dict[str, str]], title: str) -> tuple[str, dict[str, str]]:
     runtime_svg = runtime_scaling_svg(rows)
     paired_svg = paired_presentation_svg(rows)
+    complexity_svg = complexity_ladder_svg(rows)
     reduction_svg = orientation_reduction_svg(rows)
     svgs = {"runtime_scaling.svg": runtime_svg}
     if paired_svg is not None:
         svgs["paired_presentation.svg"] = paired_svg
+    if complexity_svg is not None:
+        svgs["complexity_ladder.svg"] = complexity_svg
     if reduction_svg is not None:
         svgs["orientation_reduction.svg"] = reduction_svg
 
@@ -472,6 +608,9 @@ def render_html(rows: list[dict[str, str]], title: str) -> tuple[str, dict[str, 
         "<tr>"
         f"<td>{esc(row['case_id'])}</td>"
         f"<td>{esc(row.get('tangle_mode', ''))}</td>"
+        f"<td>{integer(row, 'species_count')}</td>"
+        f"<td>{integer(row, 'ancestor_chromosomes')}</td>"
+        f"<td>{integer(row, 'events_per_branch')}</td>"
         f"<td>{esc(row.get('solver', ''))}</td>"
         f"<td>{integer(row, 'initial_crossings')}</td>"
         f"<td>{integer(row, 'optimized_crossings')}</td>"
@@ -530,7 +669,8 @@ integration test demonstrates that it changes search cost or correctness.</p>
 <table><thead><tr><th>Stage</th><th>Status</th><th>Current role</th></tr></thead>
 <tbody>{audit_rows}</tbody></table>
 <h2>Case results</h2>
-<table><thead><tr><th>Case</th><th>Tangle</th><th>Solver</th>
+<table><thead><tr><th>Case</th><th>Tangle</th><th>Species</th>
+<th>Ancestor chr</th><th>Events/branch</th><th>Solver</th>
 <th>Input C</th><th>Final C</th><th>Gap</th><th>Seconds</th></tr></thead>
 <tbody>{case_rows}</tbody></table>
 </main></body></html>

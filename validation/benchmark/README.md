@@ -110,6 +110,40 @@ This is a probe, not an assertion that 30 chromosomes is the final scaling
 limit. If a case becomes bounded, retain that result rather than silently
 raising caps: the first failure point is useful algorithmic evidence.
 
+### Coupled high-complexity stress ladder
+
+The `stress` profile deliberately increases **all three biological/search
+complexity axes together**, rather than changing only one:
+
+| Rung | Species | Ancestral chromosomes | Structural events per lineage step | Anchors/chromosome |
+|---|---:|---:|---:|---:|
+| 1 | 6 | 20 | 5 | 16 |
+| 2 | 8 | 30 | 8 | 18 |
+| 3 | 10 | 40 | 12 | 20 |
+
+Each rung is a controlled mild/strong/random presentation triplet, giving nine
+cases total. Fusion and fission counts are balanced within the high-complexity
+event plans so chromosome number remains roughly stable while structural
+history accumulates across increasingly many lineage steps.
+
+```bash
+Rscript validation/benchmark/generate_benchmark_cases.R \
+  benchmark_stress stress
+
+time python validation/benchmark/run_benchmark.py \
+  benchmark_stress \
+  --output benchmark_stress/benchmark_results.tsv \
+  --summary-json benchmark_stress/benchmark_summary.json \
+  --summary-md benchmark_stress/benchmark_summary.md \
+  --transition-cap 250000 \
+  --branch-node-cap 100000 \
+  --local-restarts 4
+```
+
+Do not increase caps merely to obtain nine proofs. A bounded result is useful:
+the first rung/structure that fails to prove the optimum identifies the next
+solver bottleneck.
+
 ## Vector visual report
 
 Benchmark results can be rendered as a dependency-free HTML report with
@@ -133,13 +167,37 @@ The report includes:
   diagnostic, preparatory, and deferred steps;
 - the complete per-case result table.
 
+For eye-level ground truth, generate a **case gallery**. Each linked report
+shows the hidden simulator-native baseline, tangled public input, optimized
+layout, graph structure, and solver diagnostics:
+
+```bash
+python validation/benchmark/render_case_gallery.py \
+  benchmark_stress \
+  benchmark_stress/case_reports
+
+open benchmark_stress/case_reports/index.html
+```
+
+To reduce rendering/solve time while first inspecting a new stress run, render
+only the random presentation from each biological rung:
+
+```bash
+python validation/benchmark/render_case_gallery.py \
+  benchmark_stress \
+  benchmark_stress/random_reports \
+  --modes random
+
+open benchmark_stress/random_reports/index.html
+```
+
 ## Recorded quantities
 
 Each case records:
 
 - input and biological fingerprints separately;
 - paired biological ID and independent biology/tangle seeds where applicable;
-- species/chromosome/anchor scale;
+- species/chromosome/anchor scale and planned structural events per lineage step;
 - incidence-component count;
 - raw incidence cycle rank;
 - chromosome-signature structural cycle rank;
