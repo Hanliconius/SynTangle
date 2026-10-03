@@ -1,33 +1,40 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from itertools import product
 
 from .layout import InfeasibleOrientationConstraints, SearchSpaceTooLarge
 from .model import ChromosomeRef, Fixture
 
 
-def legal_orientation_assignments(
+@dataclass(frozen=True)
+class OrientationBasis:
+    base_assignment: dict[ChromosomeRef, int]
+    free_flip_groups: tuple[tuple[ChromosomeRef, ...], ...]
+
+    @property
+    def assignment_count(self) -> int:
+        return 2 ** len(self.free_flip_groups)
+
+
+def orientation_basis(
     fixture: Fixture,
     refs: tuple[ChromosomeRef, ...],
-    *,
-    cap: int = 4096,
-) -> tuple[dict[ChromosomeRef, int], ...]:
-    """Enumerate legal whole-chromosome orientations by GF(2) propagation.
-
-    Connected orientation components each contribute one global reversal bit.
-    This avoids filtering all 2^n raw chromosome orientations when hard XOR
-    constraints already determine relative states.
-    """
+) -> OrientationBasis:
+    """Compactly represent every orientation satisfying hard GF(2) constraints."""
 
     ref_set = set(refs)
     constraints = tuple(
-        c
-        for c in fixture.orientation_constraints
-        if c.a in ref_set or c.b in ref_set
+        constraint
+        for constraint in fixture.orientation_constraints
+        if constraint.a in ref_set or constraint.b in ref_set
     )
-    if any(c.a not in ref_set or c.b not in ref_set for c in constraints):
+    if any(
+        constraint.a not in ref_set or constraint.b not in ref_set
+        for constraint in constraints
+    ):
         raise ValueError(
-            "Orientation constraint crosses disconnected incidence components"
+            "Orientation constraint crosses the supplied chromosome subset"
         )
 
     adjacency: dict[ChromosomeRef, list[tuple[ChromosomeRef, int]]] = {
@@ -66,20 +73,39 @@ def legal_orientation_assignments(
 
         groups.append(tuple(sorted(group)))
 
-    n_assignments = 2 ** len(groups)
-    if n_assignments > cap:
+    base_assignment = {
+        ref: (1 if relative[ref] == 0 else -1)
+        for ref in refs
+    }
+    return OrientationBasis(
+        base_assignment=base_assignment,
+        free_flip_groups=tuple(groups),
+    )
+
+
+def legal_orientation_assignments(
+    fixture: Fixture,
+    refs: tuple[ChromosomeRef, ...],
+    *,
+    cap: int = 4096,
+) -> tuple[dict[ChromosomeRef, int], ...]:
+    """Enumerate legal orientations from the compact propagated basis."""
+
+    basis = orientation_basis(fixture, refs)
+    if basis.assignment_count > cap:
         raise SearchSpaceTooLarge(
-            f"Component has {n_assignments} legal orientation assignments; "
-            f"cap is {cap}"
+            f"Component has {basis.assignment_count} legal orientation "
+            f"assignments; cap is {cap}"
         )
 
     assignments: list[dict[ChromosomeRef, int]] = []
-    for flips in product((0, 1), repeat=len(groups)):
-        assignment: dict[ChromosomeRef, int] = {}
-        for group, flip in zip(groups, flips):
+    for flips in product((0, 1), repeat=len(basis.free_flip_groups)):
+        assignment = dict(basis.base_assignment)
+        for group, flip in zip(basis.free_flip_groups, flips):
+            if not flip:
+                continue
             for ref in group:
-                bit = relative[ref] ^ flip
-                assignment[ref] = 1 if bit == 0 else -1
+                assignment[ref] *= -1
         assignments.append(assignment)
 
     return tuple(assignments)
