@@ -332,10 +332,7 @@ def optimize_branch_and_bound(
         exhausted = True
 
         if incumbent_upper == 0:
-            orientations = ( {
-                ref: incumbent_state.chromosome_orientation[ref]
-                for ref in refs
-            }, )
+            orientations = ()
         else:
             try:
                 orientations = legal_orientation_assignments(
@@ -348,7 +345,10 @@ def optimize_branch_and_bound(
                 exhausted = False
                 frontier_lower = 0
 
-        if orientations:
+        if incumbent_upper == 0:
+            exhausted = True
+            frontier_lower = 0
+        elif orientations:
             nonempty_indices = [
                 index
                 for index, species in enumerate(fixture.species_ids)
