@@ -58,6 +58,8 @@ def build_pairwise_order_costs(
     state: LayoutState,
     species_id: str,
     component_nodes: frozenset[str],
+    *,
+    neighbors: tuple[str, ...] | None = None,
 ) -> PairwiseOrderCosts:
     """Build exact pairwise order costs for one species/component.
 
@@ -84,7 +86,18 @@ def build_pairwise_order_costs(
         chromosome.ref: chromosome for chromosome in fixture.chromosomes
     }
 
-    for neighbor in _neighbor_species(fixture, species_id):
+    selected_neighbors = (
+        _neighbor_species(fixture, species_id)
+        if neighbors is None
+        else neighbors
+    )
+    legal_neighbors = set(_neighbor_species(fixture, species_id))
+    if any(neighbor not in legal_neighbors for neighbor in selected_neighbors):
+        raise ValueError(
+            f"Requested non-adjacent species as order-cost neighbor of {species_id}"
+        )
+
+    for neighbor in selected_neighbors:
         neighbor_rank = {
             ref: rank
             for rank, ref in enumerate(state.chromosome_order[neighbor])
