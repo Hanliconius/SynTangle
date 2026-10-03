@@ -22,6 +22,7 @@ from .layout import (
     score_crossings,
 )
 from .model import Fixture, FixtureValidationError
+from .order_dp import OrderDPResult, build_pairwise_order_costs, optimize_species_component_order, solve_order_subset_dp
 from .ordering import OrderingConstraintState, derive_ordering_constraints
 from .orientation import OrientationResult, solve_orientation_constraints
 from .structural import StructuralBundle, StructuralProjection, build_structural_projection
@@ -40,6 +41,7 @@ __all__ = [
     "LayoutAudit",
     "LayoutState",
     "LocalSearchResult",
+    "OrderDPResult",
     "OrderingConstraintState",
     "OrientationResult",
     "StructuralBundle",
@@ -47,6 +49,7 @@ __all__ = [
     "analyze_fixture",
     "build_incidence_graph",
     "build_layout_audit",
+    "build_pairwise_order_costs",
     "build_structural_projection",
     "canonicalize_component_order",
     "decompose_incidence_graph",
@@ -60,9 +63,11 @@ __all__ = [
     "load_fixture",
     "load_validation_bundle",
     "optimize_auto",
+    "optimize_species_component_order",
     "optimize_local_search",
     "render_layout_comparison_svg",
     "score_crossings",
+    "solve_order_subset_dp",
     "solve_orientation_constraints",
     "write_layout_comparison_svg",
 ]
