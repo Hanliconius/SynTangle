@@ -27,6 +27,13 @@ from .order_dp import OrderDPResult, build_pairwise_order_costs, optimize_specie
 from .ordering import OrderingConstraintState, derive_ordering_constraints
 from .orientation import OrientationResult, solve_orientation_constraints
 from .report import render_incidence_graph_svg, render_validation_report_html, write_validation_report_html
+from .residual import (
+    ResidualComponentSummary,
+    ResidualFactor,
+    ResidualFactorization,
+    ResidualVariable,
+    build_residual_factorization,
+)
 from .structural import StructuralBundle, StructuralProjection, build_structural_projection
 from .visualize import render_layout_comparison_svg, render_layout_state_svg, write_layout_comparison_svg
 
@@ -48,12 +55,17 @@ __all__ = [
     "OrderDPResult",
     "OrderingConstraintState",
     "OrientationResult",
+    "ResidualComponentSummary",
+    "ResidualFactor",
+    "ResidualFactorization",
+    "ResidualVariable",
     "StructuralBundle",
     "StructuralProjection",
     "analyze_fixture",
     "build_incidence_graph",
     "build_layout_audit",
     "build_pairwise_order_costs",
+    "build_residual_factorization",
     "build_structural_projection",
     "canonicalize_component_order",
     "decompose_incidence_graph",
