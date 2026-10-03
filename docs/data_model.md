@@ -11,6 +11,7 @@ species_id
 chromosome_id
 length
 input_order            # optional original display order; not biological order within chromosome
+input_orientation      # optional +1 / -1 original display orientation; not biological
 metadata               # optional
 ```
 
