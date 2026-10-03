@@ -290,11 +290,12 @@ def optimize_auto(
     orientation_cap_per_component: int = 4096,
     permutation_cap_per_species: int = 40320,
     transition_cap_per_component: int = 5_000_000,
+    branch_node_cap_per_component: int = 250_000,
     local_restarts: int = 8,
     local_max_improving_steps: int = 10000,
     seed: int = 1,
 ) -> AutoLayoutResult:
-    """Use exact layer DP when feasible, otherwise fall back to legal local search."""
+    """Use exact DP, then bounded branch-and-bound, before heuristic fallback."""
 
     try:
         exact: LayerDPResult = exact_optimize_layer_dp(
@@ -313,17 +314,27 @@ def optimize_auto(
             },
         )
     except SearchSpaceTooLarge as exc:
-        heuristic = optimize_local_search(
+        # Local import avoids a module-level cycle: branch_bound uses the
+        # local-search routine above as its incumbent generator.
+        from .branch_bound import optimize_branch_and_bound
+
+        bounded = optimize_branch_and_bound(
             fixture,
-            restarts=local_restarts,
-            max_improving_steps=local_max_improving_steps,
+            node_cap_per_component=branch_node_cap_per_component,
+            orientation_cap_per_component=orientation_cap_per_component,
+            local_restarts=local_restarts,
             seed=seed,
         )
         return AutoLayoutResult(
-            layout=heuristic.layout,
-            solver="constraint-aware-local-search",
+            layout=bounded.layout,
+            solver="hard-kernel-branch-and-bound",
             details={
                 "fallback_reason": str(exc),
-                "diagnostics": heuristic.diagnostics.to_dict(),
+                "lower_bound": bounded.lower_bound,
+                "upper_bound": bounded.upper_bound,
+                "optimality_gap": bounded.gap,
+                "component_diagnostics": [
+                    item.to_dict() for item in bounded.components
+                ],
             },
         )
