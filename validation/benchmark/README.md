@@ -192,7 +192,8 @@ The report includes:
 
 For eye-level ground truth, generate a **case gallery**. Each linked report
 shows the hidden simulator-native baseline, tangled public input, optimized
-layout, graph structure, and solver diagnostics:
+layout, biological incidence/structural graphs, the residual decision-factor
+graph, and solver diagnostics:
 
 ```bash
 python validation/benchmark/render_case_gallery.py \
