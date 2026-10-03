@@ -329,7 +329,13 @@ def run_case(
 
 def write_results(rows: list[dict[str, object]], output: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
-    fields = list(rows[0])
+    fields: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        for field in row:
+            if field not in seen:
+                seen.add(field)
+                fields.append(field)
     with output.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(
             handle,
