@@ -61,10 +61,10 @@ ancestral H1-H2 absent   -> 1 change
 ancestral H1-H2 present  -> 2 changes
 ~~~
 
-If we already possess a chromosome-valid feasible history costing one event,
-any candidate root topology that requires H1-H2 to be present has an
-independent-character lower bound of two events and can be rejected under that
-event objective.
+If we already possess a chromosome-valid ancestral reconstruction with
+adjacency-parsimony cost one, any candidate root topology that requires H1-H2
+to be present has an independent-character lower bound of two adjacency
+changes and can be rejected under that same adjacency-parsimony objective.
 
 ### 2. Genuine ancestral ambiguity
 
@@ -113,14 +113,14 @@ The individually cheapest ancestral states need not combine into a physically
 valid set of chromosomes.
 
 That is useful rather than fatal. Independent optimization is a relaxation, so
-its event count can be used as a **lower bound** on a chromosome-valid
-ancestral history.
+its score can be used as a **lower bound** on the adjacency-change parsimony
+score of a chromosome-valid ancestral reconstruction.
 
 For a proposed ancestral topology T:
 
 ~~~text
-LB_history(T) =
-    sum of root-conditioned minimum costs
+LB_adjacency(T) =
+    sum of root-conditioned minimum adjacency-change costs
     over the adjacency states required by T
 ~~~
 
@@ -129,11 +129,16 @@ Unspecified adjacencies retain their unconditional minimum.
 A topology is called prunable in this experiment only when:
 
 ~~~text
-LB_history(T) > cost(best known feasible chromosome-valid history)
+LB_adjacency(T) > adjacency cost(best known chromosome-valid reconstruction)
 ~~~
 
 A singleton parsimony-preferred root state by itself is **not** treated as a
 hard biological fact.
+
+Also, an adjacency-change score is not automatically a lower bound on the
+number of biological fusion/fission/inversion events. A single compound event
+can change more than one adjacency. Event-count pruning would therefore need an
+event-aware admissible bound or an explicit conversion proof.
 
 This distinction is important for eventual integration with SynTangle and its
 monotone-pruning rule.
@@ -168,8 +173,8 @@ This first proof-of-concept tests:
   hypergraph-backed fixture representation;
 - rooted-tree dynamic programming;
 - root-conditioned event lower bounds;
-- a case where a candidate ancestral state becomes safely dominated by a known
-  feasible history;
+- a case where a candidate ancestral state becomes safely dominated under an
+  explicit adjacency-parsimony objective;
 - a case where ambiguity must be retained;
 - sensitivity to species-tree topology.
 
