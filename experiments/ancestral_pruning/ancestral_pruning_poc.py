@@ -18,11 +18,14 @@ A Sankoff dynamic program gives the minimum number of changes compatible with
 the observations, both unconditionally and conditional on either root state.
 
 These per-adjacency costs are an independent-character relaxation. Summing
-them gives a lower bound on any chromosome-valid ancestral history. Therefore
-a candidate root topology can only be pruned safely when its conditioned lower
-bound is already worse than a known feasible history/incumbent under the same
-event objective. A singleton best root state is not, by itself, treated as a
-hard biological truth.
+them gives a lower bound on the adjacency-change parsimony score of any
+chromosome-valid ancestral reconstruction. It is NOT automatically a lower
+bound on the number of biological fusion/fission/inversion events, because one
+biological event can change more than one adjacency. A candidate root topology
+can only be pruned safely here when its conditioned adjacency-change lower
+bound is already worse than a known feasible chromosome-valid reconstruction
+under the same adjacency-parsimony objective. A singleton best root state is
+not, by itself, treated as a hard biological truth.
 """
 
 from dataclasses import dataclass
@@ -97,13 +100,13 @@ class TopologyBound:
     unconditional_lower_bound: int
     conditioned_lower_bound: int
     excess_lower_bound: int
-    incumbent_event_cost: int | None
+    incumbent_adjacency_cost: int | None
 
     @property
     def prunable(self) -> bool:
         return (
-            self.incumbent_event_cost is not None
-            and self.conditioned_lower_bound > self.incumbent_event_cost
+            self.incumbent_adjacency_cost is not None
+            and self.conditioned_lower_bound > self.incumbent_adjacency_cost
         )
 
 
@@ -340,18 +343,19 @@ def analyze_fixture(
     )
 
 
-def topology_event_lower_bound(
+def topology_adjacency_lower_bound(
     analyses: Iterable[SankoffResult],
     *,
     root_assignment: dict[Adjacency, int] | None = None,
-    incumbent_event_cost: int | None = None,
+    incumbent_adjacency_cost: int | None = None,
 ) -> TopologyBound:
-    """Lower-bound a proposed ancestral root topology.
+    """Lower-bound a proposed ancestral root topology under adjacency parsimony.
 
     root_assignment may be partial. Unspecified adjacencies use their
     unconditional minimum. Because characters are optimized independently,
-    this is a relaxation of the chromosome-valid history problem and therefore
-    a lower bound rather than a complete ancestral reconstruction.
+    this is a relaxation of the chromosome-valid adjacency-reconstruction
+    problem. The resulting score is not automatically a lower bound on the
+    number of compound biological rearrangement events.
     """
 
     assignment = {
@@ -379,14 +383,14 @@ def topology_event_lower_bound(
             + ", ".join(f"{a}--{b}" for a, b in unknown)
         )
 
-    if incumbent_event_cost is not None and incumbent_event_cost < 0:
-        raise ValueError("incumbent_event_cost must be nonnegative")
+    if incumbent_adjacency_cost is not None and incumbent_adjacency_cost < 0:
+        raise ValueError("incumbent_adjacency_cost must be nonnegative")
 
     return TopologyBound(
         unconditional_lower_bound=unconditional,
         conditioned_lower_bound=conditioned,
         excess_lower_bound=conditioned - unconditional,
-        incumbent_event_cost=incumbent_event_cost,
+        incumbent_adjacency_cost=incumbent_adjacency_cost,
     )
 
 
