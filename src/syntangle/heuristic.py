@@ -294,6 +294,7 @@ def optimize_auto(
     local_restarts: int = 8,
     local_max_improving_steps: int = 10000,
     seed: int = 1,
+    component_workers: int = 1,
 ) -> AutoLayoutResult:
     """Use exact DP, then bounded branch-and-bound, before heuristic fallback."""
 
@@ -324,6 +325,7 @@ def optimize_auto(
             orientation_cap_per_component=orientation_cap_per_component,
             local_restarts=local_restarts,
             seed=seed,
+            component_workers=component_workers,
         )
         return AutoLayoutResult(
             layout=bounded.layout,
@@ -336,5 +338,6 @@ def optimize_auto(
                 "component_diagnostics": [
                     item.to_dict() for item in bounded.components
                 ],
+                "component_workers": bounded.component_workers,
             },
         )
