@@ -39,17 +39,23 @@ class ScalableSolverTests(unittest.TestCase):
         self.assertEqual(result.solver, "exact-layer-dynamic-programming")
         self.assertEqual(result.layout.optimality_status, "proven optimum")
 
-    def test_auto_falls_back_when_exact_cap_is_tiny(self) -> None:
+    def test_auto_routes_oversized_exact_case_to_branch_and_bound(self) -> None:
         fixture = load_fixture(FIXTURES / "fusion_chain_closed_cycle.json")
         result = optimize_auto(
             fixture,
             transition_cap_per_component=1,
+            branch_node_cap_per_component=100000,
             local_restarts=3,
             seed=31,
         )
-        self.assertEqual(result.solver, "constraint-aware-local-search")
-        self.assertEqual(result.layout.optimality_status, "best known")
+        self.assertEqual(result.solver, "hard-kernel-branch-and-bound")
+        self.assertIn(
+            result.layout.optimality_status,
+            {"proven optimum", "bounded best known"},
+        )
         self.assertIn("fallback_reason", result.details)
+        self.assertIn("lower_bound", result.details)
+        self.assertIn("upper_bound", result.details)
 
     def test_seeded_local_search_is_reproducible(self) -> None:
         fixture = load_fixture(FIXTURES / "fusion_chain_closed_cycle.json")

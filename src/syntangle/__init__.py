@@ -1,6 +1,7 @@
 """SynTangle core package."""
 
 from .audit import LayoutAudit, build_layout_audit, fixture_fingerprint
+from .branch_bound import BranchAndBoundResult, ComponentBranchAndBound, optimize_branch_and_bound
 from .bundle import load_validation_bundle
 from .cycles import CycleBasisElement, fundamental_cycle_basis
 from .decomposition import GraphDecomposition, decompose_incidence_graph
@@ -30,6 +31,8 @@ from .visualize import render_layout_comparison_svg, write_layout_comparison_svg
 
 __all__ = [
     "AutoLayoutResult",
+    "BranchAndBoundResult",
+    "ComponentBranchAndBound",
     "ComponentDPDiagnostics",
     "CrossingScore",
     "CycleBasisElement",
@@ -63,6 +66,7 @@ __all__ = [
     "load_fixture",
     "load_validation_bundle",
     "optimize_auto",
+    "optimize_branch_and_bound",
     "optimize_species_component_order",
     "optimize_local_search",
     "render_layout_comparison_svg",
