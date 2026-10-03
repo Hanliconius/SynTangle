@@ -44,8 +44,11 @@ class ResidualFactorization:
     This is deliberately distinct from the biological incidence graph.
     Variables are legal display decisions (whole-component chromosome orders
     and GF(2) free orientation groups). Factors are adjacent-species crossing
-    terms. If this graph disconnects, the current crossing objective exactly
-    factorizes over those disconnected residual pieces.
+    terms. The dependency graph is conservative: a factor may list a variable
+    that proves irrelevant in a particular state, but it must not omit a
+    variable capable of changing that factor. Therefore, if this graph
+    disconnects, the current crossing objective exactly factorizes over those
+    disconnected residual pieces.
 
     Stage 18 records this factorization and separator diagnostics. The current
     optimizer already parallelizes exact incidence components; finer residual
