@@ -61,6 +61,46 @@ jobs:
           --local-restarts 4
           --seed 1303
 
+      - name: Render benchmark overview
+        run: >
+          python validation/benchmark/render_benchmark_report.py
+          /tmp/syntangle-benchmark/benchmark_results.tsv
+          /tmp/syntangle-benchmark/benchmark_report.html
+          --title "SynTangle smoke benchmark"
+          --svg-dir /tmp/syntangle-benchmark/figures
+
+      - name: Generate paired presentation smoke benchmark
+        run: >
+          Rscript validation/benchmark/generate_benchmark_cases.R
+          /tmp/syntangle-paired paired-smoke
+
+      - name: Run paired presentation smoke benchmark
+        run: >
+          python validation/benchmark/run_benchmark.py
+          /tmp/syntangle-paired
+          --output /tmp/syntangle-paired/benchmark_results.tsv
+          --summary-json /tmp/syntangle-paired/benchmark_summary.json
+          --summary-md /tmp/syntangle-paired/benchmark_summary.md
+          --transition-cap 250000
+          --branch-node-cap 100000
+          --local-restarts 4
+
+      - name: Require paired presentation invariance
+        run: >
+          python validation/benchmark/check_paired_invariance.py
+          /tmp/syntangle-paired/benchmark_results.tsv
+          --require-proven
+          --json /tmp/syntangle-paired/paired_invariance.json
+          --markdown /tmp/syntangle-paired/paired_invariance.md
+
+      - name: Render paired visual report
+        run: >
+          python validation/benchmark/render_benchmark_report.py
+          /tmp/syntangle-paired/benchmark_results.tsv
+          /tmp/syntangle-paired/benchmark_report.html
+          --title "SynTangle paired presentation smoke benchmark"
+          --svg-dir /tmp/syntangle-paired/figures
+
       - name: Upload smoke benchmark outputs
         uses: actions/upload-artifact@v4
         with:
@@ -70,3 +110,12 @@ jobs:
             /tmp/syntangle-benchmark/benchmark_summary.json
             /tmp/syntangle-benchmark/benchmark_summary.md
             /tmp/syntangle-benchmark/smoke_4sp_5chr_random_report.html
+            /tmp/syntangle-benchmark/benchmark_report.html
+            /tmp/syntangle-benchmark/figures/
+            /tmp/syntangle-paired/benchmark_results.tsv
+            /tmp/syntangle-paired/benchmark_summary.json
+            /tmp/syntangle-paired/benchmark_summary.md
+            /tmp/syntangle-paired/paired_invariance.json
+            /tmp/syntangle-paired/paired_invariance.md
+            /tmp/syntangle-paired/benchmark_report.html
+            /tmp/syntangle-paired/figures/
