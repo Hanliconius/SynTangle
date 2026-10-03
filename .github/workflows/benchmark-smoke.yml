@@ -36,12 +36,30 @@ jobs:
         run: python -m pip install -e .
 
       - name: Generate deterministic smoke benchmark
-        run: |
-          Rscript validation/benchmark/generate_benchmark_cases.R             /tmp/syntangle-benchmark smoke
+        run: >
+          Rscript validation/benchmark/generate_benchmark_cases.R
+          /tmp/syntangle-benchmark smoke
 
       - name: Run benchmark
-        run: |
-          python validation/benchmark/run_benchmark.py             /tmp/syntangle-benchmark             --output /tmp/syntangle-benchmark/benchmark_results.tsv             --summary-json /tmp/syntangle-benchmark/benchmark_summary.json             --summary-md /tmp/syntangle-benchmark/benchmark_summary.md             --transition-cap 250000             --branch-node-cap 100000             --local-restarts 4
+        run: >
+          python validation/benchmark/run_benchmark.py
+          /tmp/syntangle-benchmark
+          --output /tmp/syntangle-benchmark/benchmark_results.tsv
+          --summary-json /tmp/syntangle-benchmark/benchmark_summary.json
+          --summary-md /tmp/syntangle-benchmark/benchmark_summary.md
+          --transition-cap 250000
+          --branch-node-cap 100000
+          --local-restarts 4
+
+      - name: Generate visual validation report
+        run: >
+          python validation/benchmark/generate_case_report.py
+          /tmp/syntangle-benchmark/smoke_4sp_5chr_random
+          /tmp/syntangle-benchmark/smoke_4sp_5chr_random_report.html
+          --transition-cap 250000
+          --branch-node-cap 100000
+          --local-restarts 4
+          --seed 1303
 
       - name: Upload smoke benchmark outputs
         uses: actions/upload-artifact@v4
@@ -51,3 +69,4 @@ jobs:
             /tmp/syntangle-benchmark/benchmark_results.tsv
             /tmp/syntangle-benchmark/benchmark_summary.json
             /tmp/syntangle-benchmark/benchmark_summary.md
+            /tmp/syntangle-benchmark/smoke_4sp_5chr_random_report.html
