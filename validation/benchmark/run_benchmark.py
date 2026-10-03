@@ -12,6 +12,7 @@ from time import perf_counter
 from syntangle import (
     LayoutState,
     build_incidence_graph,
+    build_residual_factorization,
     build_structural_projection,
     fixture_fingerprint,
     load_validation_bundle,
@@ -205,6 +206,7 @@ def run_case(
     graph = build_incidence_graph(fixture)
     components = graph.connected_components()
     structural = build_structural_projection(fixture)
+    residual = build_residual_factorization(fixture)
     raw_rank = sum(
         graph.summarize_component(component).cycle_rank
         for component in components
@@ -267,6 +269,23 @@ def run_case(
             structural.decomposition.hard_kernels
         ),
         "max_structural_kernel_nodes": max_kernel_nodes,
+        "residual_variable_count": len(residual.variables),
+        "residual_factor_count": len(residual.factors),
+        "residual_objective_component_count": (
+            residual.objective_component_count
+        ),
+        "max_residual_component_variables": (
+            residual.max_objective_component_variables
+        ),
+        "residual_isolated_variable_count": len(
+            residual.isolated_variable_ids
+        ),
+        "residual_articulation_variable_count": len(
+            residual.articulation_variable_ids
+        ),
+        "residual_treewidth_upper_bound": (
+            residual.min_fill_treewidth_upper_bound
+        ),
         "hidden_evolution_event_count": event_count,
         "hidden_evolution_event_type_count": event_type_count,
         "hidden_tangle_changed_chromosomes": changed_layout_rows,
@@ -299,6 +318,9 @@ def run_case(
         "optimality_gap": gap,
         "optimality_status": layout.optimality_status,
         "solver": result.solver,
+        "component_workers_used": int(
+            result.details.get("component_workers", 1)
+        ),
         "states_or_nodes_evaluated": layout.states_evaluated,
         **reduction,
         "wall_seconds": round(elapsed, 6),
