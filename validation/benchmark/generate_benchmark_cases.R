@@ -1,5 +1,7 @@
 args <- commandArgs(trailingOnly = TRUE)
-valid_profiles <- c("smoke", "full", "paired-smoke", "paired", "scale")
+valid_profiles <- c(
+  "smoke", "full", "paired-smoke", "paired", "scale", "stress"
+)
 if (length(args) < 1L || length(args) > 2L) {
   stop(
     paste0(
@@ -39,13 +41,65 @@ event_plan_for_branch <- function(branch_index, intensity) {
       c("fusion"),
       c("inversion")
     )
-  } else {
+  } else if (intensity == "medium") {
     plans <- list(
       c("fission", "inversion"),
       c("fusion", "inversion"),
       c("fission", "fusion")
     )
+  } else if (intensity == "high") {
+    # Five independent whole-chromosome structural events per lineage step.
+    # Two fusions + two fissions keep expected chromosome count roughly stable.
+    plans <- list(
+      c("fusion", "fission", "inversion", "fusion", "fission"),
+      c("fission", "fusion", "inversion", "fission", "fusion"),
+      c("inversion", "fusion", "fission", "fusion", "fission")
+    )
+  } else if (intensity == "very_high") {
+    # Eight events per lineage step: three fusion/fission pairs plus two
+    # inversions. At least eleven distinct chromosomes are required.
+    plans <- list(
+      c(
+        "fusion", "fission", "inversion", "fusion",
+        "fission", "inversion", "fusion", "fission"
+      ),
+      c(
+        "fission", "fusion", "inversion", "fission",
+        "fusion", "inversion", "fission", "fusion"
+      ),
+      c(
+        "inversion", "fusion", "fission", "fusion",
+        "inversion", "fission", "fusion", "fission"
+      )
+    )
+  } else if (intensity == "extreme") {
+    # Twelve events per lineage step: four fusion/fission pairs plus four
+    # inversions. This deliberately creates much more cumulative structural
+    # history while keeping chromosome number approximately stable.
+    plans <- list(
+      c(
+        "fusion", "fission", "inversion",
+        "fusion", "fission", "inversion",
+        "fusion", "fission", "inversion",
+        "fusion", "fission", "inversion"
+      ),
+      c(
+        "fission", "fusion", "inversion",
+        "fission", "fusion", "inversion",
+        "fission", "fusion", "inversion",
+        "fission", "fusion", "inversion"
+      ),
+      c(
+        "inversion", "fusion", "fission",
+        "inversion", "fusion", "fission",
+        "inversion", "fusion", "fission",
+        "inversion", "fusion", "fission"
+      )
+    )
+  } else {
+    stop(paste("Unknown event intensity:", intensity))
   }
+
   plans[[((branch_index - 2L) %% length(plans)) + 1L]]
 }
 
@@ -129,6 +183,7 @@ make_case <- function(
     genes_per_chromosome = genes_per_chrom,
     tangle_mode = tangle_mode,
     event_intensity = intensity,
+    events_per_branch = length(event_plan_for_branch(2L, intensity)),
     seed = seed,
     biology_seed = biology_seed,
     tangle_seed = tangle_seed,
@@ -281,7 +336,7 @@ if (profile == "smoke") {
     genes_per_chrom = 12L,
     seed_base = 5000L
   )
-} else {
+} else if (profile == "scale") {
   # First scaling probe beyond the original 10-chromosome grid. Species count
   # is held at four while chromosome count increases; each scale point is a
   # controlled mild/strong/random triplet.
@@ -292,6 +347,55 @@ if (profile == "smoke") {
     genes_per_chrom = 12L,
     seed_base = 7000L
   )
+} else {
+  # Coupled stress ladder: species count, chromosome count, and cumulative
+  # structural-event density all increase together. Each rung is represented
+  # by a mild/strong/random presentation triplet of the same evolved biology.
+  stress_rungs <- list(
+    list(6L, 20L, 16L, "high", 5L, 8101L),
+    list(8L, 30L, 18L, "very_high", 8L, 8201L),
+    list(10L, 40L, 20L, "extreme", 12L, 8301L)
+  )
+
+  specs <- list()
+  k <- 1L
+  mode_offsets <- c(mild = 9101L, strong = 9201L, random = 9301L)
+
+  for (rung in stress_rungs) {
+    n_species <- rung[[1]]
+    n_chrom <- rung[[2]]
+    genes_per_chrom <- rung[[3]]
+    intensity <- rung[[4]]
+    expected_events <- rung[[5]]
+    biology_seed <- rung[[6]]
+    biology_id <- sprintf(
+      "stress_%dsp_%dchr_%dev",
+      n_species,
+      n_chrom,
+      expected_events
+    )
+
+    if (length(event_plan_for_branch(2L, intensity)) != expected_events) {
+      stop("Stress rung event count does not match intensity definition")
+    }
+
+    for (tangle_mode in c("mild", "strong", "random")) {
+      case_id <- sprintf("%s_%s", biology_id, tangle_mode)
+      specs[[k]] <- spec(
+        case_id,
+        n_species,
+        n_chrom,
+        genes_per_chrom,
+        tangle_mode,
+        intensity,
+        biology_seed,
+        biology_id = biology_id,
+        biology_seed = biology_seed,
+        tangle_seed = biology_seed + mode_offsets[[tangle_mode]]
+      )
+      k <- k + 1L
+    }
+  }
 }
 
 manifest_rows <- lapply(
