@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from .audit import build_layout_audit
+from .branch_bound import optimize_branch_and_bound
 from .decomposition import decompose_incidence_graph
 from .fixtures import load_fixture
 from .heuristic import optimize_auto, optimize_local_search
@@ -35,13 +36,14 @@ def build_parser() -> argparse.ArgumentParser:
     optimize.add_argument("fixture")
     optimize.add_argument(
         "--solver",
-        choices=("auto", "layer-dp", "enumerate", "local-search"),
+        choices=("auto", "branch-bound", "layer-dp", "enumerate", "local-search"),
         default="auto",
     )
     optimize.add_argument("--state-cap-per-component", type=int, default=250000)
     optimize.add_argument("--orientation-cap-per-component", type=int, default=4096)
     optimize.add_argument("--permutation-cap-per-species", type=int, default=40320)
     optimize.add_argument("--transition-cap-per-component", type=int, default=5000000)
+    optimize.add_argument("--branch-node-cap-per-component", type=int, default=250000)
     optimize.add_argument("--local-restarts", type=int, default=8)
     optimize.add_argument("--local-max-improving-steps", type=int, default=10000)
     optimize.add_argument("--seed", type=int, default=1)
@@ -85,6 +87,17 @@ def main(argv: list[str] | None = None) -> int:
         result = dp.layout
         output = dp.to_dict()
 
+    elif args.solver == "branch-bound":
+        bounded = optimize_branch_and_bound(
+            fixture,
+            node_cap_per_component=args.branch_node_cap_per_component,
+            orientation_cap_per_component=args.orientation_cap_per_component,
+            local_restarts=args.local_restarts,
+            seed=args.seed,
+        )
+        result = bounded.layout
+        output = bounded.to_dict()
+
     elif args.solver == "local-search":
         local = optimize_local_search(
             fixture,
@@ -101,6 +114,7 @@ def main(argv: list[str] | None = None) -> int:
             orientation_cap_per_component=args.orientation_cap_per_component,
             permutation_cap_per_species=args.permutation_cap_per_species,
             transition_cap_per_component=args.transition_cap_per_component,
+            branch_node_cap_per_component=args.branch_node_cap_per_component,
             local_restarts=args.local_restarts,
             local_max_improving_steps=args.local_max_improving_steps,
             seed=args.seed,
