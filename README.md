@@ -8,9 +8,22 @@ SynTangle separates those two things. It treats whole chromosomes as the movable
 
 ## Current status
 
-SynTangle now has an executable core for the small synthetic benchmark regime: canonical fixture parsing, chromosome↔homology incidence graphs, connected/core decomposition, GF(2) orientation propagation, a fundamental cycle basis, reversible-chain order constraints, exact tiny-kernel crossing minimization, and auditable initial-vs-optimized visualization. The forward chromosome simulator remains separate validation machinery.
+SynTangle now has an executable exact/bounded solver stack: canonical fixture
+parsing, chromosome↔homology incidence components, GF(2) orientation
+propagation, exact species-layer dynamic programming, exact one-layer subset
+DP, monotone residual branch-and-bound, seeded local-search incumbents, and
+auditable initial-vs-optimized visualization. The original 27-case simulation
+benchmark is solved to proven optimum throughout.
 
-The next implementation work is to scale the admissible-order representation and optimizer beyond tiny exact kernels without weakening the biological constraints. No solver should be implemented in a way that contradicts [RULES.md](RULES.md).
+Structural projection, bridges/articulation points, 2-cores, biconnected
+blocks, and the fundamental cycle basis are still computed and visualized, but
+they are currently diagnostic rather than being allowed to prune the optimizer
+without a proof that the remaining crossing objective factorizes accordingly.
+
+The next validation work uses controlled paired presentation tangles and
+12/15/20/30-chromosome scaling probes to identify the real scaling wall before
+another solver mechanism is added. No solver should be implemented in a way
+that contradicts [RULES.md](RULES.md).
 
 ## Core formulation
 
@@ -58,6 +71,9 @@ metrics + visualization
 - **[docs/data_model.md](docs/data_model.md)** — canonical input objects and representations.
 - **[docs/pipeline_manifest.md](docs/pipeline_manifest.md)** — stepwise computational plan.
 - **[docs/concepts.md](docs/concepts.md)** — mathematical concepts, with status and purpose.
+- **[docs/problem_algebra.md](docs/problem_algebra.md)** — emerging signed-permutation/GF(2)/factorized algebraic formulation.
+- **[docs/method_stage_audit.md](docs/method_stage_audit.md)** — which graph, DP, and search stages are active, diagnostic, preparatory, or deferred.
+- **[validation/benchmark/README.md](validation/benchmark/README.md)** — historical, paired, and scaling benchmarks plus vector reports.
 - **[examples/README.md](examples/README.md)** — executable synthetic invariance fixtures.
 - **[validation/simulator/README.md](validation/simulator/README.md)** — forward chromosome-evolution simulator, deliberate display-tangle induction, and visual validation.
 - **[docs/secondary_ancestral_inference.md](docs/secondary_ancestral_inference.md)** — post-core benchmark plan for ancestral fusion/fission/inversion history inference.

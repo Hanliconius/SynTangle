@@ -75,7 +75,7 @@ class BranchAndBoundResult:
 
     def to_dict(self) -> dict[str, object]:
         output = self.layout.to_dict()
-        output["solver"] = "monotone-hard-kernel-branch-and-bound"
+        output["solver"] = "monotone-monotone-component-branch-and-bound"
         output["lower_bound"] = self.lower_bound
         output["upper_bound"] = self.upper_bound
         output["optimality_gap"] = self.gap

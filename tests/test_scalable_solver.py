@@ -48,7 +48,7 @@ class ScalableSolverTests(unittest.TestCase):
             local_restarts=3,
             seed=31,
         )
-        self.assertEqual(result.solver, "hard-kernel-branch-and-bound")
+        self.assertEqual(result.solver, "monotone-component-branch-and-bound")
         self.assertIn(
             result.layout.optimality_status,
             {"proven optimum", "bounded best known"},

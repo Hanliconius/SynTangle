@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -30,6 +31,44 @@ def raw_cycle_rank(fixture) -> int:
         graph.summarize_component(component).cycle_rank
         for component in graph.connected_components()
     )
+
+
+def biological_fingerprint(fixture) -> str:
+    """Hash extant biological evidence while ignoring presentation state."""
+
+    parts: list[str] = []
+    for chromosome in sorted(fixture.chromosomes, key=lambda item: item.ref):
+        parts.append(
+            "C\t{}\t{}\t{:.12g}".format(
+                chromosome.ref.species_id,
+                chromosome.ref.chromosome_id,
+                chromosome.length,
+            )
+        )
+        for block in chromosome.blocks:
+            parts.append(
+                "B\t{}\t{}\t{}\t{:.12g}\t{:.12g}\t{}".format(
+                    chromosome.ref.species_id,
+                    chromosome.ref.chromosome_id,
+                    block.homology_id,
+                    block.start,
+                    block.end,
+                    block.strand,
+                )
+            )
+    for constraint in sorted(
+        fixture.orientation_constraints,
+        key=lambda item: (item.a, item.b, item.xor),
+    ):
+        parts.append(
+            "O\t{}\t{}\t{}".format(
+                constraint.a.label,
+                constraint.b.label,
+                constraint.xor,
+            )
+        )
+    payload = "\n".join(parts).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def hidden_native_score(fixture, case_dir: Path) -> int | None:
@@ -162,8 +201,13 @@ def run_case(
     case_dir = root / row["case_dir"]
     fixture = load_validation_bundle(case_dir)
 
+    graph = build_incidence_graph(fixture)
+    components = graph.connected_components()
     structural = build_structural_projection(fixture)
-    raw_rank = raw_cycle_rank(fixture)
+    raw_rank = sum(
+        graph.summarize_component(component).cycle_rank
+        for component in components
+    )
     max_kernel_nodes = max(
         (len(kernel) for kernel in structural.decomposition.hard_kernels),
         default=0,
@@ -210,6 +254,8 @@ def run_case(
     return {
         **row,
         "input_fingerprint": fixture_fingerprint(fixture),
+        "biological_fingerprint": biological_fingerprint(fixture),
+        "incidence_component_count": len(components),
         "chromosome_count": len(fixture.chromosomes),
         "homology_group_count": len(fixture.homology_ids),
         "structural_bundle_count": len(structural.bundles),
@@ -227,6 +273,10 @@ def run_case(
         ),
         "initial_crossings": layout.initial_score.crossings,
         "normalized_crossings": layout.normalized_score.crossings,
+        "normalization_crossings_removed": (
+            layout.initial_score.crossings
+            - layout.normalized_score.crossings
+        ),
         "optimized_crossings": layout.optimized_score.crossings,
         "crossings_removed": (
             layout.initial_score.crossings
