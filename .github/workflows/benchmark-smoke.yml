@@ -1,0 +1,53 @@
+name: Simulation benchmark smoke
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "validation/simulator/**"
+      - "validation/benchmark/**"
+      - "pyproject.toml"
+      - ".github/workflows/benchmark-smoke.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "validation/simulator/**"
+      - "validation/benchmark/**"
+      - "pyproject.toml"
+      - ".github/workflows/benchmark-smoke.yml"
+
+jobs:
+  benchmark-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install SynTangle
+        run: python -m pip install -e .
+
+      - name: Generate deterministic smoke benchmark
+        run: |
+          Rscript validation/benchmark/generate_benchmark_cases.R             /tmp/syntangle-benchmark smoke
+
+      - name: Run benchmark
+        run: |
+          python validation/benchmark/run_benchmark.py             /tmp/syntangle-benchmark             --output /tmp/syntangle-benchmark/benchmark_results.tsv             --summary-json /tmp/syntangle-benchmark/benchmark_summary.json             --summary-md /tmp/syntangle-benchmark/benchmark_summary.md             --transition-cap 250000             --branch-node-cap 100000             --local-restarts 4
+
+      - name: Upload smoke benchmark outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: syntangle-simulation-benchmark-smoke
+          path: |
+            /tmp/syntangle-benchmark/benchmark_results.tsv
+            /tmp/syntangle-benchmark/benchmark_summary.json
+            /tmp/syntangle-benchmark/benchmark_summary.md
