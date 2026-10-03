@@ -372,6 +372,14 @@ def write_summary(
         "mean_wall_seconds": mean(
             float(row["wall_seconds"]) for row in rows
         ),
+        "max_residual_component_variables": max(
+            int(float(row.get("max_residual_component_variables", 0) or 0))
+            for row in rows
+        ),
+        "max_residual_treewidth_upper_bound": max(
+            int(float(row.get("residual_treewidth_upper_bound", 0) or 0))
+            for row in rows
+        ),
         "solver_counts": dict(sorted(solvers.items())),
     }
     json_path.write_text(
@@ -389,6 +397,14 @@ def write_summary(
         f"- Mean optimized crossings: {summary['mean_optimized_crossings']:.3f}",
         f"- Mean crossings removed: {summary['mean_crossings_removed']:.3f}",
         f"- Mean wall time: {summary['mean_wall_seconds']:.4f} s",
+        (
+            "- Largest residual objective component: "
+            f"{summary['max_residual_component_variables']} variables"
+        ),
+        (
+            "- Largest residual min-fill treewidth upper bound: "
+            f"{summary['max_residual_treewidth_upper_bound']}"
+        ),
         "",
         "| Case | Solver | Initial C | Final C | Gap | Structural μ | Max kernel | Seconds |",
         "|---|---|---:|---:|---:|---:|---:|---:|",
