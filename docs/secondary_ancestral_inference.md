@@ -32,6 +32,13 @@ ranked or bounded set of compatible histories
 
 A visually simple extant layout is not itself evidence that one particular evolutionary history occurred. The ancestral-inference layer must therefore remain separate from the untangling objective and must explicitly represent non-identifiability.
 
+
+## Phylogenetic constraint (deferred until last)
+
+When this secondary module is eventually implemented, candidate ancestral events should be placed on a supplied species tree rather than inferred on an unconstrained set of taxa. The likely input will be a rooted Newick tree (or an equivalent parsed tree object), and fusion/fission/inversion histories will be constrained to branches and ancestral nodes permitted by that topology.
+
+This is intentionally deferred. The extant untangling solver does not need a phylogeny, and the ancestral-history layer should be added only after the core layout problem is stable and benchmarked.
+
 ## Why the current architecture may help
 
 Several objects already needed for SynTangle are also useful for structural-history inference:
