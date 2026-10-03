@@ -1,0 +1,362 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\title{Road-testing and validating SynTangle:\\
+a concise verification narrative}
+\author{SynTangle development note}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Purpose}
+
+SynTangle is intended to produce minimally tangled multispecies chromosome
+synteny layouts while preserving the biological order encoded by the input
+assemblies.  Validation therefore has to establish more than the fact that a
+drawing looks cleaner.  It must show that the program:
+
+\begin{enumerate}
+  \item never uses an illegal subchromosomal transformation;
+  \item finds or bounds the best legal whole-chromosome layout;
+  \item is insensitive to arbitrary presentation scrambling;
+  \item behaves sensibly on known simulated chromosome histories;
+  \item scales in a measurable way as biological and combinatorial complexity
+        increase; and
+  \item produces outputs that remain interpretable by direct visual inspection.
+\end{enumerate}
+
+This document gives the minimum conceptual verification sequence needed to
+make those claims.  It intentionally omits many implementation-level
+experiments and debugging steps.
+
+\section{What is being validated}
+
+The biological input is naturally n-ary.  A homologous block may occur in
+chromosomes from many species at once, so the conceptual representation is a
+multispecies hypergraph.  SynTangle operates on an exact bipartite incidence
+representation of that hypergraph: chromosome vertices on one side,
+homology-group vertices on the other, and one incidence edge for each block
+occurrence.
+
+The legal display state for a species consists only of a permutation of whole
+chromosomes and whole-chromosome orientation choices.  Internal chromosome
+order is immutable.  The central optimization target is the crossing count
+under those legal transformations.
+
+The strongest result for a case is therefore not merely a low crossing count
+but a statement of the form
+\[
+  C_{\mathrm{LB}} = C_{\mathrm{UB}} = C^*,
+\]
+where \(C^*\) is the constrained optimum.  When equality cannot be proved,
+SynTangle must retain and report the nonzero optimality gap rather than
+silently treating the best layout found as optimal.
+
+\section{Verification architecture}
+
+The minimum simulation-based validation separates biological evolution from
+presentation noise:
+
+\begin{verbatim}
+known ancestor
+    |
+    v
+logged fusion / fission / inversion history
+    |
+    v
+extant simulated genomes
+    |
+    v
+hidden native presentation
+    |
+    v
+whole-chromosome permutation / reversal only
+    |
+    v
+PUBLIC tangled benchmark input
+    |
+    v
+SynTangle
+    |
+    v
+optimized legal layout
+    |
+    v
+only then reveal hidden simulator information
+\end{verbatim}
+
+The hidden evolutionary log and hidden tangle log are retained for validation
+but are never supplied to the solver.  This separation is essential: otherwise
+a successful benchmark could simply reflect leakage of the simulated answer.
+
+\section{Step 1: invariant and tiny exact tests}
+
+Before testing scale, the legal state space must be tested on deliberately
+small fixtures whose behavior can be understood exactly.
+
+The essential cases are:
+
+\begin{itemize}
+  \item perfect one-to-one chromosome correspondence;
+  \item presentation scrambling with no biological change;
+  \item a case requiring whole-chromosome reversal;
+  \item a case in which an apparently cleaner solution would require an
+        illegal subchromosomal edit;
+  \item simple fusion/fission structures;
+  \item balanced orientation constraints;
+  \item contradictory orientation constraints, which must be reported rather
+        than silently coerced; and
+  \item small cyclic cases with a nonzero intrinsic crossing optimum.
+\end{itemize}
+
+These tests establish that the solver is searching the intended legal problem,
+rather than merely minimizing crossings in an unconstrained drawing.
+
+\section{Step 2: compare independent exact formulations}
+
+For sufficiently small cases, the same optimum should be recoverable by more
+than one exact method.  In SynTangle this includes direct/tiny exact search,
+species-layer dynamic programming, and bounded branch-and-bound when allowed
+to exhaust its search.
+
+Agreement among independent exact formulations is useful because the methods
+make different computational assumptions while solving the same legal
+objective.  A disagreement is a correctness failure, not a performance issue.
+
+\section{Step 3: presentation-invariance benchmark}
+
+A key property of the problem is that arbitrary display order should not
+change the constrained biological optimum.
+
+For each simulated biological dataset, create three public inputs from the
+same extant chromosomes:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Presentation & Biological evidence & Display scrambling \\
+\midrule
+mild   & identical & low \\
+strong & identical & high \\
+random & identical & random order/orientation \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The biological fingerprint, hidden native crossing baseline, and solver seed
+are held fixed within the triplet.  If all three runs are proved optimal, they
+must satisfy
+\[
+ C^*_{\mathrm{mild}}
+ =
+ C^*_{\mathrm{strong}}
+ =
+ C^*_{\mathrm{random}}.
+\]
+
+This is a stronger test than asking whether each run removes many crossings:
+it verifies that SynTangle is recovering a property of the biological problem
+rather than a property of the starting drawing.
+
+\section{Step 4: visual ground truth}
+
+Numerical validation is not sufficient for a layout program.  Representative
+cases should be inspected as a three-stage visual audit:
+
+\begin{verbatim}
+hidden simulator-native layout
+        |
+        v
+deliberately tangled public layout
+        |
+        v
+SynTangle optimized layout
+\end{verbatim}
+
+The visual report should also show the raw incidence structure, structural
+projection diagnostics, crossing counts, and proof status.
+
+The purpose of this inspection is not to demand that the optimized layout
+reproduce the simulator-native drawing exactly.  The simulator-native
+presentation is only one legal baseline and need not be the unique optimum.
+Instead, visual inspection should confirm that:
+
+\begin{itemize}
+  \item chromosomes move or reverse only as whole units;
+  \item internal genomic order is preserved;
+  \item obvious presentation tangles are removed;
+  \item residual crossings correspond to genuine constraints rather than
+        unexplained display artifacts; and
+  \item increasing benchmark complexity produces biologically plausible,
+        inspectable outputs rather than pathological layouts.
+\end{itemize}
+
+\section{Step 5: controlled scaling}
+
+Easy cases are useful for correctness but not for identifying the computational
+limits of the method.  Complexity should therefore be increased along
+separable and then coupled axes.
+
+The principal axes are:
+
+\begin{enumerate}
+  \item number of species;
+  \item number of chromosomes;
+  \item number and combination of fusion/fission/inversion events; and
+  \item anchor density, as a secondary evidence-size axis.
+\end{enumerate}
+
+The current stress design deliberately increases the first three together.
+The aim is not to force every large case to prove an optimum.  The first
+reproducible bounded case is valuable because it identifies the point at which
+the current solver ceases to close the lower/upper-bound gap efficiently.
+
+For every run, retain at least:
+
+\begin{itemize}
+  \item input crossing count;
+  \item best legal crossing count found;
+  \item lower bound and gap;
+  \item proof status;
+  \item solver selected;
+  \item states or nodes evaluated;
+  \item wall time;
+  \item raw and structural graph summaries; and
+  \item residual decision-space summaries.
+\end{itemize}
+
+\section{Step 6: explain computational difficulty using the residual problem}
+
+Raw chromosome count alone is not expected to determine runtime.  After exact
+reductions, SynTangle constructs a residual variable/factor description whose
+variables are unresolved whole-chromosome order and GF(2) orientation choices,
+and whose factors are crossing terms.
+
+This representation permits more meaningful complexity diagnostics, including:
+
+\begin{itemize}
+  \item number and size of disconnected residual factors;
+  \item objective-neutral unresolved variables;
+  \item articulation variables;
+  \item a heuristic upper bound on residual treewidth;
+  \item implicit orientation-state count;
+  \item orientation and order nodes actually evaluated; and
+  \item memoized subproblem reuse.
+\end{itemize}
+
+The central scaling question is therefore whether runtime is better predicted
+by the size/width of the residual coupled problem than by the size of the
+original genome representation.
+
+\section{Step 7: verify decomposition and parallelization}
+
+Independent chromosome--homology incidence components are exact additive
+factors of the current objective.  Serial and parallel solutions of those
+components must therefore produce identical global lower bounds, upper bounds,
+and optimized crossing counts.
+
+Finer decomposition is permitted only when the residual objective is also
+proved to factor.  The intended hierarchy is:
+
+\begin{verbatim}
+independent benchmark cases
+    ->
+independent incidence components
+    ->
+disconnected residual factor components
+    ->
+small-separator / tree-decomposition subproblems
+    ->
+parallel branch-and-bound frontier
+\end{verbatim}
+
+Parallelism must never change the mathematical result or weaken proof
+bookkeeping.  A global optimum is proved only after every independent or
+conditional subproblem is exhausted or bounded above the final incumbent.
+
+\section{Step 8: ablation of algorithmic stages}
+
+A method should not remain in the claimed core simply because it is
+mathematically attractive.  Important stages should eventually be ablated on
+the same fixed benchmark cases.
+
+For each candidate stage, compare the solver with and without it while holding
+simulation and presentation seeds fixed.  Record changes in:
+
+\begin{itemize}
+  \item correctness and proof status;
+  \item lower-bound strength;
+  \item states/nodes evaluated;
+  \item wall time; and
+  \item interpretability or audit value.
+\end{itemize}
+
+This is particularly important for structural projection, bridges,
+articulation points, 2-cores, biconnected structure, cycle bases, and future
+separator/treewidth machinery.  These should be described as active solver
+machinery only after demonstrating a computational or proof benefit.
+
+\section{Step 9: real-data road test}
+
+Simulation establishes correctness because hidden truth is available, but it
+does not establish usefulness on biological data.
+
+A later road test should therefore use one or more real multispecies synteny
+datasets with:
+
+\begin{itemize}
+  \item chromosome-scale assemblies;
+  \item a transparent homology/synteny-block construction;
+  \item known or interpretable fusion/fission relationships where possible;
+  \item a sufficiently small subset for direct visual inspection; and
+  \item a larger subset that exercises the scaling machinery.
+\end{itemize}
+
+The real-data test should ask whether SynTangle produces a cleaner legal
+representation, whether residual tangles have a biological explanation, and
+whether the result is stable to deliberate scrambling of the initial
+chromosome display order.
+
+No ancestral-event claim is required for this primary validation.
+
+\section{Step 10: later ancestral-history validation}
+
+Ancestral fusion/fission/inversion inference is a separate downstream problem.
+When implemented, candidate histories must be constrained by a species tree
+and evaluated against hidden simulator histories.
+
+Because multiple histories may explain the same extant structures, validation
+should measure ancestral adjacency recovery, event/breakpoint error, and the
+size of the equivalence class of equally compatible histories rather than
+requiring exact recovery of one hidden event sequence.
+
+\section{Minimum evidence package for a methods claim}
+
+A concise validation package for a paper or release should contain:
+
+\begin{enumerate}
+  \item invariant/tiny-fixture tests showing that illegal transformations are
+        impossible;
+  \item independent exact-method agreement on small cases;
+  \item paired presentation-invariance benchmarks;
+  \item native/tangled/optimized visual audits;
+  \item a scaling ladder that reaches at least one genuinely difficult regime;
+  \item explicit lower/upper bounds and proof status;
+  \item serial-versus-parallel equivalence tests for exact decompositions;
+  \item ablation evidence for any graph/decomposition stage claimed to improve
+        the solver; and
+  \item at least one real-data demonstration.
+\end{enumerate}
+
+This sequence is intentionally shorter than the complete development history.
+It is the conceptual chain needed to support the claims that SynTangle solves
+the correct constrained problem, removes presentation noise, reports intrinsic
+residual tangledness honestly, and scales by exploiting mathematical structure
+rather than by relaxing the biology.
+
+\end{document}
