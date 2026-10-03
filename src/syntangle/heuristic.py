@@ -15,6 +15,7 @@ from .layout import (
 from .layer_dp import LayerDPResult, exact_optimize_layer_dp
 from .model import ChromosomeRef, Fixture
 from .orientation_space import OrientationBasis, orientation_basis
+from .order_dp import optimize_species_component_order
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,7 @@ class LocalSearchDiagnostics:
     restarts: int
     improving_steps: int
     candidate_evaluations: int
+    order_dp_states_evaluated: int
     seed: int
 
     def to_dict(self) -> dict[str, object]:
@@ -29,6 +31,7 @@ class LocalSearchDiagnostics:
             "restarts": self.restarts,
             "improving_steps": self.improving_steps,
             "candidate_evaluations": self.candidate_evaluations,
+            "order_dp_states_evaluated": self.order_dp_states_evaluated,
             "seed": self.seed,
         }
 
@@ -171,9 +174,10 @@ def optimize_local_search(
 ) -> LocalSearchResult:
     """Constraint-aware best-improvement search over legal whole chromosomes.
 
-    Every ordering move is an adjacent swap of two complete chromosomes within
-    one incidence component. Every orientation move flips one complete GF(2)
-    free group, preserving all hard orientation equations.
+    Each iteration can replace one species/component order with its exact
+    O(n 2^n) subset-DP optimum conditional on neighboring layers. Adjacent
+    whole-chromosome swaps remain available as a small local move. Orientation
+    moves flip one complete GF(2) free group, preserving all hard equations.
     """
 
     if restarts < 1:
@@ -183,7 +187,7 @@ def optimize_local_search(
     normalized = canonicalize_component_order(fixture, initial)
     initial_score = score_crossings(fixture, initial)
     normalized_score = score_crossings(fixture, normalized)
-    _, component_of = _component_map(fixture)
+    components, component_of = _component_map(fixture)
     basis = orientation_basis(fixture, fixture.chromosome_refs)
     rng = random.Random(seed)
 
@@ -191,6 +195,7 @@ def optimize_local_search(
     best_score = None
     evaluations = 0
     improving_steps = 0
+    order_dp_states = 0
 
     for restart in range(restarts):
         state = _random_legal_state(
@@ -207,6 +212,30 @@ def optimize_local_search(
 
         while steps < max_improving_steps:
             chosen = None
+
+            for component_id, component_nodes in enumerate(components):
+                for species in fixture.species_ids:
+                    candidate, subproblem = optimize_species_component_order(
+                        fixture, state, species, component_nodes
+                    )
+                    order_dp_states += subproblem.subset_states_evaluated
+                    if candidate == state:
+                        continue
+                    candidate_score = score_crossings(
+                        fixture, candidate
+                    ).crossings
+                    evaluations += 1
+                    move = ("reorder", species, component_id)
+                    key = (
+                        candidate_score,
+                        move,
+                        _state_key(fixture, candidate),
+                    )
+                    if candidate_score < score and (
+                        chosen is None or key < chosen[0]
+                    ):
+                        chosen = (key, candidate, candidate_score)
+
             for move in _candidate_moves(fixture, state, component_of, basis):
                 candidate = _apply_move(state, move)
                 candidate_score = score_crossings(fixture, candidate).crossings
@@ -249,6 +278,7 @@ def optimize_local_search(
             restarts=restarts,
             improving_steps=improving_steps,
             candidate_evaluations=evaluations,
+            order_dp_states_evaluated=order_dp_states,
             seed=seed,
         ),
     )
