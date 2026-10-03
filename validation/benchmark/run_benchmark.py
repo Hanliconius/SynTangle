@@ -336,7 +336,8 @@ def write_results(rows: list[dict[str, object]], output: Path) -> None:
             if field not in seen:
                 seen.add(field)
                 fields.append(field)
-    with output.open("w", encoding="utf-8", newline="") as handle:
+    temporary = output.with_name(output.name + ".tmp")
+    with temporary.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(
             handle,
             fieldnames=fields,
@@ -344,6 +345,7 @@ def write_results(rows: list[dict[str, object]], output: Path) -> None:
         )
         writer.writeheader()
         writer.writerows(rows)
+    temporary.replace(output)
 
 
 def write_summary(
