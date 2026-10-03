@@ -10,7 +10,7 @@ from experiments.ancestral_pruning.ancestral_pruning_poc import (
     canonical_adjacency,
     derive_adjacency_evidence,
     parse_newick,
-    topology_event_lower_bound,
+    topology_adjacency_lower_bound,
 )
 
 
@@ -38,15 +38,15 @@ class AncestralPruningExperimentTests(unittest.TestCase):
         self.assertEqual(result.root_cost_present, 2)
         self.assertEqual(result.optimal_root_states, (0,))
 
-        absent = topology_event_lower_bound(
+        absent = topology_adjacency_lower_bound(
             analyses,
             root_assignment={canonical_adjacency("H1", "H2"): 0},
-            incumbent_event_cost=1,
+            incumbent_adjacency_cost=1,
         )
-        present = topology_event_lower_bound(
+        present = topology_adjacency_lower_bound(
             analyses,
             root_assignment={canonical_adjacency("H1", "H2"): 1},
-            incumbent_event_cost=1,
+            incumbent_adjacency_cost=1,
         )
 
         self.assertFalse(absent.prunable)
@@ -66,10 +66,10 @@ class AncestralPruningExperimentTests(unittest.TestCase):
         self.assertEqual(result.optimal_root_states, (0, 1))
 
         for state in (0, 1):
-            bound = topology_event_lower_bound(
+            bound = topology_adjacency_lower_bound(
                 analyses,
                 root_assignment={("H1", "H2"): state},
-                incumbent_event_cost=1,
+                incumbent_adjacency_cost=1,
             )
             self.assertFalse(bound.prunable)
             self.assertEqual(bound.conditioned_lower_bound, 1)
