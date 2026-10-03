@@ -63,3 +63,7 @@ The final result must record the input state, every whole-chromosome move/flip r
 
 **R16 — Rule changes require explicit amendment.**  
 Changing, removing, weakening, or adding a normative rule requires an intentional rules amendment recorded in `RULES_CHANGELOG.md`. Code must conform to the rules, not redefine them.
+
+
+**R17 — Search-space reduction is monotone.**  
+Once a legal state, branch, or degree of freedom has been proven infeasible, equivalent to a retained state, forced by constraints, dominated by a valid bound, or unable to improve the incumbent objective, it must not be reintroduced by a later optimization stage. Each stage operates on the residual unresolved decision space produced by earlier stages. Original biological evidence is retained for exact scoring, reconstruction, and audit even when the associated search variables have been eliminated or contracted.
