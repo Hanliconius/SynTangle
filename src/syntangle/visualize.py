@@ -127,6 +127,41 @@ def _render_panel(
     return svg
 
 
+
+def render_layout_state_svg(
+    fixture: Fixture,
+    state: LayoutState,
+    *,
+    title: str,
+    crossing_count: int,
+    width: int = 1100,
+    row_gap: int = 110,
+) -> str:
+    """Render one complete legal chromosome-layout state as standalone SVG."""
+
+    top = 70
+    height = top + row_gap * max(1, len(fixture.species_ids) - 1) + 75
+    body = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+        f'viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="white"/>',
+    ]
+    body.extend(
+        _render_panel(
+            fixture,
+            state,
+            0,
+            width,
+            top,
+            row_gap,
+            title,
+            crossing_count,
+        )
+    )
+    body.append("</svg>")
+    return "\n".join(body)
+
+
 def render_layout_comparison_svg(
     fixture: Fixture,
     result: ExactLayoutResult,
