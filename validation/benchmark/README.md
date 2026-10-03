@@ -137,12 +137,35 @@ time python validation/benchmark/run_benchmark.py \
   --summary-md benchmark_stress/benchmark_summary.md \
   --transition-cap 250000 \
   --branch-node-cap 100000 \
-  --local-restarts 4
+  --local-restarts 4 \
+  --component-workers 1
 ```
 
 Do not increase caps merely to obtain nine proofs. A bounded result is useful:
 the first rung/structure that fails to prove the optimum identifies the next
 solver bottleneck.
+
+Long runs now print a START/DONE line for every case and checkpoint the TSV and
+partial summaries after each completed case. If a run is interrupted, resume it
+without repeating completed cases:
+
+```bash
+python validation/benchmark/run_benchmark.py \
+  benchmark_stress \
+  --output benchmark_stress/benchmark_results.tsv \
+  --summary-json benchmark_stress/benchmark_summary.json \
+  --summary-md benchmark_stress/benchmark_summary.md \
+  --transition-cap 250000 \
+  --branch-node-cap 100000 \
+  --local-restarts 4 \
+  --resume
+```
+
+For a serial historical baseline, leave `--component-workers 1`. To use
+multiple CPU cores inside a difficult branch-and-bound case, set for example
+`--component-workers 4`. This currently parallelizes only exact independent
+incidence components; exact layer-DP and finer residual-factor pieces remain
+serial.
 
 ## Vector visual report
 
@@ -169,7 +192,8 @@ The report includes:
 
 For eye-level ground truth, generate a **case gallery**. Each linked report
 shows the hidden simulator-native baseline, tangled public input, optimized
-layout, graph structure, and solver diagnostics:
+layout, biological incidence/structural graphs, the residual decision-factor
+graph, and solver diagnostics:
 
 ```bash
 python validation/benchmark/render_case_gallery.py \
@@ -199,6 +223,11 @@ Each case records:
 - paired biological ID and independent biology/tangle seeds where applicable;
 - species/chromosome/anchor scale and planned structural events per lineage step;
 - incidence-component count;
+- residual order/orientation variable count and crossing-factor count;
+- number and maximum size of disconnected residual objective components;
+- objective-neutral residual-variable count;
+- residual articulation-variable count;
+- greedy min-fill treewidth upper bound (diagnostic, not exact treewidth);
 - raw incidence cycle rank;
 - chromosome-signature structural cycle rank;
 - structural hard-kernel count and largest kernel size;
@@ -229,8 +258,14 @@ reported alongside the raw graph.
 
 However, structural projection and the bridge/articulation/2-core/biconnected
 machinery are currently **diagnostic rather than optimizer inputs**. The active
-solvers factor on exact incidence connected components. See
-`docs/method_stage_audit.md` for the current status of each method stage.
+solvers factor on exact incidence connected components.
+
+Stage 18 additionally constructs the **residual decision/factor graph** from
+unresolved chromosome-order variables, GF(2) orientation variables, and the
+crossing factors that couple them. Its disconnected pieces, articulation
+variables, and min-fill treewidth upper bound are benchmarked so that the next
+decomposition step can be justified by the actual residual objective rather
+than by raw structural topology alone. See `docs/method_stage_audit.md`.
 
 Large benchmark outputs are working data. Commit scripts and compact summaries,
 not bulk generated bundles.

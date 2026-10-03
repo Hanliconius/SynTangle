@@ -507,10 +507,10 @@ def stage_audit(rows: list[dict[str, str]]) -> list[tuple[str, str, str]]:
 
     return [
         (
-            "Sparse incidence graph + connected components",
+            "Hypergraph incidence representation + connected components",
             "ACTIVE",
-            f"Directly factors every optimizer; {multi_component}/{len(rows)} "
-            "cases had multiple independent incidence components.",
+            f"Preserves n-ary homology and exactly factors independent problems; "
+            f"{multi_component}/{len(rows)} cases had multiple incidence components.",
         ),
         (
             "Component canonicalization",
@@ -533,8 +533,16 @@ def stage_audit(rows: list[dict[str, str]]) -> list[tuple[str, str, str]]:
         (
             "Monotone component branch-and-bound",
             "ACTIVE",
-            f"Fallback for {len(branch_rows)}/{len(rows)} cases; bound "
+            f"Fallback for {len(branch_rows)}/{len(rows)} cases; independent "
+            f"incidence components can run in separate worker processes. Bound "
             f"propagation recorded {forced} forcing events and {memo} memo hits.",
+        ),
+        (
+            "Residual variable/factor graph",
+            "ACTIVE DIAGNOSTIC / NEXT FACTORIZATION LAYER",
+            "Records unresolved order/orientation variables, exact crossing-factor "
+            "couplings, disconnected residual pieces, articulation variables, and "
+            "a min-fill treewidth upper bound.",
         ),
         (
             "One-layer subset DP",
@@ -551,8 +559,8 @@ def stage_audit(rows: list[dict[str, str]]) -> list[tuple[str, str, str]]:
         (
             "Bridges / articulation points / 2-core / biconnected kernels",
             "DIAGNOSTIC NOW",
-            "Computed and visualized, but Stage 15 still searches whole incidence "
-            "components rather than only those structural kernels.",
+            "Computed and visualized, but the solver does not assume these raw "
+            "structural kernels factor the residual crossing objective.",
         ),
         (
             "Fundamental cycle basis",

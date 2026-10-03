@@ -28,6 +28,7 @@ def render_case(
     transition_cap: int,
     branch_node_cap: int,
     local_restarts: int,
+    component_workers: int,
 ) -> tuple[str, str, int, int, str]:
     case_dir = root / row["case_dir"]
     fixture = load_validation_bundle(case_dir)
@@ -38,6 +39,7 @@ def render_case(
         branch_node_cap_per_component=branch_node_cap,
         local_restarts=local_restarts,
         seed=int(row["seed"]),
+        component_workers=component_workers,
     )
 
     # As in generate_case_report.py, reveal hidden native state only after solve.
@@ -157,6 +159,7 @@ def main() -> int:
     parser.add_argument("--transition-cap", type=int, default=250000)
     parser.add_argument("--branch-node-cap", type=int, default=100000)
     parser.add_argument("--local-restarts", type=int, default=4)
+    parser.add_argument("--component-workers", type=int, default=1)
     args = parser.parse_args()
 
     root = Path(args.benchmark_root)
@@ -180,6 +183,7 @@ def main() -> int:
             transition_cap=args.transition_cap,
             branch_node_cap=args.branch_node_cap,
             local_restarts=args.local_restarts,
+            component_workers=args.component_workers,
         )
         rendered.append((row, result))
         print(result[0], result[2], "->", result[3], result[4])

@@ -36,6 +36,8 @@ class ValidationReportTests(unittest.TestCase):
         self.assertIn("Tangled input → optimized layout", html)
         self.assertIn("Raw incidence structure", html)
         self.assertIn("Structural projection and hard core", html)
+        self.assertIn("Residual decision / factor structure", html)
+        self.assertIn("Residual min-fill treewidth upper bound", html)
         self.assertIn("proven optimum", html)
         self.assertIn(audit.input_fingerprint, html)
         self.assertIn("<svg", html)

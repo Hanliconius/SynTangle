@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 import heapq
+import multiprocessing as mp
 from itertools import permutations
 from math import factorial
 
@@ -72,16 +74,18 @@ class BranchAndBoundResult:
     upper_bound: int
     gap: int
     components: tuple[ComponentBranchAndBound, ...]
+    component_workers: int = 1
 
     def to_dict(self) -> dict[str, object]:
         output = self.layout.to_dict()
-        output["solver"] = "monotone-monotone-component-branch-and-bound"
+        output["solver"] = "monotone-component-branch-and-bound"
         output["lower_bound"] = self.lower_bound
         output["upper_bound"] = self.upper_bound
         output["optimality_gap"] = self.gap
         output["component_diagnostics"] = [
             component.to_dict() for component in self.components
         ]
+        output["component_workers"] = self.component_workers
         return output
 
 
@@ -790,6 +794,314 @@ def _search_orders_for_orientation(
     )
 
 
+@dataclass(frozen=True)
+class _ComponentSolveResult:
+    component_id: int
+    orders: dict[str, tuple[ChromosomeRef, ...]]
+    orientation: dict[ChromosomeRef, int]
+    lower_bound: int
+    nodes_evaluated: int
+    diagnostic: ComponentBranchAndBound
+
+
+def _solve_branch_component(
+    fixture: Fixture,
+    normalized: LayoutState,
+    incumbent_state: LayoutState,
+    component_id: int,
+    component_nodes: frozenset[str],
+    component_of: dict[ChromosomeRef, int],
+    node_cap_per_component: int,
+) -> _ComponentSolveResult:
+    """Solve one exact incidence component.
+
+    This function is deliberately self-contained and pickle-safe so independent
+    incidence components can be dispatched to separate worker processes.
+    """
+
+    refs_by_species = _component_refs_by_species(
+        fixture, component_id, component_of
+    )
+    refs = tuple(
+        sorted(
+            ref
+            for species_refs in refs_by_species.values()
+            for ref in species_refs
+        )
+    )
+
+    basis = orientation_basis(fixture, refs)
+    relaxed_bound = build_relaxed_crossing_bound(
+        fixture, component_nodes, basis
+    )
+    root_bits: tuple[int | None, ...] = tuple(
+        None for _ in basis.free_flip_groups
+    )
+    root_lower_bound = relaxed_bound.lower_bound(root_bits)
+
+    incumbent_upper = _component_cost(
+        fixture,
+        incumbent_state,
+        component_nodes,
+    )
+    if root_lower_bound > incumbent_upper:
+        raise AssertionError(
+            "Relaxed lower bound exceeds a feasible incumbent; "
+            "the branch-and-bound bound is invalid"
+        )
+
+    best_state = incumbent_state
+    budget = _Budget(node_cap_per_component)
+    lower_cache: dict[tuple[int, ...], int] = {
+        _bit_key(root_bits): root_lower_bound
+    }
+    conditional_cache: dict = {}
+
+    orientation_nodes = 0
+    orientation_leaves = 0
+    orientation_pruned = 0
+    orientation_forced = 0
+    order_nodes = 0
+    memo_hits = 0
+    unresolved_order_lower: int | None = None
+
+    if incumbent_upper == 0 or root_lower_bound == incumbent_upper:
+        component_lower = incumbent_upper
+        proven = True
+        root_reduced = _ReducedOrientation(
+            bits=root_bits,
+            lower_bound=root_lower_bound,
+            forced=0,
+            pruned=True,
+        )
+    else:
+        root_reduced, hits = _reduce_orientation(
+            root_bits,
+            incumbent_upper=incumbent_upper,
+            bound=relaxed_bound,
+            cache=lower_cache,
+        )
+        memo_hits += hits
+        orientation_forced += root_reduced.forced
+
+        if root_reduced.pruned:
+            component_lower = incumbent_upper
+            proven = True
+        else:
+            root_unresolved = sum(
+                bit is None for bit in root_reduced.bits
+            )
+            heap: list[
+                tuple[
+                    int,
+                    int,
+                    tuple[int, ...],
+                    tuple[int | None, ...],
+                ]
+            ] = []
+            heapq.heappush(
+                heap,
+                (
+                    root_reduced.lower_bound,
+                    root_unresolved,
+                    _bit_key(root_reduced.bits),
+                    root_reduced.bits,
+                ),
+            )
+            seen = {_bit_key(root_reduced.bits)}
+
+            while heap:
+                if heap[0][0] >= incumbent_upper:
+                    heap.clear()
+                    break
+                if budget.exhausted:
+                    break
+
+                node_lower, _, _, bits = heapq.heappop(heap)
+
+                refreshed, hits = _reduce_orientation(
+                    bits,
+                    incumbent_upper=incumbent_upper,
+                    bound=relaxed_bound,
+                    cache=lower_cache,
+                )
+                memo_hits += hits
+                orientation_forced += refreshed.forced
+                if refreshed.pruned:
+                    orientation_pruned += 1
+                    continue
+                bits = refreshed.bits
+                node_lower = refreshed.lower_bound
+
+                if node_lower >= incumbent_upper:
+                    orientation_pruned += 1
+                    continue
+
+                if not budget.consume():
+                    heapq.heappush(
+                        heap,
+                        (
+                            node_lower,
+                            sum(bit is None for bit in bits),
+                            _bit_key(bits),
+                            bits,
+                        ),
+                    )
+                    break
+
+                orientation_nodes += 1
+
+                if all(bit is not None for bit in bits):
+                    orientation_leaves += 1
+                    orientation = _complete_orientation(
+                        basis, bits
+                    )
+                    fixed_lower = relaxed_bound.lower_bound(bits)
+                    order_result = _search_orders_for_orientation(
+                        fixture,
+                        normalized,
+                        component_id,
+                        component_of,
+                        component_nodes,
+                        refs_by_species,
+                        orientation,
+                        fixed_lower,
+                        best_state,
+                        incumbent_upper,
+                        budget,
+                        conditional_cache,
+                    )
+                    order_nodes += order_result.nodes
+                    memo_hits += order_result.memo_hits
+
+                    if order_result.upper_bound < incumbent_upper:
+                        incumbent_upper = order_result.upper_bound
+                        best_state = order_result.best_state
+                    elif (
+                        order_result.upper_bound == incumbent_upper
+                        and order_result.best_state is not best_state
+                    ):
+                        best_state = order_result.best_state
+
+                    if not order_result.proven:
+                        if unresolved_order_lower is None:
+                            unresolved_order_lower = (
+                                order_result.lower_bound
+                            )
+                        else:
+                            unresolved_order_lower = min(
+                                unresolved_order_lower,
+                                order_result.lower_bound,
+                            )
+                        break
+                    continue
+
+                branch_index, hits = _choose_orientation_branch(
+                    bits,
+                    relaxed_bound,
+                    lower_cache,
+                )
+                memo_hits += hits
+
+                for bit in (0, 1):
+                    child = list(bits)
+                    child[branch_index] = bit
+                    reduced, hits = _reduce_orientation(
+                        tuple(child),
+                        incumbent_upper=incumbent_upper,
+                        bound=relaxed_bound,
+                        cache=lower_cache,
+                    )
+                    memo_hits += hits
+                    orientation_forced += reduced.forced
+
+                    if (
+                        reduced.pruned
+                        or reduced.lower_bound >= incumbent_upper
+                    ):
+                        orientation_pruned += 1
+                        continue
+
+                    key = _bit_key(reduced.bits)
+                    if key in seen:
+                        memo_hits += 1
+                        continue
+                    seen.add(key)
+                    heapq.heappush(
+                        heap,
+                        (
+                            reduced.lower_bound,
+                            sum(
+                                value is None
+                                for value in reduced.bits
+                            ),
+                            key,
+                            reduced.bits,
+                        ),
+                    )
+
+            open_bounds: list[int] = []
+            if heap:
+                open_bounds.append(heap[0][0])
+            if unresolved_order_lower is not None:
+                open_bounds.append(unresolved_order_lower)
+
+            if open_bounds:
+                component_lower = min(
+                    min(open_bounds),
+                    incumbent_upper,
+                )
+                proven = component_lower == incumbent_upper
+            else:
+                component_lower = incumbent_upper
+                proven = True
+
+    root_unresolved_groups = sum(
+        bit is None for bit in root_reduced.bits
+    )
+
+    local_best_orders: dict[str, tuple[ChromosomeRef, ...]] = {}
+    for species in fixture.species_ids:
+        local_best_orders[species] = tuple(
+            ref
+            for ref in best_state.chromosome_order[species]
+            if component_of[ref] == component_id
+        )
+
+    local_orientation = {
+        ref: best_state.chromosome_orientation[ref]
+        for ref in refs
+    }
+    component_nodes_evaluated = orientation_nodes + order_nodes
+    diagnostic = ComponentBranchAndBound(
+        component_id=component_id,
+        chromosome_count=len(refs),
+        nodes_evaluated=component_nodes_evaluated,
+        upper_bound=incumbent_upper,
+        lower_bound=component_lower,
+        gap=incumbent_upper - component_lower,
+        proven=proven,
+        orientation_assignments=orientation_leaves,
+        free_orientation_groups=len(basis.free_flip_groups),
+        implicit_orientation_states=basis.assignment_count,
+        root_lower_bound=root_lower_bound,
+        root_unresolved_orientation_groups=root_unresolved_groups,
+        orientation_nodes_evaluated=orientation_nodes,
+        orientation_branches_pruned=orientation_pruned,
+        orientation_groups_forced=orientation_forced,
+        order_nodes_evaluated=order_nodes,
+        memo_hits=memo_hits,
+    )
+    return _ComponentSolveResult(
+        component_id=component_id,
+        orders=local_best_orders,
+        orientation=local_orientation,
+        lower_bound=component_lower,
+        nodes_evaluated=component_nodes_evaluated,
+        diagnostic=diagnostic,
+    )
+
+
 def optimize_branch_and_bound(
     fixture: Fixture,
     *,
@@ -797,14 +1109,15 @@ def optimize_branch_and_bound(
     orientation_cap_per_component: int = 4096,
     local_restarts: int = 6,
     seed: int = 1,
+    component_workers: int = 1,
 ) -> BranchAndBoundResult:
     """Monotone exact/bounded search over residual orientation and order choices.
 
-    Hard orientation equations remain in their compact GF(2) basis. The solver
-    never expands that basis into a precomputed Cartesian list of complete
-    orientation assignments. Instead it repeatedly applies a safe relaxed
-    crossing lower bound, fixes orientation groups whose alternative cannot
-    beat the incumbent, and branches only on the residual uncertainty.
+    Independent chromosome-homology incidence components are exact additive
+    factors of the current crossing objective. When component_workers > 1,
+    those components are solved in separate processes and then recombined
+    deterministically. Within each component, hard orientation equations remain
+    in their compact GF(2) basis and Stage-15 monotone pruning is unchanged.
 
     The orientation_cap_per_component argument is retained for API
     compatibility with earlier releases. It no longer caps branch-and-bound
@@ -815,6 +1128,8 @@ def optimize_branch_and_bound(
         raise ValueError("node_cap_per_component must be at least 1")
     if orientation_cap_per_component < 1:
         raise ValueError("orientation_cap_per_component must be at least 1")
+    if component_workers < 1:
+        raise ValueError("component_workers must be at least 1")
 
     initial = initial_layout_state(fixture)
     normalized = canonicalize_component_order(fixture, initial)
@@ -829,309 +1144,57 @@ def optimize_branch_and_bound(
     incumbent_state = heuristic.layout.optimized_state
 
     components, component_of = _component_map(fixture)
-    chosen_orders: dict[int, dict[str, tuple[ChromosomeRef, ...]]] = {}
-    chosen_orientation: dict[int, dict[ChromosomeRef, int]] = {}
-    diagnostics: list[ComponentBranchAndBound] = []
+    worker_count = min(component_workers, max(1, len(components)))
 
-    total_lower = 0
-    total_nodes = 0
-
-    for component_id, component_nodes in enumerate(components):
-        refs_by_species = _component_refs_by_species(
-            fixture, component_id, component_of
-        )
-        refs = tuple(
-            sorted(
-                ref
-                for species_refs in refs_by_species.values()
-                for ref in species_refs
-            )
-        )
-
-        basis = orientation_basis(fixture, refs)
-        relaxed_bound = build_relaxed_crossing_bound(
-            fixture, component_nodes, basis
-        )
-        root_bits: tuple[int | None, ...] = tuple(
-            None for _ in basis.free_flip_groups
-        )
-        root_lower_bound = relaxed_bound.lower_bound(root_bits)
-
-        incumbent_upper = _component_cost(
-            fixture,
-            incumbent_state,
-            component_nodes,
-        )
-        if root_lower_bound > incumbent_upper:
-            raise AssertionError(
-                "Relaxed lower bound exceeds a feasible incumbent; "
-                "the branch-and-bound bound is invalid"
-            )
-
-        best_state = incumbent_state
-        budget = _Budget(node_cap_per_component)
-        lower_cache: dict[tuple[int, ...], int] = {
-            _bit_key(root_bits): root_lower_bound
-        }
-        conditional_cache: dict = {}
-
-        orientation_nodes = 0
-        orientation_leaves = 0
-        orientation_pruned = 0
-        orientation_forced = 0
-        order_nodes = 0
-        memo_hits = 0
-        unresolved_order_lower: int | None = None
-
-        if incumbent_upper == 0 or root_lower_bound == incumbent_upper:
-            component_lower = incumbent_upper
-            proven = True
-            root_reduced = _ReducedOrientation(
-                bits=root_bits,
-                lower_bound=root_lower_bound,
-                forced=0,
-                pruned=True,
-            )
-        else:
-            root_reduced, hits = _reduce_orientation(
-                root_bits,
-                incumbent_upper=incumbent_upper,
-                bound=relaxed_bound,
-                cache=lower_cache,
-            )
-            memo_hits += hits
-            orientation_forced += root_reduced.forced
-
-            if root_reduced.pruned:
-                component_lower = incumbent_upper
-                proven = True
-            else:
-                root_unresolved = sum(
-                    bit is None for bit in root_reduced.bits
+    if worker_count > 1 and len(components) > 1:
+        with ProcessPoolExecutor(
+            max_workers=worker_count,
+            mp_context=mp.get_context("spawn"),
+        ) as executor:
+            futures = [
+                executor.submit(
+                    _solve_branch_component,
+                    fixture,
+                    normalized,
+                    incumbent_state,
+                    component_id,
+                    component_nodes,
+                    component_of,
+                    node_cap_per_component,
                 )
-                heap: list[
-                    tuple[
-                        int,
-                        int,
-                        tuple[int, ...],
-                        tuple[int | None, ...],
-                    ]
-                ] = []
-                heapq.heappush(
-                    heap,
-                    (
-                        root_reduced.lower_bound,
-                        root_unresolved,
-                        _bit_key(root_reduced.bits),
-                        root_reduced.bits,
-                    ),
-                )
-                seen = {_bit_key(root_reduced.bits)}
-
-                while heap:
-                    if heap[0][0] >= incumbent_upper:
-                        heap.clear()
-                        break
-                    if budget.exhausted:
-                        break
-
-                    node_lower, _, _, bits = heapq.heappop(heap)
-
-                    # The incumbent may have improved since this node entered
-                    # the queue. Re-run propagation against the tighter upper
-                    # bound so eliminated choices never re-enter downstream.
-                    refreshed, hits = _reduce_orientation(
-                        bits,
-                        incumbent_upper=incumbent_upper,
-                        bound=relaxed_bound,
-                        cache=lower_cache,
-                    )
-                    memo_hits += hits
-                    orientation_forced += refreshed.forced
-                    if refreshed.pruned:
-                        orientation_pruned += 1
-                        continue
-                    bits = refreshed.bits
-                    node_lower = refreshed.lower_bound
-
-                    if node_lower >= incumbent_upper:
-                        orientation_pruned += 1
-                        continue
-
-                    if not budget.consume():
-                        heapq.heappush(
-                            heap,
-                            (
-                                node_lower,
-                                sum(
-                                    bit is None
-                                    for bit in bits
-                                ),
-                                _bit_key(bits),
-                                bits,
-                            ),
-                        )
-                        break
-
-                    orientation_nodes += 1
-
-                    if all(bit is not None for bit in bits):
-                        orientation_leaves += 1
-                        orientation = _complete_orientation(
-                            basis, bits
-                        )
-                        fixed_lower = relaxed_bound.lower_bound(
-                            bits
-                        )
-                        order_result = _search_orders_for_orientation(
-                            fixture,
-                            normalized,
-                            component_id,
-                            component_of,
-                            component_nodes,
-                            refs_by_species,
-                            orientation,
-                            fixed_lower,
-                            best_state,
-                            incumbent_upper,
-                            budget,
-                            conditional_cache,
-                        )
-                        order_nodes += order_result.nodes
-                        memo_hits += order_result.memo_hits
-
-                        if order_result.upper_bound < incumbent_upper:
-                            incumbent_upper = order_result.upper_bound
-                            best_state = order_result.best_state
-                        elif (
-                            order_result.upper_bound == incumbent_upper
-                            and order_result.best_state is not best_state
-                        ):
-                            best_state = order_result.best_state
-
-                        if not order_result.proven:
-                            if unresolved_order_lower is None:
-                                unresolved_order_lower = (
-                                    order_result.lower_bound
-                                )
-                            else:
-                                unresolved_order_lower = min(
-                                    unresolved_order_lower,
-                                    order_result.lower_bound,
-                                )
-                            break
-                        continue
-
-                    branch_index, hits = _choose_orientation_branch(
-                        bits,
-                        relaxed_bound,
-                        lower_cache,
-                    )
-                    memo_hits += hits
-
-                    for bit in (0, 1):
-                        child = list(bits)
-                        child[branch_index] = bit
-                        reduced, hits = _reduce_orientation(
-                            tuple(child),
-                            incumbent_upper=incumbent_upper,
-                            bound=relaxed_bound,
-                            cache=lower_cache,
-                        )
-                        memo_hits += hits
-                        orientation_forced += reduced.forced
-
-                        if (
-                            reduced.pruned
-                            or reduced.lower_bound >= incumbent_upper
-                        ):
-                            orientation_pruned += 1
-                            continue
-
-                        key = _bit_key(reduced.bits)
-                        if key in seen:
-                            memo_hits += 1
-                            continue
-                        seen.add(key)
-                        heapq.heappush(
-                            heap,
-                            (
-                                reduced.lower_bound,
-                                sum(
-                                    value is None
-                                    for value in reduced.bits
-                                ),
-                                key,
-                                reduced.bits,
-                            ),
-                        )
-
-                open_bounds: list[int] = []
-                if heap:
-                    open_bounds.append(heap[0][0])
-                if unresolved_order_lower is not None:
-                    open_bounds.append(unresolved_order_lower)
-
-                if open_bounds:
-                    component_lower = min(
-                        min(open_bounds),
-                        incumbent_upper,
-                    )
-                    proven = component_lower == incumbent_upper
-                else:
-                    component_lower = incumbent_upper
-                    proven = True
-
-        root_unresolved_groups = sum(
-            bit is None for bit in root_reduced.bits
-        )
-
-        local_best_orders: dict[str, tuple[ChromosomeRef, ...]] = {}
-        for species in fixture.species_ids:
-            local_best_orders[species] = tuple(
-                ref
-                for ref in best_state.chromosome_order[species]
-                if component_of[ref] == component_id
+                for component_id, component_nodes in enumerate(components)
+            ]
+            component_results = [future.result() for future in futures]
+    else:
+        component_results = [
+            _solve_branch_component(
+                fixture,
+                normalized,
+                incumbent_state,
+                component_id,
+                component_nodes,
+                component_of,
+                node_cap_per_component,
             )
+            for component_id, component_nodes in enumerate(components)
+        ]
 
-        chosen_orders[component_id] = local_best_orders
-        chosen_orientation[component_id] = {
-            ref: best_state.chromosome_orientation[ref]
-            for ref in refs
-        }
-
-        component_nodes_evaluated = (
-            orientation_nodes + order_nodes
-        )
-        diagnostics.append(
-            ComponentBranchAndBound(
-                component_id=component_id,
-                chromosome_count=len(refs),
-                nodes_evaluated=component_nodes_evaluated,
-                upper_bound=incumbent_upper,
-                lower_bound=component_lower,
-                gap=incumbent_upper - component_lower,
-                proven=proven,
-                orientation_assignments=orientation_leaves,
-                free_orientation_groups=len(
-                    basis.free_flip_groups
-                ),
-                implicit_orientation_states=(
-                    basis.assignment_count
-                ),
-                root_lower_bound=root_lower_bound,
-                root_unresolved_orientation_groups=(
-                    root_unresolved_groups
-                ),
-                orientation_nodes_evaluated=orientation_nodes,
-                orientation_branches_pruned=orientation_pruned,
-                orientation_groups_forced=orientation_forced,
-                order_nodes_evaluated=order_nodes,
-                memo_hits=memo_hits,
-            )
-        )
-        total_lower += component_lower
-        total_nodes += component_nodes_evaluated
+    component_results.sort(key=lambda item: item.component_id)
+    chosen_orders = {
+        item.component_id: item.orders for item in component_results
+    }
+    chosen_orientation = {
+        item.component_id: item.orientation for item in component_results
+    }
+    diagnostics = tuple(
+        item.diagnostic for item in component_results
+    )
+    total_lower = sum(
+        item.lower_bound for item in component_results
+    )
+    total_nodes = sum(
+        item.nodes_evaluated for item in component_results
+    )
 
     final_order: dict[str, tuple[ChromosomeRef, ...]] = {}
     for species in fixture.species_ids:
@@ -1176,5 +1239,6 @@ def optimize_branch_and_bound(
         lower_bound=total_lower,
         upper_bound=total_upper,
         gap=gap,
-        components=tuple(diagnostics),
+        components=diagnostics,
+        component_workers=worker_count,
     )

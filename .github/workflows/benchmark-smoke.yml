@@ -51,6 +51,18 @@ jobs:
           --branch-node-cap 100000
           --local-restarts 4
 
+      - name: Verify benchmark resume path
+        run: >
+          python validation/benchmark/run_benchmark.py
+          /tmp/syntangle-benchmark
+          --output /tmp/syntangle-benchmark/benchmark_results.tsv
+          --summary-json /tmp/syntangle-benchmark/benchmark_summary.json
+          --summary-md /tmp/syntangle-benchmark/benchmark_summary.md
+          --transition-cap 250000
+          --branch-node-cap 100000
+          --local-restarts 4
+          --resume
+
       - name: Generate visual validation report
         run: >
           python validation/benchmark/generate_case_report.py
