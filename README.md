@@ -20,10 +20,16 @@ blocks, and the fundamental cycle basis are still computed and visualized, but
 they are currently diagnostic rather than being allowed to prune the optimizer
 without a proof that the remaining crossing objective factorizes accordingly.
 
-The next validation work uses controlled paired presentation tangles and
-12/15/20/30-chromosome scaling probes to identify the real scaling wall before
-another solver mechanism is added. No solver should be implemented in a way
-that contradicts [RULES.md](RULES.md).
+Current validation now includes controlled paired presentation tangles,
+12/15/20/30-chromosome scaling probes, and a coupled high-complexity stress
+ladder. Long benchmark runs checkpoint every completed case and can resume.
+
+Stage 18 also introduces process-level parallelism across exact independent
+incidence components in monotone branch-and-bound and an explicit residual
+variable/factor graph for measuring the finer decision structure that remains
+after legal reductions. Finer residual-factor/separator parallelism is the next
+solver integration step; it will be activated only when objective independence
+is proved. No solver should contradict [RULES.md](RULES.md).
 
 ## Core formulation
 
@@ -35,33 +41,29 @@ state = chromosome permutation + whole-chromosome orientation
 
 A chromosome may move as a whole or reverse as a whole. Its internal genomic order is immutable.
 
-The intended computational strategy is:
+The current computational strategy is:
 
 ```
-homology data
+multispecies homology hypergraph
+    ↓ exact sparse incidence representation
+independent incidence components
     ↓
-multispecies hypergraph / incidence graph
+GF(2) orientation propagation + canonicalization
     ↓
-connected-component decomposition
+residual order/orientation decision-factor graph
     ↓
-orientation constraint propagation
+exact layer DP where feasible
+    ↓ otherwise
+monotone branch-and-bound with legal incumbents/bounds
     ↓
-precedence / interval constraints
+proven optimum OR explicit lower/upper-bound gap
     ↓
-contract forced structure
-    ↓
-extract unresolved cyclic kernels
-    ↓
-exact optimization where feasible
-    ↓
-spectral initialization only where needed
-    ↓
-crossing / bundle / displacement minimization
-    ↓
-re-expand solved structure
-    ↓
-metrics + visualization
+visual audit + complexity diagnostics
 ```
+
+Independent incidence components may be solved in separate worker processes.
+Disconnected residual-factor pieces and small separators are the next
+proof-preserving decomposition layer.
 
 ## Repository map
 
@@ -73,6 +75,7 @@ metrics + visualization
 - **[docs/concepts.md](docs/concepts.md)** — mathematical concepts, with status and purpose.
 - **[docs/problem_algebra.md](docs/problem_algebra.md)** — emerging signed-permutation/GF(2)/factorized algebraic formulation.
 - **[docs/method_stage_audit.md](docs/method_stage_audit.md)** — which graph, DP, and search stages are active, diagnostic, preparatory, or deferred.
+- **[docs/verification_roadmap.tex](docs/verification_roadmap.tex)** — concise narrative of the minimum benchmark/validation chain needed to road-test the method.
 - **[validation/benchmark/README.md](validation/benchmark/README.md)** — historical, paired, and scaling benchmarks plus vector reports.
 - **[examples/README.md](examples/README.md)** — executable synthetic invariance fixtures.
 - **[validation/simulator/README.md](validation/simulator/README.md)** — forward chromosome-evolution simulator, deliberate display-tangle induction, and visual validation.
