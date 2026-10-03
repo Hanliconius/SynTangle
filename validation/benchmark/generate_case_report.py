@@ -56,6 +56,7 @@ def main() -> int:
     parser.add_argument("--transition-cap", type=int, default=250000)
     parser.add_argument("--branch-node-cap", type=int, default=100000)
     parser.add_argument("--local-restarts", type=int, default=4)
+    parser.add_argument("--component-workers", type=int, default=1)
     parser.add_argument("--seed", type=int, default=1)
     args = parser.parse_args()
 
@@ -69,6 +70,7 @@ def main() -> int:
         branch_node_cap_per_component=args.branch_node_cap,
         local_restarts=args.local_restarts,
         seed=args.seed,
+        component_workers=args.component_workers,
     )
 
     # Hidden native presentation is loaded only after optimization.
