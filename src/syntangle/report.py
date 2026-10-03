@@ -472,8 +472,9 @@ pre {{
 <h1>SynTangle validation report</h1>
 <p>
 This report audits the same extant biological input through decomposition,
-legal layout optimization, and final visualization. Red graph nodes mark the
-reported 2-core for that graph representation.
+legal layout optimization, and final visualization. In the biological/structural
+graph panels, red nodes mark the reported 2-core. In the residual decision
+graph, red decision nodes mark articulation variables.
 </p>
 
 <div class="grid">
