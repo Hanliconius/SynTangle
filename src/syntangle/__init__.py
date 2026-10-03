@@ -26,8 +26,9 @@ from .model import Fixture, FixtureValidationError
 from .order_dp import OrderDPResult, build_pairwise_order_costs, optimize_species_component_order, solve_order_subset_dp
 from .ordering import OrderingConstraintState, derive_ordering_constraints
 from .orientation import OrientationResult, solve_orientation_constraints
+from .report import render_incidence_graph_svg, render_validation_report_html, write_validation_report_html
 from .structural import StructuralBundle, StructuralProjection, build_structural_projection
-from .visualize import render_layout_comparison_svg, write_layout_comparison_svg
+from .visualize import render_layout_comparison_svg, render_layout_state_svg, write_layout_comparison_svg
 
 __all__ = [
     "AutoLayoutResult",
@@ -69,9 +70,13 @@ __all__ = [
     "optimize_branch_and_bound",
     "optimize_species_component_order",
     "optimize_local_search",
+    "render_incidence_graph_svg",
     "render_layout_comparison_svg",
+    "render_layout_state_svg",
+    "render_validation_report_html",
     "score_crossings",
     "solve_order_subset_dp",
     "solve_orientation_constraints",
     "write_layout_comparison_svg",
+    "write_validation_report_html",
 ]
