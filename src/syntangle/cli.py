@@ -7,6 +7,7 @@ from pathlib import Path
 from .audit import build_layout_audit
 from .decomposition import decompose_incidence_graph
 from .fixtures import load_fixture
+from .heuristic import optimize_auto, optimize_local_search
 from .incidence import analyze_fixture, build_incidence_graph
 from .layer_dp import exact_optimize_layer_dp
 from .layout import exact_optimize_small
@@ -28,18 +29,21 @@ def build_parser() -> argparse.ArgumentParser:
 
     optimize = subparsers.add_parser(
         "optimize-fixture",
-        help="prove a minimum crossing layout for an unambiguous fixture",
+        help="minimize legal crossing tangledness",
     )
     optimize.add_argument("fixture")
     optimize.add_argument(
         "--solver",
-        choices=("layer-dp", "enumerate"),
-        default="layer-dp",
+        choices=("auto", "layer-dp", "enumerate", "local-search"),
+        default="auto",
     )
     optimize.add_argument("--state-cap-per-component", type=int, default=250000)
     optimize.add_argument("--orientation-cap-per-component", type=int, default=4096)
     optimize.add_argument("--permutation-cap-per-species", type=int, default=40320)
     optimize.add_argument("--transition-cap-per-component", type=int, default=5000000)
+    optimize.add_argument("--local-restarts", type=int, default=8)
+    optimize.add_argument("--local-max-improving-steps", type=int, default=10000)
+    optimize.add_argument("--seed", type=int, default=1)
     optimize.add_argument("--audit-json")
     optimize.add_argument("--svg")
     optimize.add_argument("--pretty", action="store_true")
@@ -60,6 +64,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     fixture = load_fixture(args.fixture)
+
     if args.solver == "enumerate":
         result = exact_optimize_small(
             fixture,
@@ -67,7 +72,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         output = result.to_dict()
         output["solver"] = "exact-full-enumeration"
-    else:
+
+    elif args.solver == "layer-dp":
         dp = exact_optimize_layer_dp(
             fixture,
             orientation_cap_per_component=args.orientation_cap_per_component,
@@ -76,6 +82,29 @@ def main(argv: list[str] | None = None) -> int:
         )
         result = dp.layout
         output = dp.to_dict()
+
+    elif args.solver == "local-search":
+        local = optimize_local_search(
+            fixture,
+            restarts=args.local_restarts,
+            max_improving_steps=args.local_max_improving_steps,
+            seed=args.seed,
+        )
+        result = local.layout
+        output = local.to_dict()
+
+    else:
+        automatic = optimize_auto(
+            fixture,
+            orientation_cap_per_component=args.orientation_cap_per_component,
+            permutation_cap_per_species=args.permutation_cap_per_species,
+            transition_cap_per_component=args.transition_cap_per_component,
+            local_restarts=args.local_restarts,
+            local_max_improving_steps=args.local_max_improving_steps,
+            seed=args.seed,
+        )
+        result = automatic.layout
+        output = automatic.to_dict()
 
     audit = build_layout_audit(fixture, result)
 
