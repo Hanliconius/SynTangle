@@ -936,6 +936,24 @@ def optimize_branch_and_bound(
                         break
 
                     node_lower, _, _, bits = heapq.heappop(heap)
+
+                    # The incumbent may have improved since this node entered
+                    # the queue. Re-run propagation against the tighter upper
+                    # bound so eliminated choices never re-enter downstream.
+                    refreshed, hits = _reduce_orientation(
+                        bits,
+                        incumbent_upper=incumbent_upper,
+                        bound=relaxed_bound,
+                        cache=lower_cache,
+                    )
+                    memo_hits += hits
+                    orientation_forced += refreshed.forced
+                    if refreshed.pruned:
+                        orientation_pruned += 1
+                        continue
+                    bits = refreshed.bits
+                    node_lower = refreshed.lower_bound
+
                     if node_lower >= incumbent_upper:
                         orientation_pruned += 1
                         continue
