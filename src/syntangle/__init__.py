@@ -26,7 +26,12 @@ from .model import Fixture, FixtureValidationError
 from .order_dp import OrderDPResult, build_pairwise_order_costs, optimize_species_component_order, solve_order_subset_dp
 from .ordering import OrderingConstraintState, derive_ordering_constraints
 from .orientation import OrientationResult, solve_orientation_constraints
-from .report import render_incidence_graph_svg, render_validation_report_html, write_validation_report_html
+from .report import (
+    render_incidence_graph_svg,
+    render_residual_factor_graph_svg,
+    render_validation_report_html,
+    write_validation_report_html,
+)
 from .residual import (
     ResidualComponentSummary,
     ResidualFactor,
@@ -84,6 +89,7 @@ __all__ = [
     "optimize_local_search",
     "render_incidence_graph_svg",
     "render_layout_comparison_svg",
+    "render_residual_factor_graph_svg",
     "render_layout_state_svg",
     "render_validation_report_html",
     "score_crossings",
