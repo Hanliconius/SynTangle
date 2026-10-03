@@ -1,11 +1,17 @@
 args <- commandArgs(trailingOnly = TRUE)
+valid_profiles <- c("smoke", "full", "paired-smoke", "paired", "scale")
 if (length(args) < 1L || length(args) > 2L) {
-  stop("Usage: Rscript validation/benchmark/generate_benchmark_cases.R OUTPUT_ROOT [smoke|full]")
+  stop(
+    paste0(
+      "Usage: Rscript validation/benchmark/generate_benchmark_cases.R ",
+      "OUTPUT_ROOT [", paste(valid_profiles, collapse = "|"), "]"
+    )
+  )
 }
 output_root <- args[[1]]
 profile <- if (length(args) == 2L) args[[2]] else "smoke"
-if (!profile %in% c("smoke", "full")) {
-  stop("profile must be smoke or full")
+if (!profile %in% valid_profiles) {
+  stop(paste("profile must be one of", paste(valid_profiles, collapse = ", ")))
 }
 
 full_args <- commandArgs(trailingOnly = FALSE)
@@ -15,7 +21,10 @@ this_file <- if (length(file_arg)) {
 } else {
   "validation/benchmark/generate_benchmark_cases.R"
 }
-repo_root <- normalizePath(file.path(dirname(this_file), "../.."), mustWork = TRUE)
+repo_root <- normalizePath(
+  file.path(dirname(this_file), "../.."),
+  mustWork = TRUE
+)
 
 source(file.path(repo_root, "validation/simulator/chromosome_simulator.R"))
 source(file.path(repo_root, "validation/simulator/tangle_induction.R"))
@@ -47,7 +56,10 @@ make_case <- function(
   genes_per_chrom,
   tangle_mode,
   intensity,
-  seed
+  seed,
+  biology_id = case_id,
+  biology_seed = seed,
+  tangle_seed = seed + 9000L
 ) {
   species_ids <- paste0("species", LETTERS[seq_len(n_species)])
 
@@ -56,7 +68,7 @@ make_case <- function(
     n_chrom = n_chrom,
     genes_per_chrom = genes_per_chrom,
     chromosome_span = 1500000,
-    seed = seed
+    seed = biology_seed
   )
 
   genomes <- list()
@@ -68,7 +80,7 @@ make_case <- function(
     descendant <- mutate_genome_structure(
       descendant,
       event_plan = event_plan_for_branch(branch_index, intensity),
-      seed = seed + branch_index * 100L
+      seed = biology_seed + branch_index * 100L
     )
     genomes[[species_ids[[branch_index]]]] <- descendant
   }
@@ -77,7 +89,7 @@ make_case <- function(
   tangled <- induce_display_tangle(
     genomes,
     mode = tangle_mode,
-    seed = seed + 9000L,
+    seed = tangle_seed,
     flip_probability = switch(
       tangle_mode,
       mild = 0.15,
@@ -93,7 +105,10 @@ make_case <- function(
     directory = case_dir,
     fixture_id = case_id,
     title = paste("SynTangle simulation benchmark", case_id),
-    purpose = "Measure legal untangling performance on hidden-truth forward simulations"
+    purpose = paste0(
+      "Measure legal untangling performance on hidden-truth forward ",
+      "simulations"
+    )
   )
   write_hidden_tangle_log(tangled$tangle_log, case_dir)
 
@@ -108,23 +123,120 @@ make_case <- function(
   data.frame(
     case_id = case_id,
     case_dir = case_id,
+    biology_id = biology_id,
     species_count = n_species,
     ancestor_chromosomes = n_chrom,
     genes_per_chromosome = genes_per_chrom,
     tangle_mode = tangle_mode,
     event_intensity = intensity,
     seed = seed,
+    biology_seed = biology_seed,
+    tangle_seed = tangle_seed,
     stringsAsFactors = FALSE
   )
 }
 
+spec <- function(
+  case_id,
+  n_species,
+  n_chrom,
+  genes_per_chrom,
+  tangle_mode,
+  intensity,
+  seed,
+  biology_id = case_id,
+  biology_seed = seed,
+  tangle_seed = seed + 9000L
+) {
+  list(
+    case_id,
+    n_species,
+    n_chrom,
+    genes_per_chrom,
+    tangle_mode,
+    intensity,
+    seed,
+    biology_id,
+    biology_seed,
+    tangle_seed
+  )
+}
+
+paired_specs <- function(
+  species_values,
+  chromosome_values,
+  prefix,
+  genes_per_chrom = 12L,
+  seed_base = 5000L
+) {
+  specs <- list()
+  k <- 1L
+  biology_index <- 1L
+  mode_offsets <- c(mild = 9101L, strong = 9201L, random = 9301L)
+
+  for (n_species in species_values) {
+    for (n_chrom in chromosome_values) {
+      intensity <- if (n_chrom >= 8L) "medium" else "low"
+      biology_id <- sprintf(
+        "%s_%dsp_%dchr",
+        prefix,
+        n_species,
+        n_chrom
+      )
+      biology_seed <- seed_base + biology_index * 101L
+
+      for (tangle_mode in c("mild", "strong", "random")) {
+        case_id <- sprintf(
+          "%s_%s",
+          biology_id,
+          tangle_mode
+        )
+        # Keep the optimizer seed fixed within a biological triplet so
+        # differences among modes reflect presentation state rather than a
+        # different stochastic restart sequence.
+        solver_seed <- biology_seed
+        tangle_seed <- biology_seed + mode_offsets[[tangle_mode]]
+
+        specs[[k]] <- spec(
+          case_id,
+          n_species,
+          n_chrom,
+          genes_per_chrom,
+          tangle_mode,
+          intensity,
+          solver_seed,
+          biology_id = biology_id,
+          biology_seed = biology_seed,
+          tangle_seed = tangle_seed
+        )
+        k <- k + 1L
+      }
+
+      biology_index <- biology_index + 1L
+    }
+  }
+
+  specs
+}
+
 if (profile == "smoke") {
   specs <- list(
-    list("smoke_3sp_4chr_mild", 3L, 4L, 8L, "mild", "low", 1301L),
-    list("smoke_3sp_5chr_strong", 3L, 5L, 8L, "strong", "medium", 1302L),
-    list("smoke_4sp_5chr_random", 4L, 5L, 6L, "random", "medium", 1303L)
+    spec(
+      "smoke_3sp_4chr_mild",
+      3L, 4L, 8L, "mild", "low", 1301L
+    ),
+    spec(
+      "smoke_3sp_5chr_strong",
+      3L, 5L, 8L, "strong", "medium", 1302L
+    ),
+    spec(
+      "smoke_4sp_5chr_random",
+      4L, 5L, 6L, "random", "medium", 1303L
+    )
   )
-} else {
+} else if (profile == "full") {
+  # Historical Stage 13/15 benchmark. Seeds remain case-specific so this
+  # profile stays reproducible and directly comparable with existing results.
   specs <- list()
   k <- 1L
   for (n_species in c(3L, 4L, 5L)) {
@@ -137,36 +249,72 @@ if (profile == "smoke") {
           n_chrom,
           tangle_mode
         )
-        specs[[k]] <- list(
+        case_seed <- 2000L + k * 37L
+        specs[[k]] <- spec(
           case_id,
           n_species,
           n_chrom,
           12L,
           tangle_mode,
           intensity,
-          2000L + k * 37L
+          case_seed
         )
         k <- k + 1L
       }
     }
   }
+} else if (profile == "paired-smoke") {
+  specs <- paired_specs(
+    species_values = c(3L),
+    chromosome_values = c(5L),
+    prefix = "paired_smoke",
+    genes_per_chrom = 8L,
+    seed_base = 4000L
+  )
+} else if (profile == "paired") {
+  # Controlled presentation-tangle experiment: each mild/strong/random triplet
+  # is generated from exactly the same evolved extant genomes.
+  specs <- paired_specs(
+    species_values = c(3L, 4L, 5L),
+    chromosome_values = c(6L, 8L, 10L),
+    prefix = "paired",
+    genes_per_chrom = 12L,
+    seed_base = 5000L
+  )
+} else {
+  # First scaling probe beyond the original 10-chromosome grid. Species count
+  # is held at four while chromosome count increases; each scale point is a
+  # controlled mild/strong/random triplet.
+  specs <- paired_specs(
+    species_values = c(4L),
+    chromosome_values = c(12L, 15L, 20L, 30L),
+    prefix = "scale",
+    genes_per_chrom = 12L,
+    seed_base = 7000L
+  )
 }
 
 manifest_rows <- lapply(
   specs,
-  function(spec) {
-    do.call(make_case, setNames(
-      spec,
-      c(
-        "case_id",
-        "n_species",
-        "n_chrom",
-        "genes_per_chrom",
-        "tangle_mode",
-        "intensity",
-        "seed"
+  function(item) {
+    do.call(
+      make_case,
+      setNames(
+        item,
+        c(
+          "case_id",
+          "n_species",
+          "n_chrom",
+          "genes_per_chrom",
+          "tangle_mode",
+          "intensity",
+          "seed",
+          "biology_id",
+          "biology_seed",
+          "tangle_seed"
+        )
       )
-    ))
+    )
   }
 )
 manifest <- do.call(rbind, manifest_rows)
@@ -179,4 +327,11 @@ write.table(
   row.names = FALSE
 )
 
-cat("Generated", nrow(manifest), profile, "benchmark cases in", output_root, "\n")
+cat(
+  "Generated",
+  nrow(manifest),
+  profile,
+  "benchmark cases in",
+  output_root,
+  "\n"
+)
