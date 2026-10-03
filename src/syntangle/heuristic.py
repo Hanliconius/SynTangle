@@ -327,7 +327,7 @@ def optimize_auto(
         )
         return AutoLayoutResult(
             layout=bounded.layout,
-            solver="hard-kernel-branch-and-bound",
+            solver="monotone-component-branch-and-bound",
             details={
                 "fallback_reason": str(exc),
                 "lower_bound": bounded.lower_bound,
