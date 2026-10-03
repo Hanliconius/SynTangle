@@ -106,6 +106,51 @@ def bounds_from_result(result) -> tuple[int, int, int]:
     return lower, upper, upper - lower
 
 
+def reduction_metrics(result) -> dict[str, object]:
+    diagnostics = result.details.get("component_diagnostics", [])
+    monotone = [
+        item
+        for item in diagnostics
+        if "implicit_orientation_states" in item
+    ]
+    if not monotone:
+        return {
+            "max_implicit_orientation_states": "",
+            "total_orientation_nodes": "",
+            "total_order_nodes": "",
+            "total_orientation_branches_pruned": "",
+            "total_orientation_groups_forced": "",
+            "total_reduction_memo_hits": "",
+        }
+
+    return {
+        "max_implicit_orientation_states": max(
+            int(item["implicit_orientation_states"])
+            for item in monotone
+        ),
+        "total_orientation_nodes": sum(
+            int(item["orientation_nodes_evaluated"])
+            for item in monotone
+        ),
+        "total_order_nodes": sum(
+            int(item["order_nodes_evaluated"])
+            for item in monotone
+        ),
+        "total_orientation_branches_pruned": sum(
+            int(item["orientation_branches_pruned"])
+            for item in monotone
+        ),
+        "total_orientation_groups_forced": sum(
+            int(item["orientation_groups_forced"])
+            for item in monotone
+        ),
+        "total_reduction_memo_hits": sum(
+            int(item["memo_hits"])
+            for item in monotone
+        ),
+    }
+
+
 def run_case(
     row: dict[str, str],
     root: Path,
@@ -136,6 +181,7 @@ def run_case(
 
     layout = result.layout
     lower, upper, gap = bounds_from_result(result)
+    reduction = reduction_metrics(result)
 
     if layout.optimized_score.crossings > layout.initial_score.crossings:
         raise AssertionError(
@@ -202,6 +248,7 @@ def run_case(
         "optimality_status": layout.optimality_status,
         "solver": result.solver,
         "states_or_nodes_evaluated": layout.states_evaluated,
+        **reduction,
         "wall_seconds": round(elapsed, 6),
     }
 
