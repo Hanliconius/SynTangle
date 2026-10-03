@@ -13,6 +13,7 @@ from .layer_dp import exact_optimize_layer_dp
 from .layout import exact_optimize_small
 from .ordering import derive_ordering_constraints
 from .orientation import solve_orientation_constraints
+from .structural import build_structural_projection
 from .visualize import write_layout_comparison_svg
 
 
@@ -60,6 +61,7 @@ def main(argv: list[str] | None = None) -> int:
         output["orientation"] = solve_orientation_constraints(fixture).to_dict()
         output["decomposition"] = decompose_incidence_graph(graph).to_dict()
         output["ordering_constraints"] = derive_ordering_constraints(fixture).to_dict()
+        output["structural_projection"] = build_structural_projection(fixture).to_dict()
         print(json.dumps(output, indent=2 if args.pretty else None, sort_keys=True))
         return 0
 

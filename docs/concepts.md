@@ -48,6 +48,13 @@ Connected components, bridges, articulation points, 2-cores, biconnected compone
 
 **Job:** describe independent cyclic constraint and locate the parts of the graph where ambiguity/conflict can persist.
 
+SynTangle keeps two related views distinct:
+
+- the **raw incidence graph**, which retains every homologous block/anchor and therefore reflects evidence density as well as structure;
+- a **chromosome-signature structural projection**, which bundles homology groups having the same chromosome-incidence multiset before computing chromosome-structural cycle/core metrics.
+
+The structural projection is only a decomposition aid. It never replaces the full ordered block data used for crossings, inversions, duplications, or within-chromosome order. Copy multiplicity within a homology group remains explicit.
+
 Do not enumerate all simple cycles in large graphs.
 
 ### Precedence / consecutive-order constraints

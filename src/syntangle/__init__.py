@@ -24,6 +24,7 @@ from .layout import (
 from .model import Fixture, FixtureValidationError
 from .ordering import OrderingConstraintState, derive_ordering_constraints
 from .orientation import OrientationResult, solve_orientation_constraints
+from .structural import StructuralBundle, StructuralProjection, build_structural_projection
 from .visualize import render_layout_comparison_svg, write_layout_comparison_svg
 
 __all__ = [
@@ -41,9 +42,12 @@ __all__ = [
     "LocalSearchResult",
     "OrderingConstraintState",
     "OrientationResult",
+    "StructuralBundle",
+    "StructuralProjection",
     "analyze_fixture",
     "build_incidence_graph",
     "build_layout_audit",
+    "build_structural_projection",
     "canonicalize_component_order",
     "decompose_incidence_graph",
     "derive_ordering_constraints",

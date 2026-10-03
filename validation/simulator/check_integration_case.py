@@ -5,7 +5,9 @@ import sys
 from pathlib import Path
 
 from syntangle import (
+    build_incidence_graph,
     build_layout_audit,
+    build_structural_projection,
     exact_optimize_layer_dp,
     fixture_fingerprint,
     load_validation_bundle,
@@ -51,6 +53,19 @@ def main() -> int:
     if not hidden_evolution.is_file() or not hidden_tangle.is_file():
         raise AssertionError("Expected hidden-truth files were not written")
 
+    raw_graph = build_incidence_graph(fixture)
+    raw_cycle_rank = sum(
+        raw_graph.summarize_component(component).cycle_rank
+        for component in raw_graph.connected_components()
+    )
+    structural = build_structural_projection(fixture)
+    if len(structural.bundles) >= len(fixture.homology_ids):
+        raise AssertionError(
+            "Simulator anchors were not compressed into chromosome-signature bundles"
+        )
+    if structural.cycle_rank_total > raw_cycle_rank:
+        raise AssertionError("Structural projection increased cycle rank")
+
     result = exact_optimize_layer_dp(
         fixture,
         orientation_cap_per_component=4096,
@@ -76,6 +91,9 @@ def main() -> int:
         "species": list(fixture.species_ids),
         "chromosomes": len(fixture.chromosomes),
         "homology_groups": len(fixture.homology_ids),
+        "structural_bundles": len(structural.bundles),
+        "raw_cycle_rank": raw_cycle_rank,
+        "structural_cycle_rank": structural.cycle_rank_total,
         "crossings_initial": result.layout.initial_score.crossings,
         "crossings_optimized": result.layout.optimized_score.crossings,
         "optimality_status": result.layout.optimality_status,
