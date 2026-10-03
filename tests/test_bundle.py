@@ -31,6 +31,12 @@ class ValidationBundleTests(unittest.TestCase):
                 "key\tvalue\nfixture_id\tbundle_test\n",
                 encoding="utf-8",
             )
+            (root / "input_display_state.tsv").write_text(
+                "species\tchrom\tsource_rank\tdisplay_rank\torientation\n"
+                "sp1\tA\t1\t1\t-1\n"
+                "sp2\tB\t1\t1\t1\n",
+                encoding="utf-8",
+            )
             hidden = root / "hidden_evolution_log.tsv"
             hidden.write_text(
                 "event_id\ttype\n1\tfusion\n",
@@ -49,6 +55,12 @@ class ValidationBundleTests(unittest.TestCase):
 
             self.assertEqual(fixture1.fixture_id, "bundle_test")
             self.assertEqual(fixture1.species_ids, ("sp1", "sp2"))
+            orientations = {
+                chromosome.ref.label: chromosome.display_orientation
+                for chromosome in fixture1.chromosomes
+            }
+            self.assertEqual(orientations["sp1:A"], -1)
+            self.assertEqual(orientations["sp2:B"], 1)
             self.assertEqual(fingerprint1, fingerprint2)
 
     def test_species_rank_controls_layer_order(self) -> None:

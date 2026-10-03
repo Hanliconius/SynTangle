@@ -32,6 +32,15 @@ def load_validation_bundle(directory: str | Path) -> Fixture:
     species_rows = _read_tsv(root / "species.tsv")
     chromosome_rows = _read_tsv(root / "chromosomes.tsv")
     occurrence_rows = _read_tsv(root / "occurrences.tsv")
+    display_state_path = root / "input_display_state.tsv"
+    display_state_rows = (
+        _read_tsv(display_state_path) if display_state_path.is_file() else []
+    )
+    display_orientation = {
+        (row.get("species", ""), row.get("chrom", "")): int(row["orientation"])
+        for row in display_state_rows
+        if row.get("species") and row.get("chrom") and row.get("orientation")
+    }
 
     if not species_rows:
         raise FixtureValidationError("Validation bundle has no species rows")
@@ -78,6 +87,10 @@ def load_validation_bundle(directory: str | Path) -> Fixture:
             chromosome_id = row["chromosome_id"]
             length = float(row["length"])
             display_rank = int(row["display_rank"])
+            orientation = int(
+                row.get("display_orientation")
+                or display_orientation.get((species_id, chromosome_id), 1)
+            )
         except (KeyError, TypeError, ValueError) as exc:
             raise FixtureValidationError(
                 "chromosomes.tsv has an invalid or missing required field"
@@ -93,6 +106,7 @@ def load_validation_bundle(directory: str | Path) -> Fixture:
                 "id": chromosome_id,
                 "length": length,
                 "display_rank": display_rank,
+                "display_orientation": orientation,
                 "blocks": blocks_by_chromosome.get(
                     (species_id, chromosome_id), []
                 ),

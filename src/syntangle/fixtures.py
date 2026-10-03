@@ -62,6 +62,11 @@ def fixture_from_dict(data: Mapping[str, Any]) -> Fixture:
 
             display_rank_raw = chrom_row.get("display_rank")
             display_rank = None if display_rank_raw is None else int(display_rank_raw)
+            display_orientation = int(chrom_row.get("display_orientation", 1))
+            if display_orientation not in {-1, 1}:
+                raise FixtureValidationError(
+                    f"display_orientation must be +1 or -1: {ref.label}"
+                )
             if display_rank is not None:
                 if display_rank < 1:
                     raise FixtureValidationError(f"display_rank must be >= 1: {ref.label}")
@@ -113,6 +118,7 @@ def fixture_from_dict(data: Mapping[str, Any]) -> Fixture:
                     ref=ref,
                     length=length,
                     display_rank=display_rank,
+                    display_orientation=display_orientation,
                     blocks=tuple(blocks),
                 )
             )

@@ -65,6 +65,7 @@ def fixture_fingerprint(fixture: Fixture) -> str:
                 "chromosome": chromosome.ref.chromosome_id,
                 "length": chromosome.length,
                 "display_rank": chromosome.display_rank,
+                "display_orientation": chromosome.display_orientation,
                 "blocks": [
                     {
                         "occurrence_id": block.occurrence_id,
