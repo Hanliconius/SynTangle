@@ -3,6 +3,7 @@ from __future__ import annotations
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 import heapq
+import multiprocessing as mp
 from itertools import permutations
 from math import factorial
 
@@ -1146,7 +1147,10 @@ def optimize_branch_and_bound(
     worker_count = min(component_workers, max(1, len(components)))
 
     if worker_count > 1 and len(components) > 1:
-        with ProcessPoolExecutor(max_workers=worker_count) as executor:
+        with ProcessPoolExecutor(
+            max_workers=worker_count,
+            mp_context=mp.get_context("spawn"),
+        ) as executor:
             futures = [
                 executor.submit(
                     _solve_branch_component,
