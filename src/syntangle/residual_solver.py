@@ -11,6 +11,7 @@ from .layout import (
     ExactLayoutResult,
     LayoutState,
     SearchSpaceTooLarge,
+    _occurrences_by_species_homology,
     canonicalize_component_order,
     initial_layout_state,
     score_crossings,
@@ -188,6 +189,7 @@ def _table_size(
 def _factor_value(
     factor: _TableFactor,
     assignment: dict[str, int],
+    occurrence_index,
 ) -> int:
     return factor.values[
         tuple(assignment[variable_id] for variable_id in factor.scope)
@@ -736,6 +738,7 @@ def _evaluate_residual_factor(
         orders[factor.species_right],
         orientation,
         component_nodes,
+        occurrence_index=occurrence_index,
     )
 
 
@@ -810,6 +813,7 @@ def _build_factor_tables(
         variable.variable_id: variable
         for variable in variables
     }
+    occurrence_index = _occurrences_by_species_homology(fixture)
     output: list[_TableFactor] = []
 
     for factor in factors:
@@ -837,6 +841,7 @@ def _build_factor_tables(
                 variables_by_id,
                 domains,
                 assignment,
+                occurrence_index,
             )
 
         table = _TableFactor(
