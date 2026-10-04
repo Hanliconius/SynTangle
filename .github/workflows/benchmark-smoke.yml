@@ -134,6 +134,17 @@ jobs:
           assert {int(r['species_count']) for r in rows} >= {4,8,12,20};
           assert {int(r['events_per_branch']) for r in rows} >= {0,1,2,5}"
 
+      - name: Solve one orthogonal biological case
+        run: >
+          python validation/benchmark/generate_case_report.py
+          /tmp/syntangle-factorial/factor_species_4sp_16chr_1ev
+          /tmp/syntangle-factorial/factor_species_4sp_16chr_1ev_report.html
+          --transition-cap 100000
+          --branch-node-cap 5000
+          --local-restarts 1
+          --component-workers 2
+          --seed 9101
+
       - name: Upload smoke benchmark outputs
         uses: actions/upload-artifact@v4
         with:
@@ -154,3 +165,4 @@ jobs:
             /tmp/syntangle-paired/figures/
             /tmp/syntangle-stress/benchmark_manifest.tsv
             /tmp/syntangle-factorial/benchmark_manifest.tsv
+            /tmp/syntangle-factorial/factor_species_4sp_16chr_1ev_report.html
