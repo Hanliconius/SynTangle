@@ -110,6 +110,70 @@ This is a probe, not an assertion that 30 chromosomes is the final scaling
 limit. If a case becomes bounded, retain that result rather than silently
 raising caps: the first failure point is useful algorithmic evidence.
 
+### Orthogonal biologically grounded benchmark
+
+The `factorial` profile is the recommended next scaling test after the
+coupled stress ladder. It changes the main biological axes independently
+instead of increasing species count, chromosome count, and rearrangement depth
+at the same time.
+
+Its extant species are generated as **independent descendants of one hidden
+ancestor**. Therefore adding species does not automatically add extra rounds of
+rearrangement history.
+
+All cases use 12 anchors per ancestral chromosome and the same random
+presentation-tangle mode. Presentation invariance is already tested by the
+paired profiles, so this benchmark avoids triplicating every biological point.
+
+The controlled axes are:
+
+| Axis | Fixed quantities | Levels |
+|---|---|---|
+| Species count | 16 ancestral chromosomes, 1 event/extant lineage | 4, 8, 12, 20 species |
+| Chromosome count | 8 species, 1 event/extant lineage | 8, 16, 31, 40 chromosomes |
+| Rearrangement burden | 8 species, 16 ancestral chromosomes | 0, 1, 2, 5 events/extant lineage |
+| Lepidoptera-like check | 31 ancestral chromosomes | 8--12 species with 0--1 events/extant lineage |
+
+The 16-chromosome point is used as a typical-scale reference for this
+experiment; 31 chromosomes represents a Lepidoptera-like conserved karyotype;
+40 remains a high-end boundary probe rather than the center of the benchmark.
+
+Generate the cases:
+
+```bash
+Rscript validation/benchmark/generate_benchmark_cases.R \
+  local_results/factorial factorial
+```
+
+Run with a deliberately more conservative search budget than the old coupled
+stress test. Completed cases are checkpointed immediately:
+
+```bash
+caffeinate -i python validation/benchmark/run_benchmark.py \
+  local_results/factorial \
+  --output local_results/factorial/benchmark_results.tsv \
+  --summary-json local_results/factorial/benchmark_summary.json \
+  --summary-md local_results/factorial/benchmark_summary.md \
+  --transition-cap 100000 \
+  --branch-node-cap 25000 \
+  --local-restarts 2 \
+  --component-workers 4
+```
+
+If interrupted, repeat the same command with `--resume`.
+
+Summarize the three orthogonal axes:
+
+```bash
+python validation/benchmark/analyze_factorial_benchmark.py \
+  local_results/factorial/benchmark_results.tsv \
+  --markdown local_results/factorial/factorial_analysis.md
+```
+
+The purpose is not merely to find a larger maximum dataset. It is to test the
+hypothesis that runtime is driven more strongly by rearrangement-induced
+coupling and residual component width than by species count itself.
+
 ### Coupled high-complexity stress ladder
 
 The `stress` profile deliberately increases **all three biological/search
