@@ -118,6 +118,22 @@ jobs:
           Rscript validation/benchmark/generate_benchmark_cases.R
           /tmp/syntangle-stress stress
 
+      - name: Generate orthogonal biological benchmark fixtures
+        run: >
+          Rscript validation/benchmark/generate_benchmark_cases.R
+          /tmp/syntangle-factorial factorial
+
+      - name: Verify orthogonal benchmark manifest
+        run: >
+          python -c "import csv, pathlib;
+          p=pathlib.Path('/tmp/syntangle-factorial/benchmark_manifest.tsv');
+          rows=list(csv.DictReader(p.open(), delimiter='\t'));
+          assert len(rows)==13;
+          assert all(r['lineage_model']=='independent' for r in rows);
+          assert {int(r['ancestor_chromosomes']) for r in rows} >= {8,16,31,40};
+          assert {int(r['species_count']) for r in rows} >= {4,8,12,20};
+          assert {int(r['events_per_branch']) for r in rows} >= {0,1,2,5}"
+
       - name: Upload smoke benchmark outputs
         uses: actions/upload-artifact@v4
         with:
@@ -137,3 +153,4 @@ jobs:
             /tmp/syntangle-paired/benchmark_report.html
             /tmp/syntangle-paired/figures/
             /tmp/syntangle-stress/benchmark_manifest.tsv
+            /tmp/syntangle-factorial/benchmark_manifest.tsv
