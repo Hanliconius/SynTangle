@@ -145,6 +145,17 @@ jobs:
           --component-workers 2
           --seed 9101
 
+      - name: Solve Stage 19 slow conserved-karyotype regression
+        run: >
+          time python validation/benchmark/generate_case_report.py
+          /tmp/syntangle-factorial/factor_lep_12sp_31chr_0ev
+          /tmp/syntangle-factorial/factor_lep_12sp_31chr_0ev_report.html
+          --transition-cap 100000
+          --branch-node-cap 25000
+          --local-restarts 2
+          --component-workers 4
+          --seed 9401
+
       - name: Upload smoke benchmark outputs
         uses: actions/upload-artifact@v4
         with:
@@ -166,3 +177,4 @@ jobs:
             /tmp/syntangle-stress/benchmark_manifest.tsv
             /tmp/syntangle-factorial/benchmark_manifest.tsv
             /tmp/syntangle-factorial/factor_species_4sp_16chr_1ev_report.html
+            /tmp/syntangle-factorial/factor_lep_12sp_31chr_0ev_report.html
