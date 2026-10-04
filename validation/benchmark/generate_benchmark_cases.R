@@ -35,7 +35,28 @@ source(file.path(repo_root, "validation/simulator/export_validation_bundle.R"))
 dir.create(output_root, recursive = TRUE, showWarnings = FALSE)
 
 event_plan_for_branch <- function(branch_index, intensity) {
-  if (intensity == "none") {
+  if (intensity %in% c("nested0", "nested1", "nested2", "nested5")) {
+    # Nested plans are used only by the orthogonal benchmark. Within a species,
+    # the 1-event history is a prefix of the 2-event history, which is a prefix
+    # of the 5-event history. This isolates rearrangement burden from changing
+    # event identity.
+    master_plans <- list(
+      c("fusion", "fission", "inversion", "fusion", "fission"),
+      c("fission", "fusion", "inversion", "fission", "fusion"),
+      c("inversion", "fusion", "fission", "inversion", "fusion")
+    )
+    master <- master_plans[[
+      ((branch_index - 2L) %% length(master_plans)) + 1L
+    ]]
+    n_keep <- switch(
+      intensity,
+      nested0 = 0L,
+      nested1 = 1L,
+      nested2 = 2L,
+      nested5 = 5L
+    )
+    plans <- list(master[seq_len(n_keep)])
+  } else if (intensity == "none") {
     plans <- list(character())
   } else if (intensity == "low") {
     plans <- list(
@@ -402,28 +423,31 @@ if (profile == "smoke") {
   # 31 (a common Lepidoptera-like karyotype), while retaining 40 only as a
   # high-end boundary probe.
   factorial_cases <- list(
-    # Species-count axis: chromosome count and rearrangement burden fixed.
-    list("factor_species_4sp_16chr_1ev", 4L, 16L, "low", 9101L, "species", "4"),
-    list("factor_species_8sp_16chr_1ev", 8L, 16L, "low", 9102L, "species", "8"),
-    list("factor_species_12sp_16chr_1ev", 12L, 16L, "low", 9103L, "species", "12"),
-    list("factor_species_20sp_16chr_1ev", 20L, 16L, "low", 9104L, "species", "20"),
+    # Species-count axis. The same seed makes smaller cases literal subsets of
+    # the larger independent-descendant cases.
+    list("factor_species_4sp_16chr_1ev", 4L, 16L, "nested1", 9101L, "species", "4"),
+    list("factor_species_8sp_16chr_1ev", 8L, 16L, "nested1", 9101L, "species", "8"),
+    list("factor_species_12sp_16chr_1ev", 12L, 16L, "nested1", 9101L, "species", "12"),
+    list("factor_species_20sp_16chr_1ev", 20L, 16L, "nested1", 9101L, "species", "20"),
 
-    # Chromosome-count axis: species number and rearrangement burden fixed.
-    # The 8sp/16chr/1ev point above is the shared baseline and is not repeated.
-    list("factor_chrom_8sp_8chr_1ev", 8L, 8L, "low", 9201L, "chromosomes", "8"),
-    list("factor_chrom_8sp_31chr_1ev", 8L, 31L, "low", 9202L, "chromosomes", "31"),
-    list("factor_chrom_8sp_40chr_1ev", 8L, 40L, "low", 9203L, "chromosomes", "40"),
+    # Chromosome-count axis. Species count, event plan, and seed are fixed.
+    list("factor_chrom_8sp_8chr_1ev", 8L, 8L, "nested1", 9201L, "chromosomes", "8"),
+    list("factor_chrom_8sp_16chr_1ev", 8L, 16L, "nested1", 9201L, "chromosomes", "16"),
+    list("factor_chrom_8sp_31chr_1ev", 8L, 31L, "nested1", 9201L, "chromosomes", "31"),
+    list("factor_chrom_8sp_40chr_1ev", 8L, 40L, "nested1", 9201L, "chromosomes", "40"),
 
-    # Rearrangement axis: species and chromosome count fixed.
-    # Again, the 1-event point is the shared 8sp/16chr baseline.
-    list("factor_events_8sp_16chr_0ev", 8L, 16L, "none", 9301L, "rearrangements", "0"),
-    list("factor_events_8sp_16chr_2ev", 8L, 16L, "medium", 9302L, "rearrangements", "2"),
-    list("factor_events_8sp_16chr_5ev", 8L, 16L, "high", 9303L, "rearrangements", "5"),
+    # Conserved 31-chromosome / Lepidoptera-like checks are deliberately
+    # scheduled before the high-rearrangement cases.
+    list("factor_lep_8sp_31chr_0ev", 8L, 31L, "nested0", 9401L, "lepidoptera_like", "8sp_0ev"),
+    list("factor_lep_12sp_31chr_0ev", 12L, 31L, "nested0", 9401L, "lepidoptera_like", "12sp_0ev"),
+    list("factor_lep_12sp_31chr_1ev", 12L, 31L, "nested1", 9401L, "lepidoptera_like", "12sp_1ev"),
 
-    # Lepidoptera-like conserved-karyotype checks.
-    list("factor_lep_8sp_31chr_0ev", 8L, 31L, "none", 9401L, "lepidoptera_like", "8sp_0ev"),
-    list("factor_lep_12sp_31chr_0ev", 12L, 31L, "none", 9402L, "lepidoptera_like", "12sp_0ev"),
-    list("factor_lep_12sp_31chr_1ev", 12L, 31L, "low", 9403L, "lepidoptera_like", "12sp_1ev")
+    # Rearrangement axis. These share one ancestor/seed and use nested event
+    # plans, so 0 -> 1 -> 2 -> 5 changes only event burden.
+    list("factor_events_8sp_16chr_0ev", 8L, 16L, "nested0", 9301L, "rearrangements", "0"),
+    list("factor_events_8sp_16chr_1ev", 8L, 16L, "nested1", 9301L, "rearrangements", "1"),
+    list("factor_events_8sp_16chr_2ev", 8L, 16L, "nested2", 9301L, "rearrangements", "2"),
+    list("factor_events_8sp_16chr_5ev", 8L, 16L, "nested5", 9301L, "rearrangements", "5")
   )
 
   specs <- lapply(
