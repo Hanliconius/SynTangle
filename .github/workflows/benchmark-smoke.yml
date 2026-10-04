@@ -160,7 +160,7 @@ jobs:
               transition_cap_per_component=100000,
               branch_node_cap_per_component=25000,
               local_restarts=2,
-              component_workers=4,
+              component_workers=1,
               seed=9401,
           )
           elapsed = perf_counter() - started
