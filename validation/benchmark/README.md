@@ -183,6 +183,37 @@ The purpose is not merely to find a larger maximum dataset. It is to test the
 hypothesis that runtime is driven more strongly by rearrangement-induced
 coupling and residual component width than by species count itself.
 
+### Stage 19 versus Stage 20 solver A/B
+
+Keep the completed Stage 19 TSV as the baseline. After updating to Stage 20,
+rerun the **same generated case directories** with different output filenames;
+do not regenerate the biology:
+
+```bash
+time caffeinate -i python validation/benchmark/run_benchmark.py \
+  local_results/factorial \
+  --output local_results/factorial/benchmark_results_stage20.tsv \
+  --summary-json local_results/factorial/benchmark_summary_stage20.json \
+  --summary-md local_results/factorial/benchmark_summary_stage20.md \
+  --transition-cap 100000 \
+  --branch-node-cap 25000 \
+  --local-restarts 2 \
+  --component-workers 4
+```
+
+Then compare exact optimum and runtime case by case:
+
+```bash
+python validation/benchmark/compare_solver_runs.py \
+  local_results/factorial/benchmark_results.tsv \
+  local_results/factorial/benchmark_results_stage20.tsv \
+  --markdown local_results/factorial/stage19_vs_stage20.md
+```
+
+The comparison fails if two runs both claim a proven optimum but disagree on
+the crossing count. This makes the current Stage 19 run a direct regression and
+performance baseline for the new decomposition rather than disposable work.
+
 ### Coupled high-complexity stress ladder
 
 The `stress` profile deliberately increases **all three biological/search
