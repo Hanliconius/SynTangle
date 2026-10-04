@@ -481,17 +481,18 @@ def _solve_factor_system(
         return _FactorSolveResult(total, assignment)
 
     active_factors = pieces[0]
-    occurrences: dict[str, int] = {}
-    for factor in active_factors:
-        for variable_id in factor.scope:
-            occurrences[variable_id] = (
-                occurrences.get(variable_id, 0) + 1
-            )
+    adjacency = _primal_adjacency(active_factors)
 
+    # "Leaf" is defined on the residual primal graph, not by the raw number of
+    # factor records containing a variable. After eliminating one endpoint of
+    # a chain, its neighbor commonly has both a unary message factor and one
+    # pair factor: two factor occurrences but only one remaining neighbor. Such
+    # a variable is still an exact leaf and should be peeled rather than
+    # triggering separator branching.
     leaf_variables = sorted(
         variable_id
-        for variable_id, count in occurrences.items()
-        if count == 1
+        for variable_id, neighbors in adjacency.items()
+        if len(neighbors) <= 1
     )
     if leaf_variables:
         variable_id = min(
@@ -539,7 +540,6 @@ def _solve_factor_system(
             assignment=assignment,
         )
 
-    adjacency = _primal_adjacency(active_factors)
     articulation = [
         variable_id
         for variable_id in _articulation_points(adjacency)
