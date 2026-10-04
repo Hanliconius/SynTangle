@@ -125,6 +125,12 @@ All cases use 12 anchors per ancestral chromosome and the same random
 presentation-tangle mode. Presentation invariance is already tested by the
 paired profiles, so this benchmark avoids triplicating every biological point.
 
+Within each controlled axis the biological seed is held fixed. The species
+axis is nested (the smaller species set is literally contained in the larger
+one), and the rearrangement axis uses nested event plans so the 1-event history
+is a prefix of the 2-event history, which is a prefix of the 5-event history.
+This removes two otherwise important simulation confounders.
+
 The controlled axes are:
 
 | Axis | Fixed quantities | Levels |
@@ -133,6 +139,9 @@ The controlled axes are:
 | Chromosome count | 8 species, 1 event/extant lineage | 8, 16, 31, 40 chromosomes |
 | Rearrangement burden | 8 species, 16 ancestral chromosomes | 0, 1, 2, 5 events/extant lineage |
 | Lepidoptera-like check | 31 ancestral chromosomes | 8--12 species with 0--1 events/extant lineage |
+
+The complete profile contains 15 cases: four points on each controlled axis
+plus three Lepidoptera-like checks.
 
 The 16-chromosome point is used as a typical-scale reference for this
 experiment; 31 chromosomes represents a Lepidoptera-like conserved karyotype;
