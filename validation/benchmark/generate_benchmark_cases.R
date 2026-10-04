@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
 valid_profiles <- c(
-  "smoke", "full", "paired-smoke", "paired", "scale", "stress"
+  "smoke", "full", "paired-smoke", "paired", "scale", "stress", "factorial"
 )
 if (length(args) < 1L || length(args) > 2L) {
   stop(
@@ -35,7 +35,30 @@ source(file.path(repo_root, "validation/simulator/export_validation_bundle.R"))
 dir.create(output_root, recursive = TRUE, showWarnings = FALSE)
 
 event_plan_for_branch <- function(branch_index, intensity) {
-  if (intensity == "low") {
+  if (intensity %in% c("nested0", "nested1", "nested2", "nested5")) {
+    # Nested plans are used only by the orthogonal benchmark. Within a species,
+    # the 1-event history is a prefix of the 2-event history, which is a prefix
+    # of the 5-event history. This isolates rearrangement burden from changing
+    # event identity.
+    master_plans <- list(
+      c("fusion", "fission", "inversion", "fusion", "fission"),
+      c("fission", "fusion", "inversion", "fission", "fusion"),
+      c("inversion", "fusion", "fission", "inversion", "fusion")
+    )
+    master <- master_plans[[
+      ((branch_index - 2L) %% length(master_plans)) + 1L
+    ]]
+    n_keep <- switch(
+      intensity,
+      nested0 = 0L,
+      nested1 = 1L,
+      nested2 = 2L,
+      nested5 = 5L
+    )
+    plans <- list(master[seq_len(n_keep)])
+  } else if (intensity == "none") {
+    plans <- list(character())
+  } else if (intensity == "low") {
     plans <- list(
       c("fission"),
       c("fusion"),
@@ -113,12 +136,25 @@ make_case <- function(
   seed,
   biology_id = case_id,
   biology_seed = seed,
-  tangle_seed = seed + 9000L
+  tangle_seed = seed + 9000L,
+  lineage_model = "sequential",
+  benchmark_axis = "legacy",
+  benchmark_level = ""
 ) {
   species_ids <- paste0("species", LETTERS[seq_len(n_species)])
 
+  if (!lineage_model %in% c("sequential", "independent")) {
+    stop("lineage_model must be sequential or independent")
+  }
+
+  ancestor_species <- if (lineage_model == "independent") {
+    "__ancestor__"
+  } else {
+    species_ids[[1]]
+  }
+
   ancestor <- simulate_ancestor_genome(
-    species = species_ids[[1]],
+    species = ancestor_species,
     n_chrom = n_chrom,
     genes_per_chrom = genes_per_chrom,
     chromosome_span = 1500000,
@@ -126,17 +162,37 @@ make_case <- function(
   )
 
   genomes <- list()
-  genomes[[species_ids[[1]]]] <- ancestor
 
-  for (branch_index in 2:n_species) {
-    previous <- genomes[[species_ids[[branch_index - 1L]]]]
-    descendant <- clone_genome(previous, species_ids[[branch_index]])
-    descendant <- mutate_genome_structure(
-      descendant,
-      event_plan = event_plan_for_branch(branch_index, intensity),
-      seed = biology_seed + branch_index * 100L
-    )
-    genomes[[species_ids[[branch_index]]]] <- descendant
+  if (lineage_model == "sequential") {
+    genomes[[species_ids[[1]]]] <- ancestor
+
+    for (branch_index in 2:n_species) {
+      previous <- genomes[[species_ids[[branch_index - 1L]]]]
+      descendant <- clone_genome(previous, species_ids[[branch_index]])
+      descendant <- mutate_genome_structure(
+        descendant,
+        event_plan = event_plan_for_branch(branch_index, intensity),
+        seed = biology_seed + branch_index * 100L
+      )
+      genomes[[species_ids[[branch_index]]]] <- descendant
+    }
+  } else {
+    # Orthogonal scaling benchmarks use independent extant descendants from a
+    # common hidden ancestor. This prevents increasing species count from also
+    # increasing cumulative rearrangement depth.
+    for (branch_index in seq_len(n_species)) {
+      descendant <- clone_genome(
+        ancestor,
+        species_ids[[branch_index]],
+        inherit_log = FALSE
+      )
+      descendant <- mutate_genome_structure(
+        descendant,
+        event_plan = event_plan_for_branch(branch_index + 1L, intensity),
+        seed = biology_seed + branch_index * 100L
+      )
+      genomes[[species_ids[[branch_index]]]] <- descendant
+    }
   }
 
   native <- make_native_display_state(genomes)
@@ -187,6 +243,9 @@ make_case <- function(
     seed = seed,
     biology_seed = biology_seed,
     tangle_seed = tangle_seed,
+    lineage_model = lineage_model,
+    benchmark_axis = benchmark_axis,
+    benchmark_level = benchmark_level,
     stringsAsFactors = FALSE
   )
 }
@@ -201,7 +260,10 @@ spec <- function(
   seed,
   biology_id = case_id,
   biology_seed = seed,
-  tangle_seed = seed + 9000L
+  tangle_seed = seed + 9000L,
+  lineage_model = "sequential",
+  benchmark_axis = "legacy",
+  benchmark_level = ""
 ) {
   list(
     case_id,
@@ -213,7 +275,10 @@ spec <- function(
     seed,
     biology_id,
     biology_seed,
-    tangle_seed
+    tangle_seed,
+    lineage_model,
+    benchmark_axis,
+    benchmark_level
   )
 }
 
@@ -347,7 +412,72 @@ if (profile == "smoke") {
     genes_per_chrom = 12L,
     seed_base = 7000L
   )
-} else {
+} else if (profile == "factorial") {
+  # Biologically grounded orthogonal benchmark. Extant species are independent
+  # descendants of one hidden ancestor, so changing species number does not
+  # also add sequential rearrangement depth. Presentation mode is fixed at
+  # random: paired presentation invariance is tested elsewhere.
+  #
+  # The design deliberately centers the chromosome axis on 16 (a useful
+  # general eukaryotic reference from the Genome Observatory discussion) and
+  # 31 (a common Lepidoptera-like karyotype), while retaining 40 only as a
+  # high-end boundary probe.
+  factorial_cases <- list(
+    # Species-count axis. The same seed makes smaller cases literal subsets of
+    # the larger independent-descendant cases.
+    list("factor_species_4sp_16chr_1ev", 4L, 16L, "nested1", 9101L, "species", "4"),
+    list("factor_species_8sp_16chr_1ev", 8L, 16L, "nested1", 9101L, "species", "8"),
+    list("factor_species_12sp_16chr_1ev", 12L, 16L, "nested1", 9101L, "species", "12"),
+    list("factor_species_20sp_16chr_1ev", 20L, 16L, "nested1", 9101L, "species", "20"),
+
+    # Chromosome-count axis. Species count, event plan, and seed are fixed.
+    list("factor_chrom_8sp_8chr_1ev", 8L, 8L, "nested1", 9201L, "chromosomes", "8"),
+    list("factor_chrom_8sp_16chr_1ev", 8L, 16L, "nested1", 9201L, "chromosomes", "16"),
+    list("factor_chrom_8sp_31chr_1ev", 8L, 31L, "nested1", 9201L, "chromosomes", "31"),
+    list("factor_chrom_8sp_40chr_1ev", 8L, 40L, "nested1", 9201L, "chromosomes", "40"),
+
+    # Conserved 31-chromosome / Lepidoptera-like checks are deliberately
+    # scheduled before the high-rearrangement cases.
+    list("factor_lep_8sp_31chr_0ev", 8L, 31L, "nested0", 9401L, "lepidoptera_like", "8sp_0ev"),
+    list("factor_lep_12sp_31chr_0ev", 12L, 31L, "nested0", 9401L, "lepidoptera_like", "12sp_0ev"),
+    list("factor_lep_12sp_31chr_1ev", 12L, 31L, "nested1", 9401L, "lepidoptera_like", "12sp_1ev"),
+
+    # Rearrangement axis. These share one ancestor/seed and use nested event
+    # plans, so 0 -> 1 -> 2 -> 5 changes only event burden.
+    list("factor_events_8sp_16chr_0ev", 8L, 16L, "nested0", 9301L, "rearrangements", "0"),
+    list("factor_events_8sp_16chr_1ev", 8L, 16L, "nested1", 9301L, "rearrangements", "1"),
+    list("factor_events_8sp_16chr_2ev", 8L, 16L, "nested2", 9301L, "rearrangements", "2"),
+    list("factor_events_8sp_16chr_5ev", 8L, 16L, "nested5", 9301L, "rearrangements", "5")
+  )
+
+  specs <- lapply(
+    factorial_cases,
+    function(item) {
+      case_id <- item[[1]]
+      n_species <- item[[2]]
+      n_chrom <- item[[3]]
+      intensity <- item[[4]]
+      biology_seed <- item[[5]]
+      benchmark_axis <- item[[6]]
+      benchmark_level <- item[[7]]
+      spec(
+        case_id,
+        n_species,
+        n_chrom,
+        12L,
+        "random",
+        intensity,
+        biology_seed,
+        biology_id = case_id,
+        biology_seed = biology_seed,
+        tangle_seed = biology_seed + 9301L,
+        lineage_model = "independent",
+        benchmark_axis = benchmark_axis,
+        benchmark_level = benchmark_level
+      )
+    }
+  )
+} else if (profile == "stress") {
   # Coupled stress ladder: species count, chromosome count, and cumulative
   # structural-event density all increase together. Each rung is represented
   # by a mild/strong/random presentation triplet of the same evolved biology.
@@ -415,7 +545,10 @@ manifest_rows <- lapply(
           "seed",
           "biology_id",
           "biology_seed",
-          "tangle_seed"
+          "tangle_seed",
+          "lineage_model",
+          "benchmark_axis",
+          "benchmark_level"
         )
       )
     )

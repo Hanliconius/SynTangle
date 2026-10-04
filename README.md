@@ -21,8 +21,12 @@ they are currently diagnostic rather than being allowed to prune the optimizer
 without a proof that the remaining crossing objective factorizes accordingly.
 
 Current validation now includes controlled paired presentation tangles,
-12/15/20/30-chromosome scaling probes, and a coupled high-complexity stress
-ladder. Long benchmark runs checkpoint every completed case and can resume.
+historical chromosome-scale probes, a coupled high-complexity stress ladder,
+and an orthogonal biologically grounded benchmark that varies species count,
+chromosome count, and rearrangement burden separately. The orthogonal profile
+uses independent extant descendants from one hidden ancestor so increasing
+species count does not also increase cumulative rearrangement depth. Long
+benchmark runs checkpoint every completed case and can resume.
 
 Stage 18 also introduces process-level parallelism across exact independent
 incidence components in monotone branch-and-bound and an explicit residual
