@@ -146,15 +146,35 @@ jobs:
           --seed 9101
 
       - name: Solve Stage 19 slow conserved-karyotype regression
-        run: >
-          time python validation/benchmark/generate_case_report.py
-          /tmp/syntangle-factorial/factor_lep_12sp_31chr_0ev
-          /tmp/syntangle-factorial/factor_lep_12sp_31chr_0ev_report.html
-          --transition-cap 100000
-          --branch-node-cap 25000
-          --local-restarts 2
-          --component-workers 4
-          --seed 9401
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from time import perf_counter
+          from syntangle import load_validation_bundle, optimize_auto
+
+          case = Path("/tmp/syntangle-factorial/factor_lep_12sp_31chr_0ev")
+          fixture = load_validation_bundle(case)
+          started = perf_counter()
+          result = optimize_auto(
+              fixture,
+              transition_cap_per_component=100000,
+              branch_node_cap_per_component=25000,
+              local_restarts=2,
+              component_workers=4,
+              seed=9401,
+          )
+          elapsed = perf_counter() - started
+          print(
+              "STAGE20_REGRESSION",
+              result.solver,
+              result.layout.optimized_score.crossings,
+              result.layout.optimality_status,
+              f"{elapsed:.6f}s",
+          )
+          assert result.solver == "exact-residual-factor-elimination"
+          assert result.layout.optimized_score.crossings == 0
+          assert result.layout.optimality_status == "proven optimum"
+          PY
 
       - name: Upload smoke benchmark outputs
         uses: actions/upload-artifact@v4
@@ -177,4 +197,3 @@ jobs:
             /tmp/syntangle-stress/benchmark_manifest.tsv
             /tmp/syntangle-factorial/benchmark_manifest.tsv
             /tmp/syntangle-factorial/factor_species_4sp_16chr_1ev_report.html
-            /tmp/syntangle-factorial/factor_lep_12sp_31chr_0ev_report.html
