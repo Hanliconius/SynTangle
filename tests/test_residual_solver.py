@@ -138,6 +138,29 @@ class ResidualFactorSolverTests(unittest.TestCase):
             0,
         )
 
+    def test_parallel_residual_components_match_serial(self) -> None:
+        fixture = load_fixture(FIXTURES / "perfect_1to1_30x3.json")
+        serial = exact_optimize_residual_factor_graph(
+            fixture,
+            component_workers=1,
+            work_cap_per_component=10_000,
+        )
+        parallel = exact_optimize_residual_factor_graph(
+            fixture,
+            component_workers=2,
+            work_cap_per_component=10_000,
+        )
+
+        self.assertEqual(
+            parallel.layout.optimized_score.crossings,
+            serial.layout.optimized_score.crossings,
+        )
+        self.assertEqual(
+            parallel.layout.optimized_state.to_dict(),
+            serial.layout.optimized_state.to_dict(),
+        )
+        self.assertEqual(parallel.component_workers, 2)
+
     def test_auto_solver_uses_residual_factor_elimination_first(self) -> None:
         fixture = orientation_chain_fixture(8, n_blocks=3)
         result = optimize_auto(
