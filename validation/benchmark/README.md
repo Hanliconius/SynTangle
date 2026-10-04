@@ -234,11 +234,11 @@ python validation/benchmark/run_benchmark.py \
   --resume
 ```
 
-For a serial historical baseline, leave `--component-workers 1`. To use
-multiple CPU cores inside a difficult branch-and-bound case, set for example
-`--component-workers 4`. This currently parallelizes only exact independent
-incidence components; exact layer-DP and finer residual-factor pieces remain
-serial.
+For a serial historical baseline, leave `--component-workers 1`. Setting for
+example `--component-workers 4` now parallelizes exact independent incidence
+components in both recursive residual factor elimination and branch-and-bound.
+Within one incidence component, finer residual pieces are recursively solved
+in-process; exact layer-DP remains serial.
 
 ## Vector visual report
 
@@ -313,6 +313,10 @@ Each case records:
 - proven optimum versus bounded best known;
 - solver selected;
 - states/nodes evaluated;
+- for recursive residual-factor runs: exact factor-table entries evaluated,
+  factor-scope variables proved irrelevant and removed, leaf eliminations,
+  articulation conditionings, dynamic residual splits, min-fill eliminations,
+  and maximum intermediate factor scope/table size;
 - for monotone branch-and-bound runs: implicit orientation-state count,
   orientation nodes actually evaluated, order nodes evaluated, branches pruned,
   groups forced by bounds, and memo/cache hits;
@@ -333,12 +337,14 @@ However, structural projection and the bridge/articulation/2-core/biconnected
 machinery are currently **diagnostic rather than optimizer inputs**. The active
 solvers factor on exact incidence connected components.
 
-Stage 18 additionally constructs the **residual decision/factor graph** from
-unresolved chromosome-order variables, GF(2) orientation variables, and the
-crossing factors that couple them. Its disconnected pieces, articulation
-variables, and min-fill treewidth upper bound are benchmarked so that the next
-decomposition step can be justified by the actual residual objective rather
-than by raw structural topology alone. See `docs/method_stage_audit.md`.
+Stage 18 introduced the **residual decision/factor graph** from unresolved
+chromosome-order variables, GF(2) orientation variables, and the crossing
+factors that couple them. Stage 20 now solves on that representation directly:
+exact factor tables can shrink conservative scopes, disconnected pieces are
+split recursively, one-factor leaves are eliminated, small articulation
+variables are conditioned, and min-fill elimination handles only the surviving
+kernel. The corresponding work metrics are written to the benchmark TSV. See
+`docs/method_stage_audit.md`.
 
 Large benchmark outputs are working data. Commit scripts and compact summaries,
 not bulk generated bundles.
