@@ -36,7 +36,10 @@ class ScalableSolverTests(unittest.TestCase):
     def test_auto_prefers_exact_solver_when_feasible(self) -> None:
         fixture = load_fixture(FIXTURES / "fusion_chain_closed_cycle.json")
         result = optimize_auto(fixture)
-        self.assertEqual(result.solver, "exact-layer-dynamic-programming")
+        self.assertEqual(
+            result.solver,
+            "exact-residual-factor-elimination",
+        )
         self.assertEqual(result.layout.optimality_status, "proven optimum")
 
     def test_auto_routes_oversized_exact_case_to_branch_and_bound(self) -> None:
