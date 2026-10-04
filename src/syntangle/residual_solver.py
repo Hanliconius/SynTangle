@@ -37,6 +37,7 @@ class ResidualSolveDiagnostics:
     articulation_conditionings: int
     min_fill_eliminations: int
     dynamic_factor_splits: int
+    factor_scope_variables_removed: int
     max_intermediate_scope: int
     max_table_entries: int
     table_entries_evaluated: int
@@ -54,6 +55,9 @@ class ResidualSolveDiagnostics:
             "articulation_conditionings": self.articulation_conditionings,
             "min_fill_eliminations": self.min_fill_eliminations,
             "dynamic_factor_splits": self.dynamic_factor_splits,
+            "factor_scope_variables_removed": (
+                self.factor_scope_variables_removed
+            ),
             "max_intermediate_scope": self.max_intermediate_scope,
             "max_table_entries": self.max_table_entries,
             "table_entries_evaluated": self.table_entries_evaluated,
@@ -130,6 +134,7 @@ class _MutableDiagnostics:
     articulation_conditionings: int = 0
     min_fill_eliminations: int = 0
     dynamic_factor_splits: int = 0
+    factor_scope_variables_removed: int = 0
 
 
 @dataclass(frozen=True)
@@ -728,6 +733,61 @@ def _evaluate_residual_factor(
     )
 
 
+def _drop_invariant_variables(
+    factor: _TableFactor,
+    domains: dict[str, _Domain],
+) -> tuple[_TableFactor, int]:
+    """Remove conservative scope variables that provably do not affect a table.
+
+    Residual graph construction deliberately over-approximates dependencies.
+    Once a factor table has been evaluated, exact value equality lets us
+    contract any variable whose value leaves that factor unchanged. Repeating
+    this to a fixed point can expose new disconnected pieces and leaves.
+    """
+
+    scope = list(factor.scope)
+    values = dict(factor.values)
+    removed = 0
+
+    changed = True
+    while changed and scope:
+        changed = False
+        for index, variable_id in enumerate(tuple(scope)):
+            other_scope = tuple(
+                item for item in scope if item != variable_id
+            )
+            grouped: dict[tuple[int, ...], list[int]] = {}
+
+            for key, cost in values.items():
+                reduced_key = key[:index] + key[index + 1 :]
+                grouped.setdefault(reduced_key, []).append(cost)
+
+            if any(
+                len(costs) != domains[variable_id].size
+                or len(set(costs)) != 1
+                for costs in grouped.values()
+            ):
+                continue
+
+            scope.pop(index)
+            values = {
+                reduced_key: costs[0]
+                for reduced_key, costs in grouped.items()
+            }
+            removed += 1
+            changed = True
+            break
+
+    return (
+        _TableFactor(
+            factor_id=factor.factor_id,
+            scope=tuple(scope),
+            values=values,
+        ),
+        removed,
+    )
+
+
 def _build_factor_tables(
     fixture: Fixture,
     component_nodes: frozenset[str],
@@ -773,13 +833,16 @@ def _build_factor_tables(
                 assignment,
             )
 
-        output.append(
-            _TableFactor(
-                factor_id=factor.factor_id,
-                scope=scope,
-                values=values,
-            )
+        table = _TableFactor(
+            factor_id=factor.factor_id,
+            scope=scope,
+            values=values,
         )
+        table, removed = _drop_invariant_variables(
+            table,
+            domains,
+        )
+        output.append(table)
 
     return output
 
@@ -811,7 +874,7 @@ def _solve_incidence_component(
     budget = _WorkBudget(work_cap_per_component)
     mutable = _MutableDiagnostics()
 
-    tables = _build_factor_tables(
+    raw_tables = _build_factor_tables(
         fixture,
         component_nodes,
         refs,
@@ -822,6 +885,16 @@ def _solve_incidence_component(
         budget,
         table_entry_cap=table_entry_cap_per_component,
     )
+    original_scope_size = sum(
+        len(factor.variable_ids) for factor in factors
+    )
+    reduced_scope_size = sum(
+        len(table.scope) for table in raw_tables
+    )
+    mutable.factor_scope_variables_removed = (
+        original_scope_size - reduced_scope_size
+    )
+    tables = raw_tables
 
     active_variable_ids = {
         variable_id
@@ -906,6 +979,9 @@ def _solve_incidence_component(
         ),
         min_fill_eliminations=mutable.min_fill_eliminations,
         dynamic_factor_splits=mutable.dynamic_factor_splits,
+        factor_scope_variables_removed=(
+            mutable.factor_scope_variables_removed
+        ),
         max_intermediate_scope=budget.max_intermediate_scope,
         max_table_entries=budget.max_table_entries,
         table_entries_evaluated=budget.used,
