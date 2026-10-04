@@ -128,7 +128,7 @@ jobs:
           python -c "import csv, pathlib;
           p=pathlib.Path('/tmp/syntangle-factorial/benchmark_manifest.tsv');
           rows=list(csv.DictReader(p.open(), delimiter='\t'));
-          assert len(rows)==13;
+          assert len(rows)==15;
           assert all(r['lineage_model']=='independent' for r in rows);
           assert {int(r['ancestor_chromosomes']) for r in rows} >= {8,16,31,40};
           assert {int(r['species_count']) for r in rows} >= {4,8,12,20};
