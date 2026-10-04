@@ -18,13 +18,16 @@ def pair_component_crossings(
     order2: tuple[ChromosomeRef, ...],
     orientation: dict[ChromosomeRef, int],
     component_nodes: frozenset[str],
+    *,
+    occurrence_index=None,
 ) -> int:
     """Crossings contributed by one incidence component between two layers."""
 
     if not order1 or not order2:
         return 0
 
-    occurrence_index = _occurrences_by_species_homology(fixture)
+    if occurrence_index is None:
+        occurrence_index = _occurrences_by_species_homology(fixture)
     rank1 = {ref: rank for rank, ref in enumerate(order1)}
     rank2 = {ref: rank for rank, ref in enumerate(order2)}
     homologies = sorted(
