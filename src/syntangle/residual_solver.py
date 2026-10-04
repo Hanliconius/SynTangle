@@ -108,6 +108,7 @@ class _EliminationRecord:
 @dataclass
 class _WorkBudget:
     cap: int
+    table_cap: int
     used: int = 0
     max_table_entries: int = 0
     max_intermediate_scope: int = 0
@@ -115,6 +116,11 @@ class _WorkBudget:
     def consume(self, count: int, *, scope_size: int) -> None:
         if count < 0:
             raise ValueError("Work count cannot be negative")
+        if count > self.table_cap:
+            raise SearchSpaceTooLarge(
+                "Residual factor elimination would create/evaluate a table "
+                f"with {count} assignments; table cap is {self.table_cap}"
+            )
         if self.used + count > self.cap:
             raise SearchSpaceTooLarge(
                 "Residual factor elimination would exceed the configured "
@@ -871,7 +877,10 @@ def _solve_incidence_component(
         variables,
         permutation_cap_per_variable=permutation_cap_per_variable,
     )
-    budget = _WorkBudget(work_cap_per_component)
+    budget = _WorkBudget(
+        cap=work_cap_per_component,
+        table_cap=table_entry_cap_per_component,
+    )
     mutable = _MutableDiagnostics()
 
     raw_tables = _build_factor_tables(
