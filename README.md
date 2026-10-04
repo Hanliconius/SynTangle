@@ -32,7 +32,7 @@ benchmark runs checkpoint every completed case and can resume.
 Stage 18 introduced the explicit residual variable/factor graph and
 process-level parallelism across independent incidence components. Stage 20
 makes that residual graph active solver machinery: exact factor tables contract
-variables that prove irrelevant, one-factor leaves are eliminated,
+variables that prove irrelevant, primal-graph leaves are eliminated,
 disconnected residual pieces are solved separately, small articulation
 variables are conditioned, and min-fill elimination is used only for the
 irreducible remainder. No solver should contradict [RULES.md](RULES.md).
