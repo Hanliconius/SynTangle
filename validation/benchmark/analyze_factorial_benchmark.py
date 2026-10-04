@@ -24,56 +24,28 @@ def axis_rows(
     rows: list[dict[str, str]],
     axis: str,
 ) -> list[dict[str, str]]:
-    independent = [
-        row for row in rows
+    selected = [
+        row
+        for row in rows
         if row.get("lineage_model") == "independent"
+        and row.get("benchmark_axis") == axis
     ]
 
     if axis == "species":
-        selected = [
-            row for row in independent
-            if as_int(row, "ancestor_chromosomes") == 16
-            and as_int(row, "events_per_branch") == 1
-        ]
-        return sorted(selected, key=lambda row: as_int(row, "species_count"))
-
-    if axis == "chromosomes":
-        selected = [
-            row for row in independent
-            if as_int(row, "species_count") == 8
-            and as_int(row, "events_per_branch") == 1
-        ]
-        return sorted(
-            selected,
-            key=lambda row: as_int(row, "ancestor_chromosomes"),
+        key = lambda row: as_int(row, "species_count")
+    elif axis == "chromosomes":
+        key = lambda row: as_int(row, "ancestor_chromosomes")
+    elif axis == "rearrangements":
+        key = lambda row: as_int(row, "events_per_branch")
+    elif axis == "lepidoptera_like":
+        key = lambda row: (
+            as_int(row, "species_count"),
+            as_int(row, "events_per_branch"),
         )
+    else:
+        raise ValueError(f"Unknown axis: {axis}")
 
-    if axis == "rearrangements":
-        selected = [
-            row for row in independent
-            if as_int(row, "species_count") == 8
-            and as_int(row, "ancestor_chromosomes") == 16
-        ]
-        return sorted(
-            selected,
-            key=lambda row: as_int(row, "events_per_branch"),
-        )
-
-    if axis == "lepidoptera_like":
-        selected = [
-            row for row in independent
-            if as_int(row, "ancestor_chromosomes") == 31
-            and as_int(row, "events_per_branch") <= 1
-        ]
-        return sorted(
-            selected,
-            key=lambda row: (
-                as_int(row, "species_count"),
-                as_int(row, "events_per_branch"),
-            ),
-        )
-
-    raise ValueError(f"Unknown axis: {axis}")
+    return sorted(selected, key=key)
 
 
 def level_label(row: dict[str, str], axis: str) -> str:
