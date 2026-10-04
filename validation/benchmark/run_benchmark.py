@@ -153,42 +153,98 @@ def reduction_metrics(result) -> dict[str, object]:
         for item in diagnostics
         if "implicit_orientation_states" in item
     ]
-    if not monotone:
-        return {
-            "max_implicit_orientation_states": "",
-            "total_orientation_nodes": "",
-            "total_order_nodes": "",
-            "total_orientation_branches_pruned": "",
-            "total_orientation_groups_forced": "",
-            "total_reduction_memo_hits": "",
-        }
+    residual_exact = [
+        item
+        for item in diagnostics
+        if "table_entries_evaluated" in item
+    ]
 
-    return {
-        "max_implicit_orientation_states": max(
-            int(item["implicit_orientation_states"])
-            for item in monotone
-        ),
-        "total_orientation_nodes": sum(
-            int(item["orientation_nodes_evaluated"])
-            for item in monotone
-        ),
-        "total_order_nodes": sum(
-            int(item["order_nodes_evaluated"])
-            for item in monotone
-        ),
-        "total_orientation_branches_pruned": sum(
-            int(item["orientation_branches_pruned"])
-            for item in monotone
-        ),
-        "total_orientation_groups_forced": sum(
-            int(item["orientation_groups_forced"])
-            for item in monotone
-        ),
-        "total_reduction_memo_hits": sum(
-            int(item["memo_hits"])
-            for item in monotone
-        ),
+    output: dict[str, object] = {
+        "max_implicit_orientation_states": "",
+        "total_orientation_nodes": "",
+        "total_order_nodes": "",
+        "total_orientation_branches_pruned": "",
+        "total_orientation_groups_forced": "",
+        "total_reduction_memo_hits": "",
+        "total_residual_table_entries": "",
+        "total_residual_leaf_eliminations": "",
+        "total_residual_articulation_conditionings": "",
+        "total_residual_min_fill_eliminations": "",
+        "total_residual_dynamic_factor_splits": "",
+        "total_factor_scope_variables_removed": "",
+        "max_residual_intermediate_scope": "",
+        "max_residual_factor_table_entries": "",
     }
+
+    if monotone:
+        output.update(
+            {
+                "max_implicit_orientation_states": max(
+                    int(item["implicit_orientation_states"])
+                    for item in monotone
+                ),
+                "total_orientation_nodes": sum(
+                    int(item["orientation_nodes_evaluated"])
+                    for item in monotone
+                ),
+                "total_order_nodes": sum(
+                    int(item["order_nodes_evaluated"])
+                    for item in monotone
+                ),
+                "total_orientation_branches_pruned": sum(
+                    int(item["orientation_branches_pruned"])
+                    for item in monotone
+                ),
+                "total_orientation_groups_forced": sum(
+                    int(item["orientation_groups_forced"])
+                    for item in monotone
+                ),
+                "total_reduction_memo_hits": sum(
+                    int(item["memo_hits"])
+                    for item in monotone
+                ),
+            }
+        )
+
+    if residual_exact:
+        output.update(
+            {
+                "total_residual_table_entries": sum(
+                    int(item["table_entries_evaluated"])
+                    for item in residual_exact
+                ),
+                "total_residual_leaf_eliminations": sum(
+                    int(item["leaf_eliminations"])
+                    for item in residual_exact
+                ),
+                "total_residual_articulation_conditionings": sum(
+                    int(item["articulation_conditionings"])
+                    for item in residual_exact
+                ),
+                "total_residual_min_fill_eliminations": sum(
+                    int(item["min_fill_eliminations"])
+                    for item in residual_exact
+                ),
+                "total_residual_dynamic_factor_splits": sum(
+                    int(item["dynamic_factor_splits"])
+                    for item in residual_exact
+                ),
+                "total_factor_scope_variables_removed": sum(
+                    int(item["factor_scope_variables_removed"])
+                    for item in residual_exact
+                ),
+                "max_residual_intermediate_scope": max(
+                    int(item["max_intermediate_scope"])
+                    for item in residual_exact
+                ),
+                "max_residual_factor_table_entries": max(
+                    int(item["max_table_entries"])
+                    for item in residual_exact
+                ),
+            }
+        )
+
+    return output
 
 
 def run_case(
