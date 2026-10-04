@@ -39,6 +39,11 @@ from .residual import (
     ResidualVariable,
     build_residual_factorization,
 )
+from .residual_solver import (
+    ResidualExactResult,
+    ResidualSolveDiagnostics,
+    exact_optimize_residual_factor_graph,
+)
 from .structural import StructuralBundle, StructuralProjection, build_structural_projection
 from .visualize import render_layout_comparison_svg, render_layout_state_svg, write_layout_comparison_svg
 
@@ -64,6 +69,8 @@ __all__ = [
     "ResidualFactor",
     "ResidualFactorization",
     "ResidualVariable",
+    "ResidualExactResult",
+    "ResidualSolveDiagnostics",
     "StructuralBundle",
     "StructuralProjection",
     "analyze_fixture",
@@ -76,6 +83,7 @@ __all__ = [
     "decompose_incidence_graph",
     "derive_ordering_constraints",
     "exact_optimize_layer_dp",
+    "exact_optimize_residual_factor_graph",
     "exact_optimize_small",
     "fixture_fingerprint",
     "fixture_from_dict",
