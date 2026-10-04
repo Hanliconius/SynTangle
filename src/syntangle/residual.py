@@ -50,9 +50,10 @@ class ResidualFactorization:
     disconnects, the current crossing objective exactly factorizes over those
     disconnected residual pieces.
 
-    Stage 18 records this factorization and separator diagnostics. The current
-    optimizer already parallelizes exact incidence components; finer residual
-    factor components are not yet handed to separate solver workers.
+    Stage 18 introduced this factorization and separator diagnostics. Stage 20
+    also uses it as an active exact solver representation: evaluated factor
+    tables may contract conservative scopes, and the remaining graph is
+    recursively split/eliminated by the residual factor solver.
     """
 
     variables: tuple[ResidualVariable, ...]
