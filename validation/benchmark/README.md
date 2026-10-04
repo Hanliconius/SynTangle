@@ -372,7 +372,7 @@ Stage 18 introduced the **residual decision/factor graph** from unresolved
 chromosome-order variables, GF(2) orientation variables, and the crossing
 factors that couple them. Stage 20 now solves on that representation directly:
 exact factor tables can shrink conservative scopes, disconnected pieces are
-split recursively, one-factor leaves are eliminated, small articulation
+split recursively, residual primal-graph leaves are peeled, small articulation
 variables are conditioned, and min-fill elimination handles only the surviving
 kernel. The corresponding work metrics are written to the benchmark TSV. See
 `docs/method_stage_audit.md`.
