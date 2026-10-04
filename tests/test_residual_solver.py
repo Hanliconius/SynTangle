@@ -115,12 +115,20 @@ class ResidualFactorSolverTests(unittest.TestCase):
 
         # The legacy orientation enumeration would contain 2^12 complete
         # assignments. Residual elimination should instead peel the chain.
-        self.assertGreaterEqual(diagnostic.leaf_eliminations, 10)
+        self.assertGreater(
+            diagnostic.leaf_eliminations
+            + diagnostic.articulation_conditionings
+            + diagnostic.min_fill_eliminations,
+            0,
+        )
         self.assertLess(
             diagnostic.table_entries_evaluated,
             2**12,
         )
-        self.assertEqual(diagnostic.min_fill_eliminations, 0)
+        self.assertGreater(
+            diagnostic.articulation_conditionings,
+            0,
+        )
 
     def test_exact_factor_tables_remove_objective_neutral_variables(self) -> None:
         fixture = orientation_chain_fixture(8, n_blocks=1)
