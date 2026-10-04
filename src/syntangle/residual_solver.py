@@ -189,7 +189,6 @@ def _table_size(
 def _factor_value(
     factor: _TableFactor,
     assignment: dict[str, int],
-    occurrence_index,
 ) -> int:
     return factor.values[
         tuple(assignment[variable_id] for variable_id in factor.scope)
@@ -706,6 +705,7 @@ def _evaluate_residual_factor(
     variables_by_id: dict[str, ResidualVariable],
     domains: dict[str, _Domain],
     assignment: dict[str, int],
+    occurrence_index,
 ) -> int:
     order_variables = tuple(
         variable
