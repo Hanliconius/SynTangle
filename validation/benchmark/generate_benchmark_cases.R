@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
 valid_profiles <- c(
-  "smoke", "full", "paired-smoke", "paired", "scale", "stress"
+  "smoke", "full", "paired-smoke", "paired", "scale", "stress", "factorial"
 )
 if (length(args) < 1L || length(args) > 2L) {
   stop(
@@ -35,7 +35,9 @@ source(file.path(repo_root, "validation/simulator/export_validation_bundle.R"))
 dir.create(output_root, recursive = TRUE, showWarnings = FALSE)
 
 event_plan_for_branch <- function(branch_index, intensity) {
-  if (intensity == "low") {
+  if (intensity == "none") {
+    plans <- list(character())
+  } else if (intensity == "low") {
     plans <- list(
       c("fission"),
       c("fusion"),
@@ -113,12 +115,25 @@ make_case <- function(
   seed,
   biology_id = case_id,
   biology_seed = seed,
-  tangle_seed = seed + 9000L
+  tangle_seed = seed + 9000L,
+  lineage_model = "sequential",
+  benchmark_axis = "legacy",
+  benchmark_level = ""
 ) {
   species_ids <- paste0("species", LETTERS[seq_len(n_species)])
 
+  if (!lineage_model %in% c("sequential", "independent")) {
+    stop("lineage_model must be sequential or independent")
+  }
+
+  ancestor_species <- if (lineage_model == "independent") {
+    "__ancestor__"
+  } else {
+    species_ids[[1]]
+  }
+
   ancestor <- simulate_ancestor_genome(
-    species = species_ids[[1]],
+    species = ancestor_species,
     n_chrom = n_chrom,
     genes_per_chrom = genes_per_chrom,
     chromosome_span = 1500000,
@@ -126,17 +141,37 @@ make_case <- function(
   )
 
   genomes <- list()
-  genomes[[species_ids[[1]]]] <- ancestor
 
-  for (branch_index in 2:n_species) {
-    previous <- genomes[[species_ids[[branch_index - 1L]]]]
-    descendant <- clone_genome(previous, species_ids[[branch_index]])
-    descendant <- mutate_genome_structure(
-      descendant,
-      event_plan = event_plan_for_branch(branch_index, intensity),
-      seed = biology_seed + branch_index * 100L
-    )
-    genomes[[species_ids[[branch_index]]]] <- descendant
+  if (lineage_model == "sequential") {
+    genomes[[species_ids[[1]]]] <- ancestor
+
+    for (branch_index in 2:n_species) {
+      previous <- genomes[[species_ids[[branch_index - 1L]]]]
+      descendant <- clone_genome(previous, species_ids[[branch_index]])
+      descendant <- mutate_genome_structure(
+        descendant,
+        event_plan = event_plan_for_branch(branch_index, intensity),
+        seed = biology_seed + branch_index * 100L
+      )
+      genomes[[species_ids[[branch_index]]]] <- descendant
+    }
+  } else {
+    # Orthogonal scaling benchmarks use independent extant descendants from a
+    # common hidden ancestor. This prevents increasing species count from also
+    # increasing cumulative rearrangement depth.
+    for (branch_index in seq_len(n_species)) {
+      descendant <- clone_genome(
+        ancestor,
+        species_ids[[branch_index]],
+        inherit_log = FALSE
+      )
+      descendant <- mutate_genome_structure(
+        descendant,
+        event_plan = event_plan_for_branch(branch_index + 1L, intensity),
+        seed = biology_seed + branch_index * 100L
+      )
+      genomes[[species_ids[[branch_index]]]] <- descendant
+    }
   }
 
   native <- make_native_display_state(genomes)
@@ -187,6 +222,9 @@ make_case <- function(
     seed = seed,
     biology_seed = biology_seed,
     tangle_seed = tangle_seed,
+    lineage_model = lineage_model,
+    benchmark_axis = benchmark_axis,
+    benchmark_level = benchmark_level,
     stringsAsFactors = FALSE
   )
 }
@@ -201,7 +239,10 @@ spec <- function(
   seed,
   biology_id = case_id,
   biology_seed = seed,
-  tangle_seed = seed + 9000L
+  tangle_seed = seed + 9000L,
+  lineage_model = "sequential",
+  benchmark_axis = "legacy",
+  benchmark_level = ""
 ) {
   list(
     case_id,
@@ -213,7 +254,10 @@ spec <- function(
     seed,
     biology_id,
     biology_seed,
-    tangle_seed
+    tangle_seed,
+    lineage_model,
+    benchmark_axis,
+    benchmark_level
   )
 }
 
@@ -347,7 +391,69 @@ if (profile == "smoke") {
     genes_per_chrom = 12L,
     seed_base = 7000L
   )
-} else {
+} else if (profile == "factorial") {
+  # Biologically grounded orthogonal benchmark. Extant species are independent
+  # descendants of one hidden ancestor, so changing species number does not
+  # also add sequential rearrangement depth. Presentation mode is fixed at
+  # random: paired presentation invariance is tested elsewhere.
+  #
+  # The design deliberately centers the chromosome axis on 16 (a useful
+  # general eukaryotic reference from the Genome Observatory discussion) and
+  # 31 (a common Lepidoptera-like karyotype), while retaining 40 only as a
+  # high-end boundary probe.
+  factorial_cases <- list(
+    # Species-count axis: chromosome count and rearrangement burden fixed.
+    list("factor_species_4sp_16chr_1ev", 4L, 16L, "low", 9101L, "species", "4"),
+    list("factor_species_8sp_16chr_1ev", 8L, 16L, "low", 9102L, "species", "8"),
+    list("factor_species_12sp_16chr_1ev", 12L, 16L, "low", 9103L, "species", "12"),
+    list("factor_species_20sp_16chr_1ev", 20L, 16L, "low", 9104L, "species", "20"),
+
+    # Chromosome-count axis: species number and rearrangement burden fixed.
+    # The 8sp/16chr/1ev point above is the shared baseline and is not repeated.
+    list("factor_chrom_8sp_8chr_1ev", 8L, 8L, "low", 9201L, "chromosomes", "8"),
+    list("factor_chrom_8sp_31chr_1ev", 8L, 31L, "low", 9202L, "chromosomes", "31"),
+    list("factor_chrom_8sp_40chr_1ev", 8L, 40L, "low", 9203L, "chromosomes", "40"),
+
+    # Rearrangement axis: species and chromosome count fixed.
+    # Again, the 1-event point is the shared 8sp/16chr baseline.
+    list("factor_events_8sp_16chr_0ev", 8L, 16L, "none", 9301L, "rearrangements", "0"),
+    list("factor_events_8sp_16chr_2ev", 8L, 16L, "medium", 9302L, "rearrangements", "2"),
+    list("factor_events_8sp_16chr_5ev", 8L, 16L, "high", 9303L, "rearrangements", "5"),
+
+    # Lepidoptera-like conserved-karyotype checks.
+    list("factor_lep_8sp_31chr_0ev", 8L, 31L, "none", 9401L, "lepidoptera_like", "8sp_0ev"),
+    list("factor_lep_12sp_31chr_0ev", 12L, 31L, "none", 9402L, "lepidoptera_like", "12sp_0ev"),
+    list("factor_lep_12sp_31chr_1ev", 12L, 31L, "low", 9403L, "lepidoptera_like", "12sp_1ev")
+  )
+
+  specs <- lapply(
+    factorial_cases,
+    function(item) {
+      case_id <- item[[1]]
+      n_species <- item[[2]]
+      n_chrom <- item[[3]]
+      intensity <- item[[4]]
+      biology_seed <- item[[5]]
+      benchmark_axis <- item[[6]]
+      benchmark_level <- item[[7]]
+      spec(
+        case_id,
+        n_species,
+        n_chrom,
+        12L,
+        "random",
+        intensity,
+        biology_seed,
+        biology_id = case_id,
+        biology_seed = biology_seed,
+        tangle_seed = biology_seed + 9301L,
+        lineage_model = "independent",
+        benchmark_axis = benchmark_axis,
+        benchmark_level = benchmark_level
+      )
+    }
+  )
+} else if (profile == "stress") {
   # Coupled stress ladder: species count, chromosome count, and cumulative
   # structural-event density all increase together. Each rung is represented
   # by a mild/strong/random presentation triplet of the same evolved biology.
@@ -415,7 +521,10 @@ manifest_rows <- lapply(
           "seed",
           "biology_id",
           "biology_seed",
-          "tangle_seed"
+          "tangle_seed",
+          "lineage_model",
+          "benchmark_axis",
+          "benchmark_level"
         )
       )
     )
