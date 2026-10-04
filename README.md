@@ -10,10 +10,11 @@ SynTangle separates those two things. It treats whole chromosomes as the movable
 
 SynTangle now has an executable exact/bounded solver stack: canonical fixture
 parsing, chromosome↔homology incidence components, GF(2) orientation
-propagation, exact species-layer dynamic programming, exact one-layer subset
-DP, monotone residual branch-and-bound, seeded local-search incumbents, and
-auditable initial-vs-optimized visualization. The original 27-case simulation
-benchmark is solved to proven optimum throughout.
+propagation, recursive exact residual factor elimination, exact species-layer
+dynamic programming as an independent fallback, exact one-layer subset DP,
+monotone branch-and-bound, seeded local-search incumbents, and auditable
+initial-vs-optimized visualization. The original 27-case simulation benchmark
+is solved to proven optimum throughout.
 
 Structural projection, bridges/articulation points, 2-cores, biconnected
 blocks, and the fundamental cycle basis are still computed and visualized, but
@@ -28,12 +29,13 @@ uses independent extant descendants from one hidden ancestor so increasing
 species count does not also increase cumulative rearrangement depth. Long
 benchmark runs checkpoint every completed case and can resume.
 
-Stage 18 also introduces process-level parallelism across exact independent
-incidence components in monotone branch-and-bound and an explicit residual
-variable/factor graph for measuring the finer decision structure that remains
-after legal reductions. Finer residual-factor/separator parallelism is the next
-solver integration step; it will be activated only when objective independence
-is proved. No solver should contradict [RULES.md](RULES.md).
+Stage 18 introduced the explicit residual variable/factor graph and
+process-level parallelism across independent incidence components. Stage 20
+makes that residual graph active solver machinery: exact factor tables contract
+variables that prove irrelevant, one-factor leaves are eliminated,
+disconnected residual pieces are solved separately, small articulation
+variables are conditioned, and min-fill elimination is used only for the
+irreducible remainder. No solver should contradict [RULES.md](RULES.md).
 
 ## Core formulation
 
@@ -56,7 +58,11 @@ GF(2) orientation propagation + canonicalization
     ↓
 residual order/orientation decision-factor graph
     ↓
-exact layer DP where feasible
+contract → split → leaf-eliminate → condition separators → repeat
+    ↓
+exact min-fill elimination on surviving kernels
+    ↓ if configured residual caps are exceeded
+exact layer DP
     ↓ otherwise
 monotone branch-and-bound with legal incumbents/bounds
     ↓
@@ -66,8 +72,9 @@ visual audit + complexity diagnostics
 ```
 
 Independent incidence components may be solved in separate worker processes.
-Disconnected residual-factor pieces and small separators are the next
-proof-preserving decomposition layer.
+Disconnected residual-factor pieces and one-variable articulation separators
+are now active exact decomposition layers. Larger multi-variable separators are
+deferred until a surviving benchmark kernel demonstrates that they are needed.
 
 ## Repository map
 
