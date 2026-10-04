@@ -13,13 +13,17 @@ auditability. Mathematical appeal alone is not sufficient.
 | Exact incidence connected components | **Active solver machinery** | Factor the objective into independent problems under R7. Monotone branch-and-bound can solve these components in separate worker processes. |
 | Component canonicalization | **Active solver machinery** | Removes representation-equivalent global component placement before expensive search. |
 | GF(2) orientation propagation / OrientationBasis | **Active solver machinery** | Encodes hard orientation equations and compact free whole-chromosome flip degrees of freedom. |
-| Exact species-layer dynamic programming | **Active solver machinery** | Primary exact solver when transition/permutation estimates fit configured limits. Currently serial across incidence components. |
+| Recursive residual factor elimination | **Active primary exact solver machinery** | Builds exact crossing-factor tables, removes provably invariant scope variables, eliminates objective-neutral/leaf variables, splits disconnected residual pieces, conditions on small articulation variables, and uses min-fill elimination only on the irreducible remainder. Independent incidence components can run in separate worker processes. |
+| Exact species-layer dynamic programming | **Active exact fallback** | Historical exact solver retained as an independent formulation and fallback when residual intermediate tables exceed configured limits. |
 | One-layer subset DP | **Active solver machinery** | Used by local search and branch-and-bound for conditional chromosome-order optimization and bounds. |
 | Constraint-aware local search | **Active supporting machinery** | Produces legal feasible incumbents and therefore useful upper bounds. |
 | Monotone component branch-and-bound | **Active solver machinery** | Handles cases beyond exact layer-DP limits; reports explicit LB/UB/gap and can parallelize independent incidence components. |
-| Residual variable/factor graph | **Active diagnostic representation; next solver factorization layer** | Explicitly records unresolved order/orientation variables and the adjacent-layer crossing factors that couple them. Disconnected residual pieces, neutral variables, articulation variables, and min-fill treewidth upper bounds are now measured. |
-| Residual disconnected-piece solving | **Next integration step** | Exact factorization is conceptually available when the residual factor graph disconnects, but the current generic solver has not yet been rewritten to dispatch those finer pieces independently. |
-| Small separators / tree decomposition | **Experimental next step** | Candidate mechanism for conditionally splitting a single connected residual problem; may become active only after proof-preserving recombination is implemented. |
+| Residual variable/factor graph | **Active solver representation** | Represents the unresolved legal order/orientation decisions and the adjacent-layer crossing factors that actually couple them. The graph is rebuilt/reduced through exact table operations rather than used only as a diagnostic. |
+| Residual disconnected-piece solving | **Active solver machinery** | Disconnected residual factor pieces are solved recursively and their optima added exactly. Newly disconnected pieces created by elimination/conditioning are split again rather than rejoined. |
+| Objective-neutral / leaf elimination | **Active solver machinery** | Conservative factor scopes are contracted when exact factor tables prove a variable irrelevant; variables with residual primal degree at most one are peeled immediately by exact min-sum reduction, including endpoints carrying unary message factors. |
+| Small articulation separators | **Active solver machinery** | Small-domain articulation variables are conditioned exactly, exposing independent subproblems that are solved and recombined for each legal separator value. |
+| Min-fill variable elimination / treewidth-aware reduction | **Active exact fallback inside residual solver** | When no cheaper split remains, an exact min-fill elimination step contracts one variable. Intermediate table/work caps prevent uncontrolled blow-up. |
+| Larger separator / tree decomposition | **Experimental next step** | Multi-variable separators and richer tree decompositions remain candidates when single articulation conditioning and min-fill elimination are insufficient. |
 | Structural bundle projection | **Diagnostic / experimental** | Summarizes chromosome-level topology but does not currently restrict optimizer states. |
 | Bridge/articulation/2-core/biconnected decomposition of structural graphs | **Diagnostic / experimental** | Useful structural descriptors. They are not assumed to be objective-factorizing kernels. |
 | Fundamental cycle basis | **Diagnostic / experimental** | Describes independent graph cycles without enumerating all simple cycles; not used in objective or branching logic. |
@@ -63,26 +67,32 @@ That distinction is important:
         -> describes which unresolved legal decisions still interact in the
            crossing objective
 
-The next graph-theoretic solver question is therefore not whether the raw
+The active graph-theoretic solver question is therefore not whether the raw
 biological graph has an articulation point. It is whether the residual
 objective graph has exact disconnected factors or sufficiently small
-separators to permit proof-preserving decomposition.
+separators to permit proof-preserving decomposition. Stage 20 now acts on
+those properties directly: exact factor tables can shrink conservative scopes,
+leaf variables are eliminated, disconnected pieces are solved separately, and
+small articulation variables are conditioned before generic elimination.
 
 ## Parallelism status
 
-Stage 18 introduces exact process-level parallelism across independent
-incidence components in monotone branch-and-bound. The result is recombined
-deterministically by adding component bounds and restoring component layouts in
-canonical order.
+Independent incidence components can now be dispatched to worker processes by
+both the primary residual exact solver and monotone branch-and-bound. Inside
+each incidence component, the residual exact solver recursively exposes finer
+objective decomposition.
 
-The intended later hierarchy is:
+The active hierarchy is:
 
     independent benchmark cases
       -> independent incidence components
+      -> exact factor-scope contraction
       -> disconnected residual factor components
-      -> separator-conditioned residual pieces
-      -> parallel branch-and-bound frontier
+      -> objective-neutral / leaf elimination
+      -> articulation-conditioned residual pieces
+      -> min-fill exact elimination
+      -> legacy exact DP or monotone B&B only if configured residual caps fail
 
-Each layer must preserve the same global optimality proof: every unresolved
-subproblem must be exhausted or bounded above the final incumbent before a
-global optimum is declared.
+Each exact layer preserves the same global optimum. Bounded branch-and-bound
+still requires every unresolved subproblem to be exhausted or bounded above
+the final incumbent before a global optimum is declared.

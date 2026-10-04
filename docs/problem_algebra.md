@@ -58,9 +58,10 @@ convenience: it is an exact factorization of the optimization problem.
 
 Further decomposition into bridges, articulation points, biconnected blocks,
 2-cores, or structural kernels is valid for optimization only when the
-remaining objective also factorizes over the proposed pieces. At present those
-decompositions are computed and visualized, but Stage 15 does not yet assume
-that every structural kernel is an independent optimization factor.
+remaining objective also factorizes over the proposed pieces. SynTangle still
+does not assume that raw structural kernels are objective factors. Stage 20
+instead derives a residual decision/factor graph and performs exact
+decomposition on that objective representation.
 
 ## 4. Crossing objective as a chain factor graph
 
@@ -70,8 +71,25 @@ over adjacent-layer costs:
 C(g_1,...,g_m) = sum_s C_(s,s+1)(g_s,g_(s+1)).
 
 For a fixed orientation assignment this is a chain-structured factor graph.
-That factorization is what makes the exact species-layer dynamic program
-possible.
+That factorization is what makes the historical exact species-layer dynamic
+program possible.
+
+Stage 20 uses the more general residual factorization directly.  Let the
+remaining legal variables be z_1,...,z_k and crossing factors be f_a with
+scopes S_a.  The exact objective is
+
+C(z) = sum_a f_a(z_{S_a}).
+
+Min-sum elimination of a variable x replaces all factors incident to x by
+
+g(y) = min_x sum_{a: x in S_a} f_a(x,y),
+
+where y denotes the remaining variables in those scopes.  This preserves the
+exact optimum while reducing the residual domain.  If the residual factor graph
+disconnects, the objective becomes an exact sum of independent subproblems.  If
+a small articulation variable separates it, conditioning that variable exposes
+independent conditional subproblems.  Reapplying these operations after each
+reduction gives the current recursive solver.
 
 The one-layer subset dynamic program solves a related conditional problem:
 given neighboring layers, choose the chromosome order of one species that
@@ -126,6 +144,6 @@ A more complete theory would explicitly define:
 It is therefore accurate to say that SynTangle is developing an algebraic
 description of the problem, but not yet that it has a finished named algebra.
 The strongest existing pieces are signed permutations, GF(2) orientation
-linear algebra, direct-product component factorization, chain-factor objective
-decomposition, quotient/canonical-state reasoning, and monotone restriction of
+linear algebra, direct-product component factorization, residual min-sum factor
+elimination, quotient/canonical-state reasoning, and monotone restriction of
 the residual feasible domain.

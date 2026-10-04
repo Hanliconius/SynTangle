@@ -13,6 +13,10 @@ from .layout import (
     score_crossings,
 )
 from .layer_dp import LayerDPResult, exact_optimize_layer_dp
+from .residual_solver import (
+    ResidualExactResult,
+    exact_optimize_residual_factor_graph,
+)
 from .model import ChromosomeRef, Fixture
 from .orientation_space import OrientationBasis, orientation_basis
 from .order_dp import optimize_species_component_order
@@ -296,7 +300,38 @@ def optimize_auto(
     seed: int = 1,
     component_workers: int = 1,
 ) -> AutoLayoutResult:
-    """Use exact DP, then bounded branch-and-bound, before heuristic fallback."""
+    """Use recursive residual elimination, then legacy exact DP/B&B fallback.
+
+    The residual solver is now the first exact method because it repeatedly
+    factors the *remaining objective* rather than enumerating global
+    orientation assignments. If an intermediate factor would exceed the same
+    configured transition/work cap, the historical exact layer DP is still
+    attempted before bounded branch-and-bound.
+    """
+
+    residual_failure: str | None = None
+    try:
+        residual: ResidualExactResult = (
+            exact_optimize_residual_factor_graph(
+                fixture,
+                permutation_cap_per_variable=permutation_cap_per_species,
+                table_entry_cap_per_component=transition_cap_per_component,
+                work_cap_per_component=transition_cap_per_component,
+                component_workers=component_workers,
+            )
+        )
+        return AutoLayoutResult(
+            layout=residual.layout,
+            solver="exact-residual-factor-elimination",
+            details={
+                "component_diagnostics": [
+                    item.to_dict() for item in residual.diagnostics
+                ],
+                "component_workers": residual.component_workers,
+            },
+        )
+    except SearchSpaceTooLarge as exc:
+        residual_failure = str(exc)
 
     try:
         exact: LayerDPResult = exact_optimize_layer_dp(
@@ -309,9 +344,10 @@ def optimize_auto(
             layout=exact.layout,
             solver="exact-layer-dynamic-programming",
             details={
+                "residual_fallback_reason": residual_failure,
                 "component_diagnostics": [
                     item.to_dict() for item in exact.diagnostics
-                ]
+                ],
             },
         )
     except SearchSpaceTooLarge as exc:
@@ -331,6 +367,7 @@ def optimize_auto(
             layout=bounded.layout,
             solver="monotone-component-branch-and-bound",
             details={
+                "residual_fallback_reason": residual_failure,
                 "fallback_reason": str(exc),
                 "lower_bound": bounded.lower_bound,
                 "upper_bound": bounded.upper_bound,

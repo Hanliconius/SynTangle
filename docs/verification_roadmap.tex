@@ -121,8 +121,8 @@ rather than merely minimizing crossings in an unconstrained drawing.
 
 For sufficiently small cases, the same optimum should be recoverable by more
 than one exact method.  In SynTangle this includes direct/tiny exact search,
-species-layer dynamic programming, and bounded branch-and-bound when allowed
-to exhaust its search.
+recursive residual factor elimination, species-layer dynamic programming, and
+bounded branch-and-bound when allowed to exhaust its search.
 
 Agreement among independent exact formulations is useful because the methods
 make different computational assumptions while solving the same legal
@@ -237,21 +237,30 @@ reductions, SynTangle constructs a residual variable/factor description whose
 variables are unresolved whole-chromosome order and GF(2) orientation choices,
 and whose factors are crossing terms.
 
-This representation permits more meaningful complexity diagnostics, including:
+This representation permits both complexity diagnostics and exact recursive
+reduction.  Exact factor tables can prove conservative scope variables
+irrelevant; residual primal-graph leaves can be eliminated; disconnected residual pieces
+can be solved separately; and small articulation variables can be conditioned
+to expose further independent pieces.  Only the surviving kernel requires
+generic min-fill elimination or a fallback solver.
+
+Relevant recorded quantities include:
 
 \begin{itemize}
   \item number and size of disconnected residual factors;
-  \item objective-neutral unresolved variables;
-  \item articulation variables;
-  \item a heuristic upper bound on residual treewidth;
-  \item implicit orientation-state count;
-  \item orientation and order nodes actually evaluated; and
-  \item memoized subproblem reuse.
+  \item objective-neutral variables removed from exact factor scopes;
+  \item leaf eliminations and articulation conditionings;
+  \item dynamic residual splits exposed after reduction;
+  \item maximum intermediate factor scope/table size;
+  \item a heuristic upper bound on initial residual treewidth;
+  \item implicit orientation-state count; and
+  \item states, nodes, or exact factor-table entries actually evaluated.
 \end{itemize}
 
 The central scaling question is therefore whether runtime is better predicted
 by the size/width of the residual coupled problem than by the size of the
-original genome representation.
+original genome representation, and whether recursively exposing that
+structure reduces runtime on identical benchmark cases.
 
 \section{Step 7: verify decomposition and parallelization}
 
@@ -261,18 +270,24 @@ components must therefore produce identical global lower bounds, upper bounds,
 and optimized crossing counts.
 
 Finer decomposition is permitted only when the residual objective is also
-proved to factor.  The intended hierarchy is:
+proved to factor.  The active hierarchy is:
 
 \begin{verbatim}
 independent benchmark cases
     ->
 independent incidence components
     ->
+exact factor-scope contraction
+    ->
 disconnected residual factor components
     ->
-small-separator / tree-decomposition subproblems
+leaf elimination
     ->
-parallel branch-and-bound frontier
+one-variable articulation conditioning
+    ->
+min-fill exact elimination
+    ->
+legacy exact DP / bounded branch-and-bound fallback
 \end{verbatim}
 
 Parallelism must never change the mathematical result or weaken proof

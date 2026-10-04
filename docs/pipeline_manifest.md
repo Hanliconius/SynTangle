@@ -70,42 +70,63 @@ After exact component and orientation reductions, distinguish:
 - unresolved GF(2) free-orientation variables;
 - adjacent-species crossing factors that depend on those variables.
 
-This residual variable/factor graph is now constructed explicitly.
+This residual variable/factor graph is now an active solver representation.
 
-If the residual factor graph disconnects, those pieces are mathematically
-independent under the current objective. Stage 18 records those pieces,
-objective-neutral variables, articulation variables, and a greedy min-fill
-treewidth upper bound.
+The graph construction is conservative: a crossing factor may initially list a
+variable that later proves irrelevant, but it must not omit a variable capable
+of changing that factor. Stage 20 evaluates exact local factor tables and then
+contracts any scope variable whose value provably leaves the factor unchanged.
 
-Current solver status:
-
-- exact incidence components: **actively parallelizable**;
-- finer disconnected residual-factor pieces: **represented and measured**;
-- separator/tree-decomposition solving inside one connected residual component:
-  **next solver integration step**.
-
-No structural split is allowed to prune search unless objective independence is
-proved.
-
-## 7. Establish a feasible incumbent
-
-Use constraint-aware local search over legal whole-chromosome operations to
-obtain a good feasible layout.
-
-Local moves may:
-
-- reorder complete chromosomes within an incidence component;
-- flip complete GF(2) free groups.
-
-They may never edit chromosome interiors.
-
-The incumbent supplies the upper bound used by exact/bounded search.
-
-## 8. Choose the smallest adequate exact solver
-
-The current hierarchy is:
+The solver then recursively applies exact reductions:
 
 ```text
+factor-scope contraction
+  -> remove objective-neutral variables
+  -> eliminate one-factor leaves
+  -> split disconnected residual pieces
+  -> condition on small articulation variables
+  -> repeat reductions in each conditioned piece
+  -> min-fill exact elimination only on the irreducible remainder
+```
+
+Every split/reduction is performed on the remaining crossing objective, not on
+raw biological topology. No structural split is allowed to prune search unless
+objective independence is proved.
+
+## 7. Solve the smallest residual pieces first
+
+The primary exact solver is recursive factor elimination. It never expands all
+global orientation assignments merely because they exist in the GF(2) basis.
+
+At each recursive call it:
+
+1. removes constant and proven objective-neutral structure;
+2. detects whether the remaining factor graph has disconnected;
+3. eliminates variables that occur in only one factor;
+4. when useful, conditions on a small-domain articulation variable and solves
+   the newly independent pieces for each legal separator value;
+5. otherwise chooses a min-fill variable and performs an exact min-sum
+   elimination step;
+6. returns to step 1 because every elimination/conditioning can expose new
+   factorization.
+
+This is a fixed-point reduction strategy: solve/reduce/refactor/repeat.
+
+Independent incidence components may be dispatched to separate worker
+processes. Residual pieces inside one component are currently solved
+recursively in-process; they are already mathematically independent even when
+not assigned separate processes.
+
+## 8. Preserve independent exact/bounded fallbacks
+
+If a residual factor table or intermediate elimination exceeds configured
+work/table caps, SynTangle retains the previous solver stack:
+
+```text
+recursive residual factor elimination
+        |
+        | if configured factor/table cap is exceeded
+        v
 exact species-layer dynamic programming
         |
         | if transition/permutation space is too large
@@ -117,18 +138,22 @@ monotone component branch-and-bound
 explicit bounded best-known result
 ```
 
-For a fixed orientation assignment, the crossing objective factors across
-adjacent species layers, enabling dynamic programming rather than a full
-Cartesian product of all species permutations.
+The legacy exact layer DP remains valuable as an independent correctness
+formulation. For a fixed orientation assignment, it factors the crossing
+objective across adjacent species layers rather than taking a full Cartesian
+product over species permutations.
 
-One-layer subset DP is reused inside local search and branch-and-bound for
-conditional order optimization and lower bounds.
+One-layer subset DP remains available inside local search and branch-and-bound
+for conditional order optimization and lower bounds.
 
 ## 9. Monotonically reduce residual uncertainty
 
-Branch-and-bound operates only on decisions that remain unresolved.
+Exact residual elimination and branch-and-bound both operate only on decisions
+that remain unresolved. Exact residual reductions can remove a variable,
+factor a component, or condition a separator; none of those resolved degrees
+of freedom is reintroduced.
 
-At every stage it may:
+When branch-and-bound is reached, it may:
 
 - force a variable when one alternative cannot beat the incumbent;
 - prune a branch whose valid lower bound cannot improve the incumbent;
@@ -150,8 +175,9 @@ A global result is reported as:
 - **proven optimum** only when global lower and upper bounds agree;
 - **bounded best known** otherwise, with the explicit remaining gap.
 
-Future residual-factor and separator parallelism must preserve the same proof
-accounting.
+Residual-factor elimination preserves exact additivity/conditional
+recombination. Future parallel dispatch of the already independent
+within-component residual pieces must preserve the same proof accounting.
 
 ## 11. Quantify structure, search difficulty, and result separately
 
@@ -226,22 +252,27 @@ bottleneck.
 
 ## 15. Next exact decomposition layer
 
-When the residual graph remains connected, test whether small separators make
-it conditionally separable.
+Single articulation variables are now an active conditional decomposition.
+The next structural extension, only if current benchmarks require it, is to
+identify **small multi-variable separators** or explicit low-width tree
+decompositions that improve on generic min-fill elimination.
 
-The intended hierarchy is:
+The current hierarchy is:
 
 ```text
 independent benchmark cases
   -> independent incidence components
+  -> exact residual scope contraction
   -> disconnected residual factor components
-  -> small-separator / tree-decomposition subproblems
-  -> parallel branch-and-bound frontier
-  -> bounded/heuristic fallback only if still necessary
+  -> leaf elimination
+  -> one-variable articulation separators
+  -> min-fill exact elimination
+  -> legacy exact DP / monotone B&B fallback
 ```
 
-Separator or treewidth machinery becomes active only after demonstrating exact
-objective factorization and preserving global lower/upper-bound proofs.
+Do not add richer separator machinery merely because it is mathematically
+available. It should be justified by a residual kernel that survives the active
+reductions and dominates runtime.
 
 ## 16. Deferred biological inference
 

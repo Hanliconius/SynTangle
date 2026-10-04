@@ -309,6 +309,71 @@ def render_validation_report_html(
         default=0,
     )
 
+    component_diagnostics = solver_details.get(
+        "component_diagnostics", []
+    )
+    residual_diagnostics = [
+        item
+        for item in component_diagnostics
+        if isinstance(item, dict)
+        and "table_entries_evaluated" in item
+    ]
+    solver_metric_rows: list[tuple[str, object]] = []
+    if residual_diagnostics:
+        solver_metric_rows.extend(
+            [
+                (
+                    "Residual exact table entries",
+                    sum(
+                        int(item["table_entries_evaluated"])
+                        for item in residual_diagnostics
+                    ),
+                ),
+                (
+                    "Factor-scope variables removed",
+                    sum(
+                        int(item["factor_scope_variables_removed"])
+                        for item in residual_diagnostics
+                    ),
+                ),
+                (
+                    "Residual leaf eliminations",
+                    sum(
+                        int(item["leaf_eliminations"])
+                        for item in residual_diagnostics
+                    ),
+                ),
+                (
+                    "Articulation conditionings",
+                    sum(
+                        int(item["articulation_conditionings"])
+                        for item in residual_diagnostics
+                    ),
+                ),
+                (
+                    "Dynamic residual splits",
+                    sum(
+                        int(item["dynamic_factor_splits"])
+                        for item in residual_diagnostics
+                    ),
+                ),
+                (
+                    "Min-fill eliminations",
+                    sum(
+                        int(item["min_fill_eliminations"])
+                        for item in residual_diagnostics
+                    ),
+                ),
+                (
+                    "Max intermediate factor scope",
+                    max(
+                        int(item["max_intermediate_scope"])
+                        for item in residual_diagnostics
+                    ),
+                ),
+            ]
+        )
+
     metrics = _metric_table(
         [
             ("Fixture", fixture.fixture_id),
@@ -348,6 +413,7 @@ def render_validation_report_html(
             ("Optimality status", result.optimality_status),
             ("Solver", solver),
             ("States / nodes evaluated", result.states_evaluated),
+            *solver_metric_rows,
             ("Input fingerprint", audit.input_fingerprint),
         ]
     )
@@ -525,8 +591,10 @@ This is a derived computational graph, not a replacement for the biological
 hypergraph. Left nodes are unresolved legal chromosome-order or GF(2)
 orientation decisions; right nodes are adjacent-species crossing factors.
 Red decision nodes are articulation variables in the residual primal graph.
-Grey-filled decisions do not currently affect any crossing factor. Disconnected
-residual pieces are exact candidates for the next solver-factorization layer.
+Grey-filled decisions do not currently affect any crossing factor. Stage 20
+uses this objective representation actively: exact table evaluation may remove
+additional invariant scope variables, and newly disconnected pieces are solved
+recursively rather than being carried into one monolithic search.
 </p>
 <div class="svg-wrap">{residual_svg}</div>
 </section>
