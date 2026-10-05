@@ -78,7 +78,9 @@ def paired(args):
         methods.append(row)
         atomic(output/'paired.json', dict(case_id=entry['case_id'], budget_seconds=args.budget,
                branch_nodes=args.nodes, methods=methods, prior_genespace=baselines,
-               note='Heuristic strategy changed; compare score, bounds and elapsed time, not identical search.'))
+               note=('Exact cache comparison; complete results must match apart from elapsed time.'
+                     if args.require_identical else
+                     'Heuristic strategy changed; compare score, bounds and elapsed time, not identical search.')))
         final = row.get('result')
         if final:
             print(entry['case_id'], name, status, f'C={final["optimized_score"]["crossings"]}',
@@ -86,12 +88,25 @@ def paired(args):
         else:
             print(entry['case_id'], name, status,
                   f'incumbent={row.get("incumbent", {}).get("crossings", "missing")}', flush=True)
+    if args.require_identical:
+        complete = [row for row in methods if row['status'] == 'complete']
+        if len(complete) == 2:
+            records = [{key: value for key, value in row['result'].items()
+                        if key != 'seconds'} for row in complete]
+            identical = records[0] == records[1]
+            speedup = complete[0]['result']['seconds'] / complete[1]['result']['seconds']
+            print(f'IDENTICAL_RESULT_AND_SEARCH={identical} SPEEDUP={speedup:.3f}x', flush=True)
+            if not identical:
+                raise AssertionError('Cache changed layout, bounds, reductions or search diagnostics')
+        else:
+            print('IDENTITY_UNVERIFIED: at least one solve did not complete', flush=True)
     for baseline in baselines:
         print(entry['case_id'], baseline['method'], f'PRIOR_C={baseline["crossings"]}', flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--require-identical', action='store_true')
     parser.add_argument('--worker', action='store_true')
     parser.add_argument('--root')
     parser.add_argument('--case')

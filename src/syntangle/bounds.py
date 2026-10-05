@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import combinations, product
 
 from .incidence import chromosome_node_id
@@ -40,53 +40,35 @@ class RelaxedCrossingBound:
     constant_interleaving_lower_bound: int
     group_index_by_ref: dict[ChromosomeRef, int]
 
+    cell_tables: tuple = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self):
+        # Each cell depends on at most two GF(2) groups. Retain shared-group
+        # correlation and use the original float/reflection scorer verbatim.
+        tables = []
+        for cell in self.cells:
+            indices = tuple(sorted({self.group_index_by_ref[cell.left_ref],
+                                    self.group_index_by_ref[cell.right_ref]}))
+            complete = {}
+            for values in product((0, 1), repeat=len(indices)):
+                assignment = dict(zip(indices, values))
+                signs = [self.basis.base_assignment[ref] *
+                         (-1 if assignment[self.group_index_by_ref[ref]] else 1)
+                         for ref in (cell.left_ref, cell.right_ref)]
+                complete[values] = _cell_internal_crossings(cell.anchors, *signs)
+            partial = {bits: min(value for values, value in complete.items()
+                                if all(bit is None or bit == v
+                                       for bit, v in zip(bits, values)))
+                       for bits in product((None, 0, 1), repeat=len(indices))}
+            tables.append((indices, partial))
+        object.__setattr__(self, 'cell_tables', tuple(tables))
+
     def lower_bound(self, bits: tuple[int | None, ...]) -> int:
         if len(bits) != len(self.basis.free_flip_groups):
             raise ValueError("Orientation bit vector does not match orientation basis")
-
-        total = self.constant_interleaving_lower_bound
-
-        for cell in self.cells:
-            group_indices = tuple(
-                sorted(
-                    {
-                        self.group_index_by_ref[cell.left_ref],
-                        self.group_index_by_ref[cell.right_ref],
-                    }
-                )
-            )
-            unresolved = tuple(
-                index for index in group_indices if bits[index] is None
-            )
-
-            best: int | None = None
-            for values in product((0, 1), repeat=len(unresolved)):
-                assignment = dict(zip(unresolved, values))
-                left_orientation = _orientation_for_ref(
-                    self.basis,
-                    self.group_index_by_ref,
-                    cell.left_ref,
-                    bits,
-                    assignment,
-                )
-                right_orientation = _orientation_for_ref(
-                    self.basis,
-                    self.group_index_by_ref,
-                    cell.right_ref,
-                    bits,
-                    assignment,
-                )
-                value = _cell_internal_crossings(
-                    cell.anchors,
-                    left_orientation,
-                    right_orientation,
-                )
-                if best is None or value < best:
-                    best = value
-
-            total += 0 if best is None else best
-
-        return total
+        return self.constant_interleaving_lower_bound + sum(
+            table[tuple(bits[index] for index in indices)]
+            for indices, table in self.cell_tables)
 
 
 def _orientation_for_ref(

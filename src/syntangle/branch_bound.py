@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from contextvars import ContextVar
+from functools import wraps
 import heapq
 import multiprocessing as mp
 from itertools import permutations
@@ -20,7 +22,24 @@ from .layout import (
 from .model import ChromosomeRef, Fixture
 from .order_dp import build_pairwise_order_costs, solve_order_subset_dp
 from .orientation_space import OrientationBasis, orientation_basis
-from .pair_cost import pair_component_crossings
+from .pair_cost import pair_component_crossings, PreparedPairCrossings
+
+
+_prepared_edge = ContextVar('syntangle_prepared_edge', default=None)
+
+
+def _with_prepared_edges(solve):
+    @wraps(solve)
+    def wrapped(fixture, normalized, incumbent_state, component_id,
+                component_nodes, *args, **kwargs):
+        scorer = PreparedPairCrossings(fixture, component_nodes)
+        token = _prepared_edge.set((fixture, component_nodes, scorer))
+        try:
+            return solve(fixture, normalized, incumbent_state, component_id,
+                         component_nodes, *args, **kwargs)
+        finally:
+            _prepared_edge.reset(token)
+    return wrapped
 
 
 @dataclass(frozen=True)
@@ -202,6 +221,10 @@ def _edge_cost(
     state: LayoutState,
     component_nodes: frozenset[str],
 ) -> int:
+    prepared = _prepared_edge.get()
+    if prepared is not None and prepared[0] is fixture and prepared[1] == component_nodes:
+        return prepared[2].score(species_left, species_right, order_left,
+                                 order_right, state.chromosome_orientation)
     return pair_component_crossings(
         fixture,
         species_left,
@@ -829,6 +852,7 @@ class _ComponentSolveResult:
     diagnostic: ComponentBranchAndBound
 
 
+@_with_prepared_edges
 def _solve_branch_component(
     fixture: Fixture,
     normalized: LayoutState,
