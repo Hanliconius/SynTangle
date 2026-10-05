@@ -72,3 +72,17 @@ they are not recomputed. Original inputs and ongoing result files are read-only.
 A timeout is never counted as an optimization win or a proven optimum. These
 short runs establish whether useful incumbents/results arrive sooner; they do
 not replace the longer quality/proof experiments.
+
+## Diagnose unresolved large cases
+
+`bash validation/benchmark/submit_pipeline_diagnostic.sh` submits a read-only
+saved-audit job followed by three 90-second sampled solves: 8sp mild, 10sp mild,
+and 10sp strong. It uses the same five-step/one-restart/1,000-node settings as
+the short comparison. Solver code and decisions are unchanged; wrappers record
+call counts, inclusive/exclusive timing, orientation pruning/forcing, and
+samples of elimination, scope reduction and conditioned continuation context.
+Faulthandler samples the live Python stack every 30 seconds. A controlled
+90-second interruption saves the counters and active stage even without a
+final solver result. These instrumented times are diagnostic, not speedup
+measurements. Missing final audits from earlier timeout jobs are explicitly
+reported as unknown, never taken as evidence of successful pruning.
