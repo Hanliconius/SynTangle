@@ -44,7 +44,7 @@ export OPENBLAS_NUM_THREADS=1
 # Keep baselines on disk if the exact solver takes too long. Each case gets
 # its own process, outputs and 25-minute external wall-clock limit.
 timeout --signal=TERM --kill-after=30s 1500s \
-    "$SCT_MAMBA" run -n syntangle_test python \
+    bash -c 'set -euo pipefail; eval "$("$SCT_MAMBA" shell hook --shell bash)"; micromamba activate syntangle_test; exec python "$@"' gs-python \
     validation/benchmark/compare_genespace.py "$SCT_ROOT" \
     --index "$SLURM_ARRAY_TASK_ID" --micromamba "$SCT_MAMBA"
 SLURM

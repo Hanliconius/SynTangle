@@ -1,10 +1,13 @@
 import importlib.util
 import tempfile
 import unittest
+from itertools import product
+import random
 from pathlib import Path
 
 from syntangle.fixtures import fixture_from_dict
 from syntangle.layout import initial_layout_state, score_crossings
+from syntangle import load_fixture, LayoutState
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location(
@@ -29,6 +32,31 @@ def fixture():
 
 
 class GenespaceComparisonTests(unittest.TestCase):
+    def test_cached_costs_and_flip_deltas_match_full_scorer(self):
+        data = load_fixture(ROOT / "examples/fixtures/fusion_chain_closed_cycle.json")
+        initial = initial_layout_state(data)
+        refs = sorted(data.chromosome_refs)
+        rng = random.Random(51)
+        for trial in range(4):
+            order = {}
+            for species, chromosome_refs in initial.chromosome_order.items():
+                selected = list(chromosome_refs)
+                rng.shuffle(selected)
+                order[species] = tuple(selected)
+            state = LayoutState(order, initial.chromosome_orientation)
+            costs = comparison.FixedOrderCosts(data, state)
+            assignments = list(product((-1, 1), repeat=len(refs))) if len(refs) <= 8 else [
+                tuple(rng.choice((-1, 1)) for ref in refs) for _ in range(100)]
+            for assignment in assignments:
+                signs = dict(zip(refs, assignment))
+                score = score_crossings(data, LayoutState(order, signs)).crossings
+                self.assertEqual(costs.score(signs), score)
+                for ref in refs:
+                    candidate = dict(signs)
+                    candidate[ref] *= -1
+                    expected = score_crossings(data, LayoutState(order, candidate)).crossings
+                    self.assertEqual(score + costs.delta(ref, signs), expected)
+
     def test_flip_assistance_preserves_order_and_fixes_reversed_pair(self):
         data = fixture()
         initial = initial_layout_state(data)

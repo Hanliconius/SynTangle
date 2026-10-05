@@ -89,3 +89,29 @@ Retain the entire output directory when copying the gallery: its HTML links
 refer to per-case reports. Rerunning submission repeats the deterministic pilot
 and replaces that pilot's result files; save prior runs before rerunning if
 needed. Bulk generated results should not be committed.
+
+## Fixed-order flip scoring performance
+
+The initial helper recomputed the complete crossing score for every candidate
+flip. The revised helper caches an exact constant/unary/binary sign-cost table
+for each fixed chromosome ordering. A link-pair depends on at most two signs,
+so a candidate flip changes only incident costs. The same three restarts,
+random seed, strict-improvement rule and tie order are retained. Canonical
+full scoring verifies the initial and returned scores; regression tests check
+cached scores/deltas against complete scoring across sign assignments and
+chromosome orders. This changes evaluation cost, not the optimization method.
+Per-reference START/DONE lines now expose progress. R subprocesses activate
+their environment directly to avoid shared `micromamba run` process locks.
+
+The first Pegasus task 9 ended with exit `124:0` after 25:01, hitting the
+external wall-clock limit in flip assistance before Syntangle began. Its peak
+RSS was 435424 KiB, below the 8 GiB allocation. To retry only that existing case:
+
+```bash
+bash validation/benchmark/retry_genespace_case9.sh
+```
+
+The retry job archives the partial case-9 directory under a job-specific name,
+does not regenerate biology or rerun the nine completed cases, and submits a
+dependent collection job. Old and new timing rows use different scoring
+implementations and must not be pooled as a uniform performance benchmark.

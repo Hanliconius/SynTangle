@@ -9,10 +9,12 @@ import json
 import random
 import subprocess
 import time
+from itertools import combinations
 from pathlib import Path
 
 from syntangle import LayoutState, load_validation_bundle, optimize_auto, score_crossings
 from syntangle.layout import initial_layout_state
+from syntangle.layout import _occurrences_by_species_homology
 from syntangle.visualize import render_layout_state_svg
 
 
@@ -45,35 +47,106 @@ def validate_state(fixture, state):
         raise ValueError("Illegal orientation")
 
 
+class FixedOrderCosts:
+    """Exact crossing cost tables for signs with chromosome orders fixed.
+
+    A pair of homology links depends on a chromosome sign only when its two
+    endpoints share that chromosome. It therefore contributes a constant,
+    unary sign cost, or binary sign cost. Cache those terms once rather than
+    rescoring every homology in every greedy candidate.
+    """
+    def __init__(self, fixture, state):
+        self.constant = 0
+        self.unary = {ref: [0, 0] for ref in fixture.chromosome_refs}
+        self.edges = {}
+        ranks = {ref: rank for refs in state.chromosome_order.values()
+                 for rank, ref in enumerate(refs)}
+        index = _occurrences_by_species_homology(fixture)
+        for left, right in zip(fixture.species_ids, fixture.species_ids[1:]):
+            links = []
+            for homology in sorted(set(index.get(left, {})) & set(index.get(right, {}))):
+                if len(index[left][homology]) != 1 or len(index[right][homology]) != 1:
+                    raise ValueError("Flip cost cache requires unambiguous homology")
+                lc, lb = index[left][homology][0]
+                rc, rb = index[right][homology][0]
+                links.append((lc.ref, (lb.start + lb.end) / (2 * lc.length),
+                              rc.ref, (rb.start + rb.end) / (2 * rc.length)))
+            for a, b in combinations(links, 2):
+                lvar = a[0] if a[0] == b[0] else None
+                rvar = a[2] if a[2] == b[2] else None
+                # Comparisons across chromosomes are determined by their ranks;
+                # within a chromosome they reverse with its sign.
+                ld = [(1 - a[1]) - (1 - b[1]), a[1] - b[1]] if lvar is not None else [ranks[a[0]] - ranks[b[0]]] * 2
+                rd = [(1 - a[3]) - (1 - b[3]), a[3] - b[3]] if rvar is not None else [ranks[a[2]] - ranks[b[2]]] * 2
+                if not any(ld) or not any(rd):
+                    continue
+                if lvar is None and rvar is None:
+                    self.constant += int(ld[1] * rd[1] < 0)
+                elif lvar is None or rvar is None:
+                    variable = lvar if lvar is not None else rvar
+                    for i in range(2):
+                        value = ld[i] * rd[1] if lvar is not None else ld[1] * rd[i]
+                        self.unary[variable][i] += int(value < 0)
+                else:
+                    table = self.edges.setdefault((lvar, rvar), [0, 0, 0, 0])
+                    for li in range(2):
+                        for ri in range(2):
+                            table[li * 2 + ri] += int(ld[li] * rd[ri] < 0)
+        self.neighbors = {ref: [] for ref in fixture.chromosome_refs}
+        for (left, right), table in self.edges.items():
+            self.neighbors[left].append((right, table, True))
+            self.neighbors[right].append((left, table, False))
+
+    def score(self, signs):
+        total = self.constant + sum(cost[int(signs[ref] == 1)]
+                                   for ref, cost in self.unary.items())
+        return total + sum(table[int(signs[l] == 1) * 2 + int(signs[r] == 1)]
+                           for (l, r), table in self.edges.items())
+
+    def delta(self, ref, signs):
+        old = int(signs[ref] == 1)
+        new = 1 - old
+        difference = self.unary[ref][new] - self.unary[ref][old]
+        for neighbor, table, is_left in self.neighbors[ref]:
+            other = int(signs[neighbor] == 1)
+            before = old * 2 + other if is_left else other * 2 + old
+            after = new * 2 + other if is_left else other * 2 + new
+            difference += table[after] - table[before]
+        return difference
+
+
 def improve_flips(fixture, start, seed, restarts=3):
     """Greedy flip assistance; fixed GENESPACE order, no ancestry or exact solver."""
     rng = random.Random(seed)
     refs = sorted(fixture.chromosome_refs)
     best = start
     best_score = score_crossings(fixture, best).crossings
+    costs = FixedOrderCosts(fixture, start)
+    if costs.score(start.chromosome_orientation) != best_score:
+        raise AssertionError("Cached flip score disagrees with canonical scorer")
     evaluations = 0
     for restart in range(restarts):
         orientation = dict(start.chromosome_orientation)
         if restart:
             orientation = {ref: rng.choice((-1, 1)) for ref in refs}
-        state = LayoutState(start.chromosome_order, orientation)
-        score = score_crossings(fixture, state).crossings
+        score = costs.score(orientation)
         while True:
             chosen = None
             chosen_score = score
             for ref in refs:
-                signs = dict(state.chromosome_orientation)
-                signs[ref] *= -1
-                candidate = LayoutState(start.chromosome_order, signs)
-                value = score_crossings(fixture, candidate).crossings
+                value = score + costs.delta(ref, orientation)
                 evaluations += 1
                 if value < chosen_score:
-                    chosen, chosen_score = candidate, value
+                    chosen, chosen_score = ref, value
             if chosen is None:
                 break
-            state, score = chosen, chosen_score
+            orientation[chosen] *= -1
+            score = chosen_score
         if score < best_score:
-            best, best_score = state, score
+            best = LayoutState(start.chromosome_order, dict(orientation))
+            best_score = score
+    if score_crossings(fixture, best).crossings != best_score:
+        raise AssertionError("Cached flip result disagrees with canonical scorer")
     return best, evaluations
 
 
@@ -180,7 +253,11 @@ def run_case(args):
     export_native_input(fixture, output / "public_native_input")
     helper = Path(__file__).with_name("genespace_native_order.R")
     process_started = time.perf_counter()
-    subprocess.run([args.micromamba, "run", "-n", args.genespace_env, "Rscript",
+    # Activation avoids micromamba run's shared ~/.cache/mamba/proc locks.
+    subprocess.run(["bash", "-c",
+                    'set -euo pipefail; eval "$("$1" shell hook --shell bash)"; '
+                    'micromamba activate "$2"; exec Rscript "$3" "$4" "$5"',
+                    "native-genespace", args.micromamba, args.genespace_env,
                     str(helper), str(output / "public_native_input"), str(output)],
                    check=True, timeout=180)
     native_process_seconds = time.perf_counter() - process_started
@@ -194,14 +271,20 @@ def run_case(args):
     flip_seconds = 0.0
     assisted, variants_audit = [], []
     for number, (variant, row, state) in enumerate(variants):
+        print(f'{entry["case_id"]} flip assistance START {number + 1}/{len(variants)} {variant}', flush=True)
         flip_started = time.perf_counter()
         flipped, evaluations = improve_flips(fixture, state, int(entry["seed"]) + number)
-        flip_seconds += time.perf_counter() - flip_started
+        variant_seconds = time.perf_counter() - flip_started
+        flip_seconds += variant_seconds
+        print(f'{entry["case_id"]} flip assistance DONE {variant}: '
+              f'C={score_crossings(fixture, flipped).crossings}, '
+              f'{variant_seconds:.4f}s, {evaluations} candidates', flush=True)
         assisted.append((variant, flipped))
         variants_audit.append(dict(variant=variant, reference=row["reference"],
                                    synteny_weight=row["synteny_weight"],
                                    raw_crossings=score_crossings(fixture, state).crossings,
                                    assisted_crossings=score_crossings(fixture, flipped).crossings,
+                                   flip_seconds=variant_seconds,
                                    flip_candidate_evaluations=evaluations))
         (output / f"{variant}.layout.json").write_text(json.dumps(state.to_dict(), indent=2))
         (output / f"{variant}.flips.layout.json").write_text(json.dumps(flipped.to_dict(), indent=2))
@@ -215,6 +298,7 @@ def run_case(args):
     (output / "solver_started.json").write_text(json.dumps(dict(
         transition_cap=args.transition_cap, branch_node_cap=args.branch_node_cap,
         started_at=time.time(), fingerprint=fingerprint)))
+    print(f'{entry["case_id"]} Syntangle START', flush=True)
     started = time.perf_counter()
     result = optimize_auto(fixture, transition_cap_per_component=args.transition_cap,
                            branch_node_cap_per_component=args.branch_node_cap,
