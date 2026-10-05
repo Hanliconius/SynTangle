@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import random
+from typing import Callable
+
+from .crossing_cache import CrossingCostCache
 
 from .incidence import build_incidence_graph, chromosome_node_id
 from .layout import (
@@ -175,6 +178,7 @@ def optimize_local_search(
     restarts: int = 8,
     max_improving_steps: int = 10000,
     seed: int = 1,
+    progress_callback: Callable[[LayoutState, int], None] | None = None,
 ) -> LocalSearchResult:
     """Constraint-aware best-improvement search over legal whole chromosomes.
 
@@ -200,6 +204,15 @@ def optimize_local_search(
     evaluations = 0
     improving_steps = 0
     order_dp_states = 0
+    cache = CrossingCostCache(fixture)
+    reported_best = float("inf")
+
+    def report(state, score):
+        nonlocal reported_best
+        if score < reported_best:
+            reported_best = score
+            if progress_callback is not None:
+                progress_callback(state, score)
 
     for restart in range(restarts):
         state = _random_legal_state(
@@ -210,7 +223,8 @@ def optimize_local_search(
             rng,
             randomize=(restart > 0),
         )
-        score = score_crossings(fixture, state).crossings
+        score = cache.prepare(state)
+        report(state, score)
         evaluations += 1
         steps = 0
 
@@ -225,9 +239,7 @@ def optimize_local_search(
                     order_dp_states += subproblem.subset_states_evaluated
                     if candidate == state:
                         continue
-                    candidate_score = score_crossings(
-                        fixture, candidate
-                    ).crossings
+                    candidate_score = cache.score_candidate(candidate)
                     evaluations += 1
                     move = ("reorder", species, component_id)
                     key = (
@@ -242,7 +254,7 @@ def optimize_local_search(
 
             for move in _candidate_moves(fixture, state, component_of, basis):
                 candidate = _apply_move(state, move)
-                candidate_score = score_crossings(fixture, candidate).crossings
+                candidate_score = cache.score_candidate(candidate)
                 evaluations += 1
                 key = (candidate_score, move, _state_key(fixture, candidate))
                 if candidate_score < score and (
@@ -255,6 +267,9 @@ def optimize_local_search(
 
             state = chosen[1]
             score = chosen[2]
+            if cache.prepare(state) != score:
+                raise AssertionError("Cached candidate crossing score mismatch")
+            report(state, score)
             steps += 1
             improving_steps += 1
 
@@ -265,6 +280,8 @@ def optimize_local_search(
 
     assert best_state is not None
     optimized_score = score_crossings(fixture, best_state)
+    if optimized_score.crossings != best_score[0]:
+        raise AssertionError("Cached local-search score differs from canonical scorer")
 
     layout = ExactLayoutResult(
         initial_state=initial,
@@ -299,6 +316,7 @@ def optimize_auto(
     local_max_improving_steps: int = 10000,
     seed: int = 1,
     component_workers: int = 1,
+    progress_callback: Callable[[LayoutState, int], None] | None = None,
 ) -> AutoLayoutResult:
     """Use recursive residual elimination, then legacy exact DP/B&B fallback.
 
@@ -360,6 +378,8 @@ def optimize_auto(
             node_cap_per_component=branch_node_cap_per_component,
             orientation_cap_per_component=orientation_cap_per_component,
             local_restarts=local_restarts,
+            local_max_improving_steps=local_max_improving_steps,
+            progress_callback=progress_callback,
             seed=seed,
             component_workers=component_workers,
         )

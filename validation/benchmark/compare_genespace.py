@@ -300,9 +300,20 @@ def run_case(args):
         started_at=time.time(), fingerprint=fingerprint)))
     print(f'{entry["case_id"]} Syntangle START', flush=True)
     started = time.perf_counter()
+    def checkpoint(state, crossings):
+        payload = dict(stage="local_search", crossings=crossings,
+                       seconds=time.perf_counter() - started,
+                       optimality_status="heuristic; proof pending", state=state.to_dict())
+        temporary = output / "incumbent.tmp"
+        temporary.write_text(json.dumps(payload, indent=2))
+        temporary.replace(output / "incumbent.json")
+        print(f'{entry["case_id"]} Syntangle incumbent: C={crossings}, '
+              f'{payload["seconds"]:.3f}s, local_search', flush=True)
+
     result = optimize_auto(fixture, transition_cap_per_component=args.transition_cap,
                            branch_node_cap_per_component=args.branch_node_cap,
-                           local_restarts=args.local_restarts, component_workers=1, seed=int(entry["seed"]))
+                           local_restarts=args.local_restarts, component_workers=1, seed=int(entry["seed"]),
+                           progress_callback=checkpoint)
     seconds = time.perf_counter() - started
     status = result.layout.optimality_status
     add("Syntangle", result.layout.optimized_state, seconds, status,

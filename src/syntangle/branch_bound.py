@@ -1108,6 +1108,8 @@ def optimize_branch_and_bound(
     node_cap_per_component: int = 250_000,
     orientation_cap_per_component: int = 4096,
     local_restarts: int = 6,
+    local_max_improving_steps: int = 10000,
+    progress_callback=None,
     seed: int = 1,
     component_workers: int = 1,
 ) -> BranchAndBoundResult:
@@ -1139,6 +1141,8 @@ def optimize_branch_and_bound(
     heuristic = optimize_local_search(
         fixture,
         restarts=local_restarts,
+        max_improving_steps=local_max_improving_steps,
+        progress_callback=progress_callback,
         seed=seed,
     )
     incumbent_state = heuristic.layout.optimized_state
