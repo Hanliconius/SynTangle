@@ -10,15 +10,9 @@ from .incidence import build_incidence_graph, chromosome_node_id
 from .layout import (
     ExactLayoutResult,
     LayoutState,
-    SearchSpaceTooLarge,
     canonicalize_component_order,
     initial_layout_state,
     score_crossings,
-)
-from .layer_dp import LayerDPResult, exact_optimize_layer_dp
-from .residual_solver import (
-    ResidualExactResult,
-    exact_optimize_residual_factor_graph,
 )
 from .model import ChromosomeRef, Fixture
 from .orientation_space import OrientationBasis, orientation_basis
@@ -179,6 +173,10 @@ def optimize_local_search(
     max_improving_steps: int = 10000,
     seed: int = 1,
     progress_callback: Callable[[LayoutState, int], None] | None = None,
+    order_dp_max_chromosomes: int | None = None,
+    starting_state: LayoutState | None = None,
+    prepared_components=None,
+    prepared_basis: OrientationBasis | None = None,
 ) -> LocalSearchResult:
     """Constraint-aware best-improvement search over legal whole chromosomes.
 
@@ -186,6 +184,8 @@ def optimize_local_search(
     O(n 2^n) subset-DP optimum conditional on neighboring layers. Adjacent
     whole-chromosome swaps remain available as a small local move. Orientation
     moves flip one complete GF(2) free group, preserving all hard equations.
+    An optional chromosome cap skips expensive conditional DP moves only;
+    skipped orders remain unresolved, not pruned from the legal search space.
     """
 
     if restarts < 1:
@@ -195,8 +195,8 @@ def optimize_local_search(
     normalized = canonicalize_component_order(fixture, initial)
     initial_score = score_crossings(fixture, initial)
     normalized_score = score_crossings(fixture, normalized)
-    components, component_of = _component_map(fixture)
-    basis = orientation_basis(fixture, fixture.chromosome_refs)
+    components, component_of = prepared_components or _component_map(fixture)
+    basis = prepared_basis or orientation_basis(fixture, fixture.chromosome_refs)
     rng = random.Random(seed)
 
     best_state = None
@@ -223,6 +223,15 @@ def optimize_local_search(
             rng,
             randomize=(restart > 0),
         )
+        if restart == 0 and starting_state is not None:
+            # Validate external/warm starts through the canonical scorer.
+            score_crossings(fixture, starting_state)
+            for group in basis.free_flip_groups:
+                signs = {starting_state.chromosome_orientation[ref] * basis.base_assignment[ref]
+                         for ref in group}
+                if len(signs) != 1:
+                    raise ValueError("Warm start violates hard orientation equations")
+            state = canonicalize_component_order(fixture, starting_state)
         score = cache.prepare(state)
         report(state, score)
         evaluations += 1
@@ -233,6 +242,10 @@ def optimize_local_search(
 
             for component_id, component_nodes in enumerate(components):
                 for species in fixture.species_ids:
+                    count = sum(component_of[ref] == component_id
+                                for ref in state.chromosome_order[species])
+                    if order_dp_max_chromosomes is not None and count > order_dp_max_chromosomes:
+                        continue  # Work limit only; no order is declared excluded.
                     candidate, subproblem = optimize_species_component_order(
                         fixture, state, species, component_nodes
                     )
@@ -318,83 +331,13 @@ def optimize_auto(
     component_workers: int = 1,
     progress_callback: Callable[[LayoutState, int], None] | None = None,
 ) -> AutoLayoutResult:
-    """Use recursive residual elimination, then legacy exact DP/B&B fallback.
-
-    The residual solver is now the first exact method because it repeatedly
-    factors the *remaining objective* rather than enumerating global
-    orientation assignments. If an intermediate factor would exceed the same
-    configured transition/work cap, the historical exact layer DP is still
-    attempted before bounded branch-and-bound.
-    """
-
-    residual_failure: str | None = None
-    try:
-        residual: ResidualExactResult = (
-            exact_optimize_residual_factor_graph(
-                fixture,
-                permutation_cap_per_variable=permutation_cap_per_species,
-                table_entry_cap_per_component=transition_cap_per_component,
-                work_cap_per_component=transition_cap_per_component,
-                component_workers=component_workers,
-            )
-        )
-        return AutoLayoutResult(
-            layout=residual.layout,
-            solver="exact-residual-factor-elimination",
-            details={
-                "component_diagnostics": [
-                    item.to_dict() for item in residual.diagnostics
-                ],
-                "component_workers": residual.component_workers,
-            },
-        )
-    except SearchSpaceTooLarge as exc:
-        residual_failure = str(exc)
-
-    try:
-        exact: LayerDPResult = exact_optimize_layer_dp(
-            fixture,
-            orientation_cap_per_component=orientation_cap_per_component,
-            permutation_cap_per_species=permutation_cap_per_species,
-            transition_cap_per_component=transition_cap_per_component,
-        )
-        return AutoLayoutResult(
-            layout=exact.layout,
-            solver="exact-layer-dynamic-programming",
-            details={
-                "residual_fallback_reason": residual_failure,
-                "component_diagnostics": [
-                    item.to_dict() for item in exact.diagnostics
-                ],
-            },
-        )
-    except SearchSpaceTooLarge as exc:
-        # Local import avoids a module-level cycle: branch_bound uses the
-        # local-search routine above as its incumbent generator.
-        from .branch_bound import optimize_branch_and_bound
-
-        bounded = optimize_branch_and_bound(
-            fixture,
-            node_cap_per_component=branch_node_cap_per_component,
-            orientation_cap_per_component=orientation_cap_per_component,
-            local_restarts=local_restarts,
-            local_max_improving_steps=local_max_improving_steps,
-            progress_callback=progress_callback,
-            seed=seed,
-            component_workers=component_workers,
-        )
-        return AutoLayoutResult(
-            layout=bounded.layout,
-            solver="monotone-component-branch-and-bound",
-            details={
-                "residual_fallback_reason": residual_failure,
-                "fallback_reason": str(exc),
-                "lower_bound": bounded.lower_bound,
-                "upper_bound": bounded.upper_bound,
-                "optimality_gap": bounded.gap,
-                "component_diagnostics": [
-                    item.to_dict() for item in bounded.components
-                ],
-                "component_workers": bounded.component_workers,
-            },
-        )
+    """One component pipeline, with bounded continuation on reduced factors."""
+    from .search_pipeline import optimize_pipeline
+    return optimize_pipeline(
+        fixture, orientation_cap_per_component=orientation_cap_per_component,
+        permutation_cap_per_species=permutation_cap_per_species,
+        transition_cap_per_component=transition_cap_per_component,
+        branch_node_cap_per_component=branch_node_cap_per_component,
+        local_restarts=local_restarts, local_max_improving_steps=local_max_improving_steps,
+        seed=seed, component_workers=component_workers, progress_callback=progress_callback,
+    )

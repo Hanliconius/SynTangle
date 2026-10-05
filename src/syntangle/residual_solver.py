@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import multiprocessing as mp
 from itertools import permutations, product
 from math import factorial
@@ -113,6 +113,14 @@ class _WorkBudget:
     used: int = 0
     max_table_entries: int = 0
     max_intermediate_scope: int = 0
+    continuation_node_cap: int | None = None
+    continuation_nodes: int = 0
+    continuation_pruned: int = 0
+    preferred: dict[str, int] = field(default_factory=dict)
+    handoffs: list[dict[str, object]] = field(default_factory=list)
+    reconstruction_stack: list[_EliminationRecord] = field(default_factory=list)
+    conditions: dict[str, int] = field(default_factory=dict)
+    scope_reductions: list[dict[str, object]] = field(default_factory=list)
 
     def consume(self, count: int, *, scope_size: int) -> None:
         if count < 0:
@@ -148,6 +156,11 @@ class _MutableDiagnostics:
 class _FactorSolveResult:
     cost: int
     assignment: dict[str, int]
+    lower_bound: int | None = None
+
+    @property
+    def lower(self) -> int:
+        return self.cost if self.lower_bound is None else self.lower_bound
 
 
 @dataclass(frozen=True)
@@ -157,6 +170,10 @@ class _ComponentResidualResult:
     orientation: dict[ChromosomeRef, int]
     optimum: int
     diagnostics: ResidualSolveDiagnostics
+    lower_bound: int = 0
+    handoffs: tuple[dict[str, object], ...] = ()
+    continuation_nodes: int = 0
+    continuation_pruned: int = 0
 
 
 def _component_map(
@@ -452,6 +469,81 @@ def _min_fill_variable(
     return min(adjacency, key=key)
 
 
+def _bounded_factor_search(factors, domains, budget, diagnostics):
+    """Continue on precisely the current factors; never rebuild original scopes.
+
+    Eliminations above this call remain on the reconstruction stack. Conditioning
+    is already encoded in these tables, and disconnected solved pieces remain
+    with their caller. A node cap leaves a valid bound, never an exclusion.
+    """
+    import heapq
+    variables = tuple(sorted({v for f in factors for v in f.scope}))
+    eliminated = {r.variable_id for r in budget.reconstruction_stack}
+    if eliminated.intersection(variables) or set(budget.conditions).intersection(variables):
+        raise AssertionError("Eliminated/conditioned variable reintroduced at handoff")
+    budget.handoffs.append({
+        "active_variables": list(variables),
+        "retained_eliminations": [dict(variable=r.variable_id,
+            remaining_scope=list(r.remaining_scope), reason="exact conditional minimization",
+            reconstruction_entries=len(r.best_value)) for r in budget.reconstruction_stack],
+        "retained_conditions": dict(budget.conditions),
+        "retained_scope_reductions": list(budget.scope_reductions),
+        "factor_scopes": [list(f.scope) for f in factors],
+        "leaf_eliminations_retained": diagnostics.leaf_eliminations,
+        "min_fill_eliminations_retained": diagnostics.min_fill_eliminations,
+        "scope_variables_removed_retained": diagnostics.factor_scope_variables_removed,
+        "reason": "elimination work/table cap; continue reduced factors",
+        "scope": "current conditioned residual piece",
+    })
+    preferred = {v: budget.preferred.get(v, 0) for v in variables}
+    best = dict(preferred)
+    upper = sum(_factor_value(f, best) for f in factors)
+
+    def lower(partial):
+        total = 0
+        for factor in factors:
+            positions = [(i, partial[v]) for i, v in enumerate(factor.scope) if v in partial]
+            total += min(cost for key, cost in factor.values.items()
+                         if all(key[i] == value for i, value in positions))
+        return total
+
+    root_lower = lower({})
+    serial = 0
+    heap = [(root_lower, serial, {})]
+    while heap and budget.continuation_nodes < budget.continuation_node_cap:
+        bound, _, partial = heapq.heappop(heap)
+        if bound >= upper:
+            budget.continuation_pruned += 1
+            continue
+        budget.continuation_nodes += 1
+        if len(partial) == len(variables):
+            upper, best = bound, partial
+            continue
+        variable = min((v for v in variables if v not in partial),
+                       key=lambda v: (domains[v].size, v))
+        values = [preferred[variable]] + [i for i in range(domains[variable].size)
+                                         if i != preferred[variable]]
+        for value in values:
+            child = {**partial, variable: value}
+            child_lower = lower(child)
+            if child_lower >= upper:
+                budget.continuation_pruned += 1
+                continue
+            feasible = {**preferred, **child}
+            cost = sum(_factor_value(f, feasible) for f in factors)
+            if cost < upper:
+                upper, best = cost, feasible
+            if child_lower < upper:
+                serial += 1
+                heapq.heappush(heap, (child_lower, serial, child))
+            else:
+                budget.continuation_pruned += 1
+    final_lower = min(upper, heap[0][0]) if heap else upper
+    budget.handoffs[-1].update(lower_bound=final_lower, upper_bound=upper,
+                              unresolved=final_lower < upper)
+    return _FactorSolveResult(upper, best, final_lower)
+
+
 def _solve_factor_system(
     factors: list[_TableFactor],
     domains: dict[str, _Domain],
@@ -469,6 +561,7 @@ def _solve_factor_system(
     if len(pieces) > 1:
         diagnostics.dynamic_factor_splits += len(pieces) - 1
         total = constant
+        total_lower = constant
         assignment: dict[str, int] = {}
         for piece in pieces:
             result = _solve_factor_system(
@@ -479,13 +572,14 @@ def _solve_factor_system(
                 separator_domain_cap=separator_domain_cap,
             )
             total += result.cost
+            total_lower += result.lower
             overlap = set(assignment) & set(result.assignment)
             if overlap:
                 raise AssertionError(
                     "Disconnected residual pieces unexpectedly share variables"
                 )
             assignment.update(result.assignment)
-        return _FactorSolveResult(total, assignment)
+        return _FactorSolveResult(total, assignment, total_lower)
 
     active_factors = pieces[0]
     adjacency = _primal_adjacency(active_factors)
@@ -522,20 +616,25 @@ def _solve_factor_system(
                 item,
             ),
         )
-        reduced, record = _eliminate_variable(
-            variable_id,
-            active_factors,
-            domains,
-            budget,
-        )
+        try:
+            reduced, record = _eliminate_variable(
+                variable_id, active_factors, domains, budget,
+            )
+        except SearchSpaceTooLarge:
+            if budget.continuation_node_cap is None:
+                raise
+            result = _bounded_factor_search(active_factors, domains, budget, diagnostics)
+            return _FactorSolveResult(constant + result.cost, result.assignment,
+                                      constant + result.lower)
         diagnostics.leaf_eliminations += 1
-        result = _solve_factor_system(
-            reduced,
-            domains,
-            budget,
-            diagnostics,
-            separator_domain_cap=separator_domain_cap,
-        )
+        budget.reconstruction_stack.append(record)
+        try:
+            result = _solve_factor_system(
+                reduced, domains, budget, diagnostics,
+                separator_domain_cap=separator_domain_cap,
+            )
+        finally:
+            budget.reconstruction_stack.pop()
         remaining_key = tuple(
             result.assignment[item]
             for item in record.remaining_scope
@@ -545,6 +644,7 @@ def _solve_factor_system(
         return _FactorSolveResult(
             cost=constant + result.cost,
             assignment=assignment,
+            lower_bound=constant + result.lower,
         )
 
     articulation = [
@@ -567,18 +667,21 @@ def _solve_factor_system(
             _FactorSolveResult,
         ] | None = None
 
+        branch_lowers = []
         for value in range(domains[variable_id].size):
             conditioned = [
                 _condition_factor(factor, variable_id, value)
                 for factor in active_factors
             ]
-            result = _solve_factor_system(
-                conditioned,
-                domains,
-                budget,
-                diagnostics,
-                separator_domain_cap=separator_domain_cap,
-            )
+            budget.conditions[variable_id] = value
+            try:
+                result = _solve_factor_system(
+                    conditioned, domains, budget, diagnostics,
+                    separator_domain_cap=separator_domain_cap,
+                )
+            finally:
+                del budget.conditions[variable_id]
+            branch_lowers.append(constant + result.lower)
             assignment = dict(result.assignment)
             assignment[variable_id] = value
             candidate = _FactorSolveResult(
@@ -590,23 +693,26 @@ def _solve_factor_system(
                 best = (key, candidate)
 
         assert best is not None
-        return best[1]
+        return _FactorSolveResult(best[1].cost, best[1].assignment, min(branch_lowers))
 
     variable_id = _min_fill_variable(active_factors, domains)
-    reduced, record = _eliminate_variable(
-        variable_id,
-        active_factors,
-        domains,
-        budget,
-    )
+    try:
+        reduced, record = _eliminate_variable(variable_id, active_factors, domains, budget)
+    except SearchSpaceTooLarge:
+        if budget.continuation_node_cap is None:
+            raise
+        result = _bounded_factor_search(active_factors, domains, budget, diagnostics)
+        return _FactorSolveResult(constant + result.cost, result.assignment,
+                                  constant + result.lower)
     diagnostics.min_fill_eliminations += 1
-    result = _solve_factor_system(
-        reduced,
-        domains,
-        budget,
-        diagnostics,
-        separator_domain_cap=separator_domain_cap,
-    )
+    budget.reconstruction_stack.append(record)
+    try:
+        result = _solve_factor_system(
+            reduced, domains, budget, diagnostics,
+            separator_domain_cap=separator_domain_cap,
+        )
+    finally:
+        budget.reconstruction_stack.pop()
     remaining_key = tuple(
         result.assignment[item]
         for item in record.remaining_scope
@@ -616,6 +722,7 @@ def _solve_factor_system(
     return _FactorSolveResult(
         cost=constant + result.cost,
         assignment=assignment,
+        lower_bound=constant + result.lower,
     )
 
 
@@ -816,6 +923,10 @@ def _build_factor_tables(
     occurrence_index = _occurrences_by_species_homology(fixture)
     output: list[_TableFactor] = []
 
+    sizes = [_table_size(tuple(sorted(f.variable_ids)), domains) for f in factors]
+    if any(size > table_entry_cap for size in sizes) or budget.used + sum(sizes) > budget.cap:
+        raise SearchSpaceTooLarge("Factor materialization exceeds cap; no factor reductions started")
+
     for factor in factors:
         scope = tuple(sorted(factor.variable_ids))
         entry_count = _table_size(scope, domains)
@@ -850,9 +961,12 @@ def _build_factor_tables(
             values=values,
         )
         table, removed = _drop_invariant_variables(
-            table,
-            domains,
+            table, domains,
         )
+        if removed:
+            budget.scope_reductions.append(dict(
+                factor=factor.factor_id, removed_variables=sorted(set(scope)-set(table.scope)),
+                reason="exact table invariance", scope="this factor only"))
         output.append(table)
 
     return output
@@ -869,6 +983,10 @@ def _solve_incidence_component(
     table_entry_cap_per_component: int,
     work_cap_per_component: int,
     separator_domain_cap: int,
+    *,
+    prepared_basis: OrientationBasis | None = None,
+    incumbent_state: LayoutState | None = None,
+    continuation_node_cap: int | None = None,
 ) -> _ComponentResidualResult:
     refs = tuple(
         sorted(
@@ -877,7 +995,7 @@ def _solve_incidence_component(
             if component_of[ref] == component_id
         )
     )
-    basis = orientation_basis(fixture, refs)
+    basis = prepared_basis or orientation_basis(fixture, refs)
     domains = _build_domains(
         variables,
         permutation_cap_per_variable=permutation_cap_per_variable,
@@ -885,7 +1003,18 @@ def _solve_incidence_component(
     budget = _WorkBudget(
         cap=work_cap_per_component,
         table_cap=table_entry_cap_per_component,
+        continuation_node_cap=continuation_node_cap,
     )
+    if incumbent_state is not None:
+        for variable in variables:
+            if variable.kind == "orientation":
+                ref = variable.chromosome_refs[0]
+                budget.preferred[variable.variable_id] = int(
+                    incumbent_state.chromosome_orientation[ref] != basis.base_assignment[ref])
+            else:
+                selected = tuple(ref for ref in incumbent_state.chromosome_order[variable.species_id]
+                                 if ref in variable.chromosome_refs)
+                budget.preferred[variable.variable_id] = domains[variable.variable_id].values.index(selected)
     mutable = _MutableDiagnostics()
 
     raw_tables = _build_factor_tables(
@@ -1006,6 +1135,10 @@ def _solve_incidence_component(
         orientation=orientation,
         optimum=result.cost,
         diagnostics=diagnostic,
+        lower_bound=result.lower,
+        handoffs=tuple(budget.handoffs),
+        continuation_nodes=budget.continuation_nodes,
+        continuation_pruned=budget.continuation_pruned,
     )
 
 

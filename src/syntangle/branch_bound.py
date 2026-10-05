@@ -221,7 +221,9 @@ def _conditional_edge_minimum(
     component_nodes: frozenset[str],
     *,
     cache: dict,
+    order_dp_max_chromosomes: int = 12,
 ) -> tuple[int, tuple[ChromosomeRef, ...], bool]:
+    """Admissible conditional edge bound, exact for small order domains."""
     target = fixture.species_ids[target_index]
     neighbor = fixture.species_ids[neighbor_index]
     neighbor_order = tuple(
@@ -239,6 +241,7 @@ def _conditional_edge_minimum(
         target_index,
         neighbor_index,
         tuple(ref.label for ref in neighbor_order),
+        order_dp_max_chromosomes,
     )
 
     cached = cache.get(key)
@@ -252,6 +255,28 @@ def _conditional_edge_minimum(
         component_nodes,
         neighbors=(neighbor,),
     )
+    if len(costs.refs) > order_dp_max_chromosomes:
+        # Relax transitivity: minimize each pair independently. The invariant
+        # same-target-chromosome contribution is recovered from direct scoring.
+        current_order = tuple(ref for ref in state.chromosome_order[target]
+                              if ref in costs.refs)
+        if target_index < neighbor_index:
+            actual = _edge_cost(fixture, target, neighbor, current_order,
+                                neighbor_order, state, component_nodes)
+        else:
+            actual = _edge_cost(fixture, neighbor, target, neighbor_order,
+                                current_order, state, component_nodes)
+        variable_cost = sum(costs.cost(a, b) for i, a in enumerate(current_order)
+                            for b in current_order[i+1:])
+        constant = actual - variable_cost
+        if constant < 0:
+            raise AssertionError("Pairwise order costs exceed direct edge cost")
+        minimum = constant + sum(min(costs.cost(a, b), costs.cost(b, a))
+            for i, a in enumerate(costs.refs) for b in costs.refs[i+1:])
+        preferred = tuple(sorted(costs.refs, key=lambda a: (
+            sum(costs.cost(a, b) - costs.cost(b, a) for b in costs.refs if b != a), a.label)))
+        cache[key] = (minimum, preferred)
+        return minimum, preferred, False
     result = solve_order_subset_dp(target, costs)
 
     orders = dict(state.chromosome_order)
@@ -812,6 +837,7 @@ def _solve_branch_component(
     component_nodes: frozenset[str],
     component_of: dict[ChromosomeRef, int],
     node_cap_per_component: int,
+    prepared_basis=None,
 ) -> _ComponentSolveResult:
     """Solve one exact incidence component.
 
@@ -830,7 +856,7 @@ def _solve_branch_component(
         )
     )
 
-    basis = orientation_basis(fixture, refs)
+    basis = prepared_basis or orientation_basis(fixture, refs)
     relaxed_bound = build_relaxed_crossing_bound(
         fixture, component_nodes, basis
     )

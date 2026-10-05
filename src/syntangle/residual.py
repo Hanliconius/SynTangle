@@ -208,17 +208,22 @@ def _min_fill_treewidth_upper_bound(
 
 def build_residual_factorization(
     fixture: Fixture,
+    *,
+    prepared_components=None,
+    prepared_bases=None,
 ) -> ResidualFactorization:
     """Build the residual decision-factor graph for the current objective."""
 
-    graph = build_incidence_graph(fixture)
-    incidence_components = graph.connected_components()
-
-    component_of: dict[ChromosomeRef, int] = {}
-    for component_id, nodes in enumerate(incidence_components):
-        for ref in fixture.chromosome_refs:
-            if chromosome_node_id(ref) in nodes:
-                component_of[ref] = component_id
+    if prepared_components is None:
+        graph = build_incidence_graph(fixture)
+        incidence_components = graph.connected_components()
+        component_of: dict[ChromosomeRef, int] = {}
+        for component_id, nodes in enumerate(incidence_components):
+            for ref in fixture.chromosome_refs:
+                if chromosome_node_id(ref) in nodes:
+                    component_of[ref] = component_id
+    else:
+        incidence_components, component_of = prepared_components
 
     homology_refs: dict[str, set[ChromosomeRef]] = {}
     for chromosome in fixture.chromosomes:
@@ -263,7 +268,8 @@ def build_residual_factorization(
                 )
             )
 
-        basis = orientation_basis(fixture, refs)
+        basis = (prepared_bases[component_id] if prepared_bases is not None
+                 else orientation_basis(fixture, refs))
         orientation_group_by_ref: dict[ChromosomeRef, str] = {}
         for group_index, group in enumerate(basis.free_flip_groups):
             variable_id = f"orient::{component_id}::{group_index}"
