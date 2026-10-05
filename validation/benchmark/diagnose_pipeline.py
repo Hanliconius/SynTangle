@@ -134,8 +134,10 @@ class Observer:
                 scope_reductions=budget.scope_reductions))
         self.wrap(residual, '_bounded_factor_search', before=continuation)
         self.wrap(branch, 'build_relaxed_crossing_bound')
-        def reduction(result, args, kwargs):
+        def reduction(returned, args, kwargs):
+            result, cache_hits = returned
             stats = self.stats['_reduce_orientation']
+            stats['cache_hits'] = stats.get('cache_hits', 0) + cache_hits
             stats['forced_total'] = stats.get('forced_total', 0) + result.forced
             stats['pruned_calls'] = stats.get('pruned_calls', 0) + int(result.pruned)
             self.sample('orientation.reduction', dict(forced=result.forced, pruned=result.pruned,

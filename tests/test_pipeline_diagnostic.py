@@ -35,6 +35,28 @@ class DiagnosticTests(unittest.TestCase):
         self.assertTrue(any(s['event'].endswith('.exception') and
                             s['type'] == 'SearchSpaceTooLarge' for s in observer.samples))
 
+    def test_orientation_reduction_tuple_return_preserved_and_counted(self):
+        import syntangle.branch_bound as branch
+        class Bound:
+            def lower_bound(self, bits):
+                # Bit zero is provably unable to improve the incumbent.
+                return 5 if bits[0] == 0 else 0
+        kwargs = dict(incumbent_upper=5, bound=Bound(), cache={})
+        expected = branch._reduce_orientation((None,), **kwargs)
+        observer = diagnostic.Observer().install()
+        try:
+            actual = branch._reduce_orientation((None,), incumbent_upper=5,
+                                                bound=Bound(), cache={})
+        finally:
+            observer.close()
+        self.assertEqual(actual, expected)
+        reduced, hits = actual
+        self.assertEqual(reduced.bits, (1,))
+        self.assertEqual(reduced.forced, 1)
+        self.assertEqual(observer.stats['_reduce_orientation']['forced_total'], 1)
+        self.assertEqual(observer.stats['_reduce_orientation']['cache_hits'], hits)
+        self.assertEqual(observer.samples[-1]['event'], 'orientation.reduction')
+
     def test_audit_distinguishes_unresolved_timeout_from_completed_bounds(self):
         fixture = load_fixture(ROOT/'examples/fixtures/fusion_chain_closed_cycle.json')
         result = optimize_auto(fixture, local_restarts=1).to_dict()
