@@ -296,13 +296,13 @@ def run_case(args):
 
     # Checkpoint the baselines before entering the potentially expensive solver.
     (output / "solver_started.json").write_text(json.dumps(dict(
-        transition_cap=args.transition_cap, branch_node_cap=args.branch_node_cap,
+        transition_cap=args.transition_cap, branch_node_cap=args.branch_node_cap, local_restarts=args.local_restarts,
         started_at=time.time(), fingerprint=fingerprint)))
     print(f'{entry["case_id"]} Syntangle START', flush=True)
     started = time.perf_counter()
     result = optimize_auto(fixture, transition_cap_per_component=args.transition_cap,
                            branch_node_cap_per_component=args.branch_node_cap,
-                           local_restarts=2, component_workers=1, seed=int(entry["seed"]))
+                           local_restarts=args.local_restarts, component_workers=1, seed=int(entry["seed"]))
     seconds = time.perf_counter() - started
     status = result.layout.optimality_status
     add("Syntangle", result.layout.optimized_state, seconds, status,
@@ -332,7 +332,7 @@ def collect(root):
         comparisons.append((entry["case_id"], scores, outcome))
     if rows:
         write_tsv(root / "comparison_results.tsv", rows)
-    lines = ["# GENESPACE layout pilot", "", "| Case | Input C | GS C | GS + flips C | Syntangle C | Outcome |",
+    lines = ["# GENESPACE layout comparison", "", "| Case | Input C | GS C | GS + flips C | Syntangle C | Outcome |",
              "|---|---:|---:|---:|---:|---|"]
     for case, scores, outcome in comparisons:
         lines.append("| " + " | ".join([case, *map(str, scores), outcome]) + " |")
@@ -345,10 +345,10 @@ def collect(root):
                      + "".join(f'<td>{value}</td>' for value in scores)
                      + f'<td>{html.escape(outcome)}</td></tr>')
     (root / "comparison_index.html").write_text(
-        '<!doctype html><meta charset="utf-8"><title>GENESPACE pilot</title>'
+        '<!doctype html><meta charset="utf-8"><title>GENESPACE comparison</title>'
         '<style>body{font:16px sans-serif;margin:24px}td,th{padding:8px;text-align:left}</style>'
-        '<h1>GENESPACE layout pilot</h1><p>Click a case for matched vector figures. '
-        'This is a small synthetic pilot, not evidence of general superiority.</p>'
+        '<h1>GENESPACE layout comparison</h1><p>Click a case for matched vector figures. '
+        'These are synthetic cases; results do not establish general superiority.</p>'
         '<table><tr><th>Case</th><th>Input C</th><th>GS C</th><th>GS + flips C</th>'
         '<th>Syntangle C</th><th>Outcome</th></tr>' + "".join(links) + '</table>')
     print("\n".join(lines))
@@ -363,6 +363,7 @@ def main():
     parser.add_argument("--genespace-env", default="lep_busco_painter_clean")
     parser.add_argument("--transition-cap", type=int, default=100000)
     parser.add_argument("--branch-node-cap", type=int, default=25000)
+    parser.add_argument("--local-restarts", type=int, default=2)
     args = parser.parse_args()
     if args.collect:
         collect(args.root)
