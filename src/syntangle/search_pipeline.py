@@ -99,13 +99,17 @@ def _solve_component(args):
 def optimize_pipeline(fixture, *, orientation_cap_per_component,
                       permutation_cap_per_species, transition_cap_per_component,
                       branch_node_cap_per_component, local_restarts,
-                      local_max_improving_steps, seed, component_workers, progress_callback, time_limit_seconds=None):
+                      local_max_improving_steps, seed, component_workers, progress_callback, time_limit_seconds=None, starting_state=None, bound_cluster_size=0):
     from .heuristic import AutoLayoutResult, _component_map, optimize_local_search
     for value in (orientation_cap_per_component, permutation_cap_per_species,
                   transition_cap_per_component, branch_node_cap_per_component,
                   component_workers, local_restarts):
         if value < 1:
             raise ValueError('Solver caps, workers and restarts must be at least 1')
+    if not 0 <= bound_cluster_size <= 8:
+        raise ValueError('bound_cluster_size must be 0..8')
+    if bound_cluster_size and component_workers != 1:
+        raise ValueError('Cluster bounds currently require component_workers=1')
     if time_limit_seconds is not None and component_workers != 1:
         raise ValueError('Deadline-controlled solves currently require component_workers=1')
     components, component_of = _component_map(fixture)
@@ -118,6 +122,12 @@ def optimize_pipeline(fixture, *, orientation_cap_per_component,
     initial = initial_layout_state(fixture)
     normalized = canonicalize_component_order(fixture, initial)
     seed_state = median_order_seed(fixture, normalized, components, component_of, whole_basis)
+    if starting_state is not None:
+        from .saved_layout import validate_saved_layout
+        validate_saved_layout(fixture, starting_state, whole_basis)
+        saved = canonicalize_component_order(fixture, starting_state)
+        if score_crossings(fixture, saved).crossings <= score_crossings(fixture, seed_state).crossings:
+            seed_state = saved
     incumbent = optimize_local_search(
         fixture, restarts=local_restarts,
         # Keep the first pass bounded in iterations and exact subset-DP size.
@@ -215,6 +225,7 @@ def optimize_pipeline(fixture, *, orientation_cap_per_component,
     return AutoLayoutResult(layout, solver, dict(
         lower_bound=lower, upper_bound=upper, optimality_gap=upper-lower,
         time_limit_seconds=time_limit_seconds, deadline_reached=expired(),
+        bound_cluster_size=bound_cluster_size, saved_incumbent_supplied=starting_state is not None,
         component_workers=workers, component_diagnostics=diagnostics,
         prepared_reductions=[dict(component_id=i,
             chromosome_refs=sorted(r.label for r in bases[i].base_assignment),

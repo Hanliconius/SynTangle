@@ -9,7 +9,7 @@ import multiprocessing as mp
 from itertools import permutations
 from math import factorial
 
-from .search_control import expired, emit
+from .search_control import expired, emit, _cluster_size
 from .bounds import RelaxedCrossingBound, build_relaxed_crossing_bound
 from .heuristic import optimize_local_search
 from .incidence import build_incidence_graph, chromosome_node_id
@@ -896,7 +896,7 @@ def _solve_branch_component(
 
     basis = prepared_basis or orientation_basis(fixture, refs)
     relaxed_bound = build_relaxed_crossing_bound(
-        fixture, component_nodes, basis
+        fixture, component_nodes, basis, cluster_size=_cluster_size.get()
     )
     root_bits: tuple[int | None, ...] = tuple(
         None for _ in basis.free_flip_groups

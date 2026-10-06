@@ -120,3 +120,33 @@ returns; individual partial factor assignments are not exported as layouts.
 Completed records include layout, valid bounds, optimality gap and a deadline
 flag. Emergency cutoffs retain the last exported feasible incumbent and make
 no claim about a final bound.
+
+## Saved incumbents and coupled orientation bounds
+
+`starting_state` accepts a complete saved `LayoutState`. Before use it must
+contain every species and chromosome exactly once, have only signs +1/-1,
+and satisfy the shared hard GF(2) orientation basis. Its canonical score is
+compared with the median seed; the better seed starts local search. Final
+upper bounds cannot exceed the retained incumbent. A saved feasible layout
+is an upper bound, not a proof that any other ordering is infeasible.
+
+`bound_cluster_size=6` enables an experimental stronger orientation lower
+bound (default 0 preserves the independent-cell bound). Groups are partitioned
+deterministically into clusters of at most six. Each internal anchor-cell
+factor is assigned once: if its entire scope lies inside a cluster, its cost
+is summed with the other internal factors and minimized jointly over compatible
+cluster bits. Factors spanning clusters retain their independent relaxation.
+Complete and partial cluster tables are precomputed, preserving shared-group
+correlations and strict floating-point coordinate ties. Summing these independent
+cluster/cross-cluster minima remains admissible and cannot be weaker than the
+old per-cell relaxation for the same partial assignment. It does not assert
+chromosome-order consistency or discard branches without a bound proof.
+The 6-group table has at most 729 partial assignments. The existing memory
+request is unchanged. Cluster-controlled solves currently require one worker.
+
+`submit_bound_pair_benchmark.sh` launches nine cases concurrently. Each case
+selects and rescoring-validates the best saved layout from prior benchmark
+folders, then runs cluster sizes 0 and 6 from that identical layout, at 5,000
+nodes per component and a 150-second cooperative deadline. This compares
+algorithmic search changes, so identical search counters are not expected.
+Invalid saved layouts or inconsistent recorded scores fail explicitly.

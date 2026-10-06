@@ -4,6 +4,7 @@ from functools import wraps
 from time import monotonic
 
 _deadline = ContextVar('syntangle_deadline', default=None)
+_cluster_size = ContextVar('syntangle_bound_cluster_size', default=0)
 _progress = ContextVar('syntangle_component_progress', default=None)
 
 
@@ -24,9 +25,11 @@ def controlled(solve):
         seconds = kwargs.get('time_limit_seconds')
         if seconds is not None and seconds <= 0:
             raise ValueError('time_limit_seconds must be positive')
+        cluster_token = _cluster_size.set(kwargs.get('bound_cluster_size', 0))
         token = _deadline.set(None if seconds is None else monotonic() + seconds)
         try:
             return solve(*args, **kwargs)
         finally:
             _deadline.reset(token)
+            _cluster_size.reset(cluster_token)
     return wrapped
