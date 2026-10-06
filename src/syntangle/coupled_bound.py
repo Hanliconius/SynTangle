@@ -74,7 +74,7 @@ def bucket_tables(factors, size):
 
 
 class CoupledCrossingBound:
-    def __init__(self, fixture, nodes, independent, size=6):
+    def __init__(self, fixture, nodes, independent, size=6, *, prepare_tables=True):
         if not 1 <= size <= 8:
             raise ValueError('Coupled bound size must be 1..8')
         self.independent = independent
@@ -116,8 +116,9 @@ class CoupledCrossingBound:
         self.factor_count=len(aggregate)
         self.constant=sum(next(iter(values.values())) for values in aggregate.values()
                           if len(set(values.values()))==1)
-        self.tables=bucket_tables([(scope,values) for scope,values in aggregate.items()
-                                   if len(set(values.values()))>1],size)
+        self.factors=tuple((scope,values) for scope,values in aggregate.items()
+                           if len(set(values.values()))>1)
+        self.tables=bucket_tables(self.factors,size) if prepare_tables else ()
 
     def lower_bound(self,bits,orders=None):
         if len(bits)!=len(self.basis.free_flip_groups):
