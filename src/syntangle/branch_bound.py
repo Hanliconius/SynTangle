@@ -9,7 +9,7 @@ import multiprocessing as mp
 from itertools import permutations
 from math import factorial
 
-from .search_control import expired, emit, _cluster_size
+from .search_control import expired, emit, _cluster_size, _coupled_size
 from .bounds import RelaxedCrossingBound, build_relaxed_crossing_bound
 from .heuristic import optimize_local_search
 from .incidence import build_incidence_graph, chromosome_node_id
@@ -26,6 +26,7 @@ from .orientation_space import OrientationBasis, orientation_basis
 from .pair_cost import pair_component_crossings, PreparedPairCrossings
 
 
+_active_coupled_bound = ContextVar('syntangle_active_coupled_bound', default=None)
 _prepared_edge = ContextVar('syntangle_prepared_edge', default=None)
 
 
@@ -34,12 +35,14 @@ def _with_prepared_edges(solve):
     def wrapped(fixture, normalized, incumbent_state, component_id,
                 component_nodes, *args, **kwargs):
         scorer = PreparedPairCrossings(fixture, component_nodes)
+        bound_token = _active_coupled_bound.set(None)
         token = _prepared_edge.set((fixture, component_nodes, scorer))
         try:
             return solve(fixture, normalized, incumbent_state, component_id,
                          component_nodes, *args, **kwargs)
         finally:
             _prepared_edge.reset(token)
+            _active_coupled_bound.reset(bound_token)
     return wrapped
 
 
@@ -62,6 +65,8 @@ class ComponentBranchAndBound:
     orientation_groups_forced: int = 0
     order_nodes_evaluated: int = 0
     memo_hits: int = 0
+    root_independent_lower_bound: int = 0
+    coupled_bound_size: int = 0
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -84,6 +89,8 @@ class ComponentBranchAndBound:
             "orientation_groups_forced": self.orientation_groups_forced,
             "order_nodes_evaluated": self.order_nodes_evaluated,
             "memo_hits": self.memo_hits,
+            "root_independent_lower_bound": self.root_independent_lower_bound,
+            "coupled_bound_size": self.coupled_bound_size,
         }
 
 
@@ -390,6 +397,9 @@ def _frontier_lower_bound(
         bound += minimum
         memo_hits += int(hit)
 
+    coupled = _active_coupled_bound.get()
+    if coupled is not None:
+        bound = max(bound, coupled.for_orders(orientation, local_orders))
     return max(bound, relaxed_lower_bound), memo_hits
 
 
@@ -898,6 +908,12 @@ def _solve_branch_component(
     relaxed_bound = build_relaxed_crossing_bound(
         fixture, component_nodes, basis, cluster_size=_cluster_size.get()
     )
+    independent_bound = relaxed_bound
+    if _coupled_size.get():
+        from .coupled_bound import CoupledCrossingBound
+        relaxed_bound = CoupledCrossingBound(fixture, component_nodes,
+                                             relaxed_bound, _coupled_size.get())
+        _active_coupled_bound.set(relaxed_bound)
     root_bits: tuple[int | None, ...] = tuple(
         None for _ in basis.free_flip_groups
     )
@@ -1149,6 +1165,8 @@ def _solve_branch_component(
         free_orientation_groups=len(basis.free_flip_groups),
         implicit_orientation_states=basis.assignment_count,
         root_lower_bound=root_lower_bound,
+        root_independent_lower_bound=independent_bound.lower_bound(root_bits),
+        coupled_bound_size=_coupled_size.get(),
         root_unresolved_orientation_groups=root_unresolved_groups,
         orientation_nodes_evaluated=orientation_nodes,
         orientation_branches_pruned=orientation_pruned,

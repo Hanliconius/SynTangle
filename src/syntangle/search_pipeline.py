@@ -99,13 +99,17 @@ def _solve_component(args):
 def optimize_pipeline(fixture, *, orientation_cap_per_component,
                       permutation_cap_per_species, transition_cap_per_component,
                       branch_node_cap_per_component, local_restarts,
-                      local_max_improving_steps, seed, component_workers, progress_callback, time_limit_seconds=None, starting_state=None, bound_cluster_size=0):
+                      local_max_improving_steps, seed, component_workers, progress_callback, time_limit_seconds=None, starting_state=None, bound_cluster_size=0, coupled_bound_size=0):
     from .heuristic import AutoLayoutResult, _component_map, optimize_local_search
     for value in (orientation_cap_per_component, permutation_cap_per_species,
                   transition_cap_per_component, branch_node_cap_per_component,
                   component_workers, local_restarts):
         if value < 1:
             raise ValueError('Solver caps, workers and restarts must be at least 1')
+    if not 0 <= coupled_bound_size <= 8:
+        raise ValueError('coupled_bound_size must be 0..8')
+    if coupled_bound_size and component_workers != 1:
+        raise ValueError('Coupled bounds currently require component_workers=1')
     if not 0 <= bound_cluster_size <= 8:
         raise ValueError('bound_cluster_size must be 0..8')
     if bound_cluster_size and component_workers != 1:
@@ -225,6 +229,7 @@ def optimize_pipeline(fixture, *, orientation_cap_per_component,
     return AutoLayoutResult(layout, solver, dict(
         lower_bound=lower, upper_bound=upper, optimality_gap=upper-lower,
         time_limit_seconds=time_limit_seconds, deadline_reached=expired(),
+        coupled_bound_size=coupled_bound_size,
         bound_cluster_size=bound_cluster_size, saved_incumbent_supplied=starting_state is not None,
         factor_table_entries_evaluated=sum(d.get('table_entries_evaluated', 0) for d in diagnostics),
         branch_search_nodes_evaluated=sum(d.get('nodes_evaluated', 0) for d in diagnostics

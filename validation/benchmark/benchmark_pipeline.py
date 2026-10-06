@@ -33,6 +33,8 @@ def worker(args):
     if args.warm_layout:
         from syntangle.saved_layout import decode_saved_layout
         kwargs['starting_state'] = decode_saved_layout(fixture, json.loads(Path(args.warm_layout).read_text()))
+    if args.coupled_bound_size:
+        kwargs['coupled_bound_size'] = args.coupled_bound_size
     if args.bound_cluster_size:
         kwargs['bound_cluster_size'] = args.bound_cluster_size
     if args.solve_seconds is not None:
@@ -115,6 +117,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--warm-layout')
     parser.add_argument('--bound-cluster-size', type=int, default=0)
+    parser.add_argument('--coupled-bound-size', type=int, default=0)
     parser.add_argument('--solve-seconds', type=float)
     parser.add_argument('--require-identical', action='store_true')
     parser.add_argument('--worker', action='store_true')

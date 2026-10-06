@@ -172,3 +172,35 @@ Auto results now expose separate `factor_table_entries_evaluated`,
 `branch_search_nodes_evaluated`, and `factor_continuation_nodes_evaluated` totals.
 The legacy `states_evaluated` remains their sum for compatibility; a node cap
 limits accepted search nodes per component, not factor-table assignments.
+
+## Adjacent-layer coupling without fixing unresolved orders
+
+`coupled_bound_size=6` is a separate experimental bound, disabled by default.
+It builds exact nonnegative crossing factors for pairs of homology links in
+one incidence component. Each endpoint decision is either a whole-chromosome
+orientation or a relative order of two whole chromosomes. Orientation variables
+are mapped through the existing hard GF(2) basis, including base-sign offsets;
+shared groups are represented once. Each relative-order decision is likewise
+shared across all neighboring-layer factors that reference it. The resulting
+binary factor graph retains evidence for exact scoring and does not assert
+independent pair decisions are a legal chromosome permutation.
+
+The bound relaxes permutation transitivity, partitions decision variables into
+small connected buckets, and assigns every objective factor exactly once.
+Within a bucket, compatible bits jointly minimize the sum of its factors.
+Cross-bucket factors retain their own two-bit minima. Partial orientation bits
+and already fixed row orders condition these tables. Unresolved neighbor
+orders remain free; incumbent orders are never treated as constraints.
+Any legal completion is included in the relaxed space, so the result is an
+admissible lower bound. It is combined with the original bound using maximum,
+not addition, to avoid counting crossing contributions twice. In the implicit
+ordering search, it also conditions on all fixed rows in the current frontier.
+It does not restart an eliminated factor space or replace retained constraints.
+
+`submit_coupled_pair_benchmark.sh` compares disabled/enabled coupling from the
+same validated saved incumbent on all nine stress cases concurrently. Both runs
+use one CPU, 16 GB, a 5,000-node component cap and 150-second cooperative deadline.
+It reports separate work counters and independent/coupled root bounds. Benchmark
+results are needed before enabling this bound by default; extra preparation and
+bound-query work may outweigh pruning gains. Multiprocess coupling is presently
+rejected explicitly rather than silently dropping its solve-local configuration.
