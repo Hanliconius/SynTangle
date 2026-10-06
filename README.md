@@ -12,8 +12,9 @@ The Pegasus development branch also contains experimental joint MILP and hybrid
 neighborhood solvers. See the [benchmark history](docs/benchmark_history.md) for
 methods, tested commits, job IDs, results and limitations, and the
 [archived global-method comparison](validation/benchmark/results/2026-10-06-global-methods/summary.md)
-for the complete collector output. The current hybrid run is pending; these
-experiments have not replaced the default production solver.
+for the complete collector output. The latest hybrid comparison reports matching global bounds on all nine stress
+presentations, including the largest cases at C=8377. These experiments have not
+replaced the default production solver; raw proof/audit review remains outstanding.
 
 SynTangle now has an executable exact/bounded solver stack: canonical fixture
 parsing, chromosome↔homology incidence components, GF(2) orientation
@@ -72,8 +73,12 @@ ordering choices shared by neighboring species that independent conditional
 optimizations can miss. Structural diagnostics still require a proof before
 they can remove feasible choices.
 
-The [hybrid comparison](validation/benchmark/HYBRID_METHODS.md) and
-strict-improvement audit are currently pending. Graph/GF(2) reductions and model
+The [hybrid comparison](validation/benchmark/results/2026-10-06-hybrid-methods/summary.md)
+now reports all nine stress presentations solved to matching global bounds at
+600-second allowances. The three largest cases reach C=8377 in 428–501 seconds;
+adaptive neighborhoods yield better layouts at shorter budgets, while plain
+MILP also reaches the final optimum. Stage-by-stage efficiency attribution and
+the setup strict-improvement audit output still require review. Graph/GF(2) reductions and model
 data are reused in the hybrid, but importing every residual-domain reduction
 and reconstruction mapping from the older exact backends has not yet been
 established. That handoff contract remains a requirement before claiming full

@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-06",
+  "code_commit": "a8c0bde9615eb71aa94347eb3db6841d7a5fc0ee",
+  "branch": "pegasus-genespace-pilot",
+  "slurm_job_ids": null,
+  "expected_tasks": 108,
+  "recorded_tasks": 108,
+  "complete_tasks": 108,
+  "reported_matching_bounds": 78,
+  "cpus_per_task": 1,
+  "memory_per_task": "16G",
+  "evidence_level": "User-supplied collector stdout; raw solver records and strict-improvement setup audit not uploaded",
+  "summary_sha256": "7c73b14f038503a293fc5aa32ae423226894ed0cb49cd93b123923db60e110d7",
+  "proof_audit_status": "Setup audit output not supplied",
+  "limitations": [
+    "Starts are frozen best layouts from previous experiment, so cross-experiment timing is not a cold-start comparison.",
+    "Direct HiGHS backend differs from earlier SciPy MILP backend.",
+    "Three presentation variants per biology; three biology rungs, not nine independent biological replicates.",
+    "Stage timing and component solver logs are required for detailed efficiency attribution."
+  ]
+}

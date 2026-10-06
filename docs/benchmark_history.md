@@ -39,7 +39,7 @@ not describe the archived stdout as an independently checked proof certificate.
 | Conditional-order probe | 138384046; implementation f7228c8 | Substantial conflicts between the two neighbors' preferred shared order; sampled triangle lifts zero | Target shared ordering across layers; do not treat conditional bounds as global |
 | Coupled factor buckets | Implementation a3a57dc; job ID not retained | 6-species lower bound 276→298; 8-species +1; largest branch work ~1571→122 without better layouts | Park bucket refinement; cost outweighed pruning |
 | Global methods | Array 138387348, setup 138387347, collector 138387349; implementation 5618814 | Joint MILP established reported C*=341 at 6 species and C*=1258 at 8; neighborhoods best on largest cases | Prioritize joint formulation and hybrid neighborhoods |
-| Hybrid optimization and strict-improvement audit | Implementation a8c0bde; current job IDs not supplied | Submitted by user; results and audit output pending | No outcome recorded yet |
+| Hybrid optimization | Implementation a8c0bde; job IDs not supplied | 108/108 complete; all three largest presentations report C=lower=8377 within 428–501 s at 600 s allowance | Joint global solve now closes largest proof gaps; adaptive neighborhoods improve shorter-budget layouts; setup audit output still needed |
 
 Earlier pilot task 138371248_9 failed with exit 124 after 25:01 and ~435 MB RSS,
 with an interrupted-system-call message. Accounting initially showed a stale
@@ -125,8 +125,43 @@ is feasible for each positive-score component of a reported optimum. Counterexam
 abort setup; time-limited audit attempts remain unresolved. The audit is another
 numerical solver check, not an independently checked rational proof file.
 
-Audit/collector results will be catalogued after they are supplied. No job ID,
-new optimum, or claimed speedup is inferred from a submission instruction alone.
+Collector results are now [archived](../validation/benchmark/results/2026-10-06-hybrid-methods/summary.md)
+with 108 machine-readable records and provenance. At the 600-second allowance,
+all four variants report matching global bounds on all nine presentations.
+For the largest biology, C*=8377 in all three presentations; wall times range
+from 428 to 501 seconds. This extends reported proof coverage from six to nine
+presentation cases, or from two to three biological stress rungs. Smaller cases
+retain C*=341 and C*=1258. These are reported solver proofs, pending inspection
+of raw component records and the setup strict-improvement audit output.
+
+At 150 seconds, adaptive neighborhoods improve the large-case scores to
+14092/11600/12346 (mild/strong/random), compared with
+17768/16605/14394 for the plain hinted MILP. At 600 seconds every variant reaches
+8377; three-species neighborhoods are fastest for mild, hinted MILP for
+strong/random. No one variant wins both proof time and short-budget quality.
+
+### Efficiency attribution
+
+| Process change | Evidence so far | Interpretation |
+|---|---|---|
+| Cached local scoring | Identical completed search; 4.8–7.4x measured speedup | Clear implementation efficiency gain |
+| Cached branch machinery | Identical result/search; up to ~4x speedup | Clear implementation efficiency gain |
+| Joint order/orientation model | Medium cases close previously large proof gaps | Major formulation gain |
+| Corrected time allocation and direct backend | All four new variants solve largest cases; old runs left time unused | Shared changes enable full global search, but their individual contributions are not isolated |
+| Feasible MIP start | Sometimes faster proof; no uniform largest-case advantage | Useful candidate, not a universal win |
+| Adaptive neighborhoods | Better large layouts at 150 s; no consistent 600 s proof-time win | Favor when early layout quality matters |
+| Coupled bounds / block SDP | Earlier weak benefit relative to cost | Keep experimental/off by default |
+
+Next efficiency measurements should retain per-component preparation,
+neighborhood and global-solve times, model size, branch nodes, incumbent/bound
+trajectories and memory peaks. Use frozen identical starts, inputs and solver
+versions, repeated runs, and separate cold-start end-to-end tests. A combined
+change must not be credited to one stage without an ablation.
+
+Job IDs and setup audit output were not included in the supplied collector log.
+All variants start from previous best layouts; comparison against the earlier
+experiment includes warmer starts and a backend change, so it is not a clean
+end-to-end speedup measurement.
 
 ## Promotion and remaining validation
 
