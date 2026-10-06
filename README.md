@@ -44,6 +44,41 @@ disconnected residual pieces are solved separately, small articulation
 variables are conditioned, and min-fill elimination is used only for the
 irreducible remainder. No solver should contradict [RULES.md](RULES.md).
 
+## Current development direction
+
+The latest Pegasus experiments shift the emphasis from refining branch-search
+bounds to optimizing chromosome order and orientation jointly across species.
+Joint MILP reported matching layout scores and global bounds at C=341 on the
+6-species stress cases and C=1258 on the 8-species cases. On the 10-species
+cases, multi-species neighborhood search found better layouts than the tested
+MILP and pipeline runs, but the global proof gaps remain large. See the
+[benchmark history](docs/benchmark_history.md) for matched results and caveats.
+
+The next candidate combines these strengths:
+
+- Use incidence components, GF(2) orientation propagation and crossing factors
+  to construct a joint order/orientation model.
+- Improve a feasible layout with bounded multi-species neighborhoods, then pass
+  it as a solver start to global MILP.
+- Reuse sparse model matrices, retain proven-zero components, and allocate
+  unused time to unresolved components rather than restart unchanged work.
+- Preserve every applicable proven reduction across stages. A heuristic layout
+  supplies an upper bound; its preferred ordering does not by itself justify
+  excluding alternatives. Neighborhood restrictions are conditional and are
+  released before global search.
+
+This remains a graph-informed approach. The joint formulation addresses
+ordering choices shared by neighboring species that independent conditional
+optimizations can miss. Structural diagnostics still require a proof before
+they can remove feasible choices.
+
+The [hybrid comparison](validation/benchmark/HYBRID_METHODS.md) and
+strict-improvement audit are currently pending. Graph/GF(2) reductions and model
+data are reused in the hybrid, but importing every residual-domain reduction
+and reconstruction mapping from the older exact backends has not yet been
+established. That handoff contract remains a requirement before claiming full
+reduction continuity or promoting the experimental backend.
+
 ## Core formulation
 
 For each species, the legal display state is a constrained signed permutation of whole chromosomes:
@@ -54,7 +89,7 @@ state = chromosome permutation + whole-chromosome orientation
 
 A chromosome may move as a whole or reverse as a whole. Its internal genomic order is immutable.
 
-The current computational strategy is:
+The default solver's computational strategy is:
 
 ```
 multispecies homology hypergraph
@@ -94,6 +129,7 @@ deferred until a surviving benchmark kernel demonstrates that they are needed.
 - **[docs/problem_algebra.md](docs/problem_algebra.md)** — emerging signed-permutation/GF(2)/factorized algebraic formulation.
 - **[docs/method_stage_audit.md](docs/method_stage_audit.md)** — which graph, DP, and search stages are active, diagnostic, preparatory, or deferred.
 - **[docs/verification_roadmap.tex](docs/verification_roadmap.tex)** — concise narrative of the minimum benchmark/validation chain needed to road-test the method.
+- **[docs/benchmark_history.md](docs/benchmark_history.md)** — Pegasus experiment chronology, evidence, limitations and current decisions.
 - **[validation/benchmark/README.md](validation/benchmark/README.md)** — historical, paired, and scaling benchmarks plus vector reports.
 - **[examples/README.md](examples/README.md)** — executable synthetic invariance fixtures.
 - **[validation/simulator/README.md](validation/simulator/README.md)** — forward chromosome-evolution simulator, deliberate display-tangle induction, and visual validation.
