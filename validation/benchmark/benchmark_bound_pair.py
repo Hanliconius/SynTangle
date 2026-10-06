@@ -16,7 +16,7 @@ def choose_saved(fixture, case_id, history):
     best = None
     basis = orientation_basis(fixture, fixture.chromosome_refs)
     paths = []
-    for pattern in ('search_budget_*', 'pipeline_pair_*', 'branch_cache_pair_*'):
+    for pattern in ('search_budget_*', 'pipeline_pair_*', 'branch_cache_pair_*', 'bound_pair_*'):
         for root in history.glob(pattern):
             case = root/case_id
             if case.is_dir():
@@ -82,7 +82,9 @@ def main():
                 raise AssertionError('Saved feasible incumbent was lost')
             print(f"{entry['case_id']} cluster={cluster} START_C={score} "
                   f"C={result['upper_bound']} lower={result['lower_bound']} "
-                  f"gap={result['optimality_gap']} nodes={result['states_evaluated']} "
+                  f"gap={result['optimality_gap']} branch_nodes={result['branch_search_nodes_evaluated']} "
+                  f"table_entries={result['factor_table_entries_evaluated']} "
+                  f"continuation_nodes={result['factor_continuation_nodes_evaluated']} "
                   f"deadline={result['deadline_reached']} {row['seconds']:.3f}s", flush=True)
         else:
             checkpoint = result_path.with_suffix('.incumbent.json')

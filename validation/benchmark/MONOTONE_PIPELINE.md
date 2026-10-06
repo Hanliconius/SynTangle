@@ -150,3 +150,25 @@ folders, then runs cluster sizes 0 and 6 from that identical layout, at 5,000
 nodes per component and a 150-second cooperative deadline. This compares
 algorithmic search changes, so identical search counters are not expected.
 Invalid saved layouts or inconsistent recorded scores fail explicitly.
+
+## Ordering-relaxation diagnostic
+
+`submit_order_relaxation_diagnostic.sh` submits all nine existing stress cases
+concurrently. It chooses the best rescored saved layout, including the latest
+`bound_pair_*` results, and probes every nontrivial component row. Each probe
+holds chromosome orientations and both neighboring species orders fixed.
+It reports the current adjacent-edge score, the sum of independently minimized
+neighbor pair costs, a joint pair-cost minimum sharing target precedence across
+both neighbors, and an edge-disjoint triangle transitivity correction. Each
+triangle uses its exact six-order optimum; no pair cost is counted in more than
+one correction. For rows of at most 12 chromosomes the exact conditional
+subset-DP optimum is also reported. Hierarchy assertions check all bounds.
+These are conditional probes, not whole-fixture lower bounds. Do not add row
+scores together (adjacent edges are shared), use them to force orientations, or
+prune unrestricted search from them. The diagnostic changes no solver decisions.
+It identifies which lost consistency could justify a future admissible bound.
+
+Auto results now expose separate `factor_table_entries_evaluated`,
+`branch_search_nodes_evaluated`, and `factor_continuation_nodes_evaluated` totals.
+The legacy `states_evaluated` remains their sum for compatibility; a node cap
+limits accepted search nodes per component, not factor-table assignments.
