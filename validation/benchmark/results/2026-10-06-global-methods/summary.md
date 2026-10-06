@@ -1,0 +1,116 @@
+# Global method comparison
+
+| Case | Seconds allowed | Method | Starting C | Final/saved C | Lower | Status | Wall seconds |
+|---|---:|---|---:|---:|---:|---|---:|
+| stress_10sp_40chr_12ev_mild | 150 | lns | 49846 | 25700 | 0 | complete | 153.73 |
+| stress_10sp_40chr_12ev_mild | 30 | lns | 49846 | 35916 | 0 | complete | 30.77 |
+| stress_10sp_40chr_12ev_mild | 600 | lns | 49846 | 25700 | 0 | complete | 600.72 |
+| stress_10sp_40chr_12ev_mild | 150 | milp | 49846 | 38084 | 4343 | complete | 27.61 |
+| stress_10sp_40chr_12ev_mild | 30 | milp | 49846 | 38084 | 4343 | complete | 13.75 |
+| stress_10sp_40chr_12ev_mild | 600 | milp | 49846 | 38084 | 4343 | complete | 95.88 |
+| stress_10sp_40chr_12ev_mild | 150 | pipeline | 49846 | 49619 | 1586 | complete | 151.22 |
+| stress_10sp_40chr_12ev_mild | 30 | pipeline | 49846 | 49619 | 1575 | complete | 30.91 |
+| stress_10sp_40chr_12ev_mild | 600 | pipeline | 49846 | 49619 | 1586 | complete | 601.58 |
+| stress_10sp_40chr_12ev_mild | 150 | sdp | 49846 | 48424 | 0 | complete | 55.11 |
+| stress_10sp_40chr_12ev_mild | 30 | sdp | 49846 | 49846 | unavailable | wall cutoff; final bounds unavailable | 50.08 |
+| stress_10sp_40chr_12ev_mild | 600 | sdp | 49846 | 48424 | 0 | complete | 108.19 |
+| stress_10sp_40chr_12ev_random | 150 | lns | 49336 | 21804 | 0 | complete | 150.76 |
+| stress_10sp_40chr_12ev_random | 30 | lns | 49336 | 29440 | 0 | complete | 30.61 |
+| stress_10sp_40chr_12ev_random | 600 | lns | 49336 | 21804 | 0 | complete | 600.57 |
+| stress_10sp_40chr_12ev_random | 150 | milp | 49336 | 34574 | 4343 | complete | 27.96 |
+| stress_10sp_40chr_12ev_random | 30 | milp | 49336 | 34574 | 4343 | complete | 10.33 |
+| stress_10sp_40chr_12ev_random | 600 | milp | 49336 | 34574 | 4343 | complete | 92.92 |
+| stress_10sp_40chr_12ev_random | 150 | pipeline | 49336 | 48672 | 1586 | complete | 151.71 |
+| stress_10sp_40chr_12ev_random | 30 | pipeline | 49336 | 48672 | 1575 | complete | 31.16 |
+| stress_10sp_40chr_12ev_random | 600 | pipeline | 49336 | 48672 | 1586 | complete | 601.15 |
+| stress_10sp_40chr_12ev_random | 150 | sdp | 49336 | 47336 | 0 | complete | 67.94 |
+| stress_10sp_40chr_12ev_random | 30 | sdp | 49336 | 49336 | 0 | complete | 45.79 |
+| stress_10sp_40chr_12ev_random | 600 | sdp | 49336 | 47336 | 0 | complete | 108.19 |
+| stress_10sp_40chr_12ev_strong | 150 | lns | 59043 | 23272 | 0 | complete | 150.75 |
+| stress_10sp_40chr_12ev_strong | 30 | lns | 59043 | 33507 | 0 | complete | 30.62 |
+| stress_10sp_40chr_12ev_strong | 600 | lns | 59043 | 23272 | 0 | complete | 600.80 |
+| stress_10sp_40chr_12ev_strong | 150 | milp | 59043 | 40704 | 4343 | complete | 27.40 |
+| stress_10sp_40chr_12ev_strong | 30 | milp | 59043 | 40704 | 4343 | complete | 15.00 |
+| stress_10sp_40chr_12ev_strong | 600 | milp | 59043 | 40704 | 4343 | complete | 92.92 |
+| stress_10sp_40chr_12ev_strong | 150 | pipeline | 59043 | 57913 | 1585 | complete | 151.77 |
+| stress_10sp_40chr_12ev_strong | 30 | pipeline | 59043 | 57913 | 0 | complete | 31.18 |
+| stress_10sp_40chr_12ev_strong | 600 | pipeline | 59043 | 57913 | 1586 | complete | 601.18 |
+| stress_10sp_40chr_12ev_strong | 150 | sdp | 59043 | 57043 | 0 | complete | 67.35 |
+| stress_10sp_40chr_12ev_strong | 30 | sdp | 59043 | 59043 | unavailable | wall cutoff; final bounds unavailable | 50.09 |
+| stress_10sp_40chr_12ev_strong | 600 | sdp | 59043 | 57043 | 0 | complete | 107.83 |
+| stress_6sp_20chr_5ev_mild | 150 | lns | 341 | 341 | 0 | complete | 150.40 |
+| stress_6sp_20chr_5ev_mild | 30 | lns | 341 | 341 | 0 | complete | 30.31 |
+| stress_6sp_20chr_5ev_mild | 600 | lns | 341 | 341 | 0 | complete | 600.36 |
+| stress_6sp_20chr_5ev_mild | 150 | milp | 341 | 341 | 341 | complete | 1.02 |
+| stress_6sp_20chr_5ev_mild | 30 | milp | 341 | 341 | 149 | complete | 11.45 |
+| stress_6sp_20chr_5ev_mild | 600 | milp | 341 | 341 | 341 | complete | 1.02 |
+| stress_6sp_20chr_5ev_mild | 150 | pipeline | 341 | 341 | 195 | complete | 152.84 |
+| stress_6sp_20chr_5ev_mild | 30 | pipeline | 341 | 341 | 128 | complete | 33.93 |
+| stress_6sp_20chr_5ev_mild | 600 | pipeline | 341 | 341 | 341 | complete | 176.44 |
+| stress_6sp_20chr_5ev_mild | 150 | sdp | 341 | 341 | 0 | complete | 12.72 |
+| stress_6sp_20chr_5ev_mild | 30 | sdp | 341 | 341 | 0 | complete | 14.35 |
+| stress_6sp_20chr_5ev_mild | 600 | sdp | 341 | 341 | 0 | complete | 7.33 |
+| stress_6sp_20chr_5ev_random | 150 | lns | 341 | 341 | 0 | complete | 150.33 |
+| stress_6sp_20chr_5ev_random | 30 | lns | 341 | 341 | 0 | complete | 30.62 |
+| stress_6sp_20chr_5ev_random | 600 | lns | 341 | 341 | 0 | complete | 600.74 |
+| stress_6sp_20chr_5ev_random | 150 | milp | 341 | 341 | 341 | complete | 1.02 |
+| stress_6sp_20chr_5ev_random | 30 | milp | 341 | 341 | 149 | complete | 11.93 |
+| stress_6sp_20chr_5ev_random | 600 | milp | 341 | 341 | 341 | complete | 1.32 |
+| stress_6sp_20chr_5ev_random | 150 | pipeline | 341 | 341 | 190 | complete | 150.47 |
+| stress_6sp_20chr_5ev_random | 30 | pipeline | 341 | 341 | 121 | complete | 30.60 |
+| stress_6sp_20chr_5ev_random | 600 | pipeline | 341 | 341 | 341 | complete | 197.30 |
+| stress_6sp_20chr_5ev_random | 150 | sdp | 341 | 341 | 0 | complete | 5.73 |
+| stress_6sp_20chr_5ev_random | 30 | sdp | 341 | 341 | 0 | complete | 15.08 |
+| stress_6sp_20chr_5ev_random | 600 | sdp | 341 | 341 | 0 | complete | 5.17 |
+| stress_6sp_20chr_5ev_strong | 150 | lns | 341 | 341 | 0 | complete | 150.41 |
+| stress_6sp_20chr_5ev_strong | 30 | lns | 341 | 341 | 0 | complete | 30.31 |
+| stress_6sp_20chr_5ev_strong | 600 | lns | 341 | 341 | 0 | complete | 600.35 |
+| stress_6sp_20chr_5ev_strong | 150 | milp | 341 | 341 | 341 | complete | 1.17 |
+| stress_6sp_20chr_5ev_strong | 30 | milp | 341 | 341 | 149 | complete | 11.44 |
+| stress_6sp_20chr_5ev_strong | 600 | milp | 341 | 341 | 341 | complete | 1.17 |
+| stress_6sp_20chr_5ev_strong | 150 | pipeline | 341 | 341 | 189 | complete | 150.50 |
+| stress_6sp_20chr_5ev_strong | 30 | pipeline | 341 | 341 | 127 | complete | 30.32 |
+| stress_6sp_20chr_5ev_strong | 600 | pipeline | 341 | 341 | 341 | complete | 177.64 |
+| stress_6sp_20chr_5ev_strong | 150 | sdp | 341 | 341 | 0 | complete | 12.73 |
+| stress_6sp_20chr_5ev_strong | 30 | sdp | 341 | 341 | 0 | complete | 14.30 |
+| stress_6sp_20chr_5ev_strong | 600 | sdp | 341 | 341 | 0 | complete | 5.17 |
+| stress_8sp_30chr_8ev_mild | 150 | lns | 9440 | 5306 | 0 | complete | 150.37 |
+| stress_8sp_30chr_8ev_mild | 30 | lns | 9440 | 5306 | 0 | complete | 30.83 |
+| stress_8sp_30chr_8ev_mild | 600 | lns | 9440 | 5306 | 0 | complete | 600.52 |
+| stress_8sp_30chr_8ev_mild | 150 | milp | 9440 | 1258 | 1258 | complete | 2.72 |
+| stress_8sp_30chr_8ev_mild | 30 | milp | 9440 | 1258 | 1040 | complete | 13.17 |
+| stress_8sp_30chr_8ev_mild | 600 | milp | 9440 | 1258 | 1258 | complete | 2.97 |
+| stress_8sp_30chr_8ev_mild | 150 | pipeline | 9440 | 9440 | 345 | complete | 150.49 |
+| stress_8sp_30chr_8ev_mild | 30 | pipeline | 9440 | 9440 | 339 | complete | 30.57 |
+| stress_8sp_30chr_8ev_mild | 600 | pipeline | 9440 | 9440 | 352 | complete | 600.83 |
+| stress_8sp_30chr_8ev_mild | 150 | sdp | 9440 | 2333 | 0 | complete | 24.31 |
+| stress_8sp_30chr_8ev_mild | 30 | sdp | 9440 | 2513 | 0 | complete | 27.19 |
+| stress_8sp_30chr_8ev_mild | 600 | sdp | 9440 | 2333 | 0 | complete | 23.11 |
+| stress_8sp_30chr_8ev_random | 150 | lns | 7931 | 4490 | 0 | complete | 150.55 |
+| stress_8sp_30chr_8ev_random | 30 | lns | 7931 | 4490 | 0 | complete | 30.62 |
+| stress_8sp_30chr_8ev_random | 600 | lns | 7931 | 4490 | 0 | complete | 600.53 |
+| stress_8sp_30chr_8ev_random | 150 | milp | 7931 | 1258 | 1258 | complete | 3.19 |
+| stress_8sp_30chr_8ev_random | 30 | milp | 7931 | 1258 | 1040 | complete | 13.15 |
+| stress_8sp_30chr_8ev_random | 600 | milp | 7931 | 1258 | 1258 | complete | 8.29 |
+| stress_8sp_30chr_8ev_random | 150 | pipeline | 7931 | 7931 | 345 | complete | 150.48 |
+| stress_8sp_30chr_8ev_random | 30 | pipeline | 7931 | 7931 | 339 | complete | 30.67 |
+| stress_8sp_30chr_8ev_random | 600 | pipeline | 7931 | 7931 | 353 | complete | 601.02 |
+| stress_8sp_30chr_8ev_random | 150 | sdp | 7931 | 2623 | 0 | complete | 27.89 |
+| stress_8sp_30chr_8ev_random | 30 | sdp | 7931 | 2623 | 0 | complete | 19.75 |
+| stress_8sp_30chr_8ev_random | 600 | sdp | 7931 | 2623 | 0 | complete | 23.05 |
+| stress_8sp_30chr_8ev_strong | 150 | lns | 5038 | 4991 | 0 | complete | 150.44 |
+| stress_8sp_30chr_8ev_strong | 30 | lns | 5038 | 4991 | 0 | complete | 30.72 |
+| stress_8sp_30chr_8ev_strong | 600 | lns | 5038 | 4991 | 0 | complete | 600.72 |
+| stress_8sp_30chr_8ev_strong | 150 | milp | 5038 | 1258 | 1258 | complete | 2.92 |
+| stress_8sp_30chr_8ev_strong | 30 | milp | 5038 | 1258 | 1040 | complete | 13.19 |
+| stress_8sp_30chr_8ev_strong | 600 | milp | 5038 | 1258 | 1258 | complete | 8.28 |
+| stress_8sp_30chr_8ev_strong | 150 | pipeline | 5038 | 5038 | 345 | complete | 150.48 |
+| stress_8sp_30chr_8ev_strong | 30 | pipeline | 5038 | 5038 | 339 | complete | 30.72 |
+| stress_8sp_30chr_8ev_strong | 600 | pipeline | 5038 | 5038 | 352 | complete | 600.79 |
+| stress_8sp_30chr_8ev_strong | 150 | sdp | 5038 | 2286 | 0 | complete | 27.88 |
+| stress_8sp_30chr_8ev_strong | 30 | sdp | 5038 | 2286 | 0 | complete | 17.49 |
+| stress_8sp_30chr_8ev_strong | 600 | sdp | 5038 | 2286 | 0 | complete | 23.10 |
+
+SDP estimates are numerical diagnostics, not certified bounds. Neighborhood bounds are not global bounds.
+Expected 108 tasks; found 108 records. Missing/failed/cutoff tasks are not wins.
+All methods start independently from the same frozen legal layout; prior branch exclusions are not resumed.

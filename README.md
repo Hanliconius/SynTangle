@@ -8,6 +8,13 @@ SynTangle separates those two things. It treats whole chromosomes as the movable
 
 ## Current status
 
+The Pegasus development branch also contains experimental joint MILP and hybrid
+neighborhood solvers. See the [benchmark history](docs/benchmark_history.md) for
+methods, tested commits, job IDs, results and limitations, and the
+[archived global-method comparison](validation/benchmark/results/2026-10-06-global-methods/summary.md)
+for the complete collector output. The current hybrid run is pending; these
+experiments have not replaced the default production solver.
+
 SynTangle now has an executable exact/bounded solver stack: canonical fixture
 parsing, chromosome↔homology incidence components, GF(2) orientation
 propagation, recursive exact residual factor elimination, exact species-layer
