@@ -90,6 +90,7 @@ class JointModel:
     def linear_model(self):
         if hasattr(self,'_linear_cache'):
             return self._linear_cache
+        matrix_started=time.perf_counter()
         from scipy.sparse import coo_matrix
         pairs = list(self.quadratic)
         c = np.r_[self.linear, [self.quadratic[p] for p in pairs]]
@@ -106,6 +107,7 @@ class JointModel:
             add(((z,1),(b,-1)),-np.inf,0)
             add(((z,1),(a,-1),(b,-1)),-1,np.inf)
         matrix = coo_matrix((values,(rows,cols)),shape=(len(lower),len(c))).tocsr()
+        self.linear_model_build_seconds=time.perf_counter()-matrix_started
         self._linear_cache=(c,matrix,np.asarray(lower),np.asarray(upper),pairs)
         return self._linear_cache
 
@@ -120,6 +122,8 @@ class JointModel:
         upper=np.r_[upper,self.objective(warm)-self.constant]
         lb,ub=np.zeros(len(c)),np.ones(len(c))
         for i,value in (fixed or {}).items():lb[i]=ub[i]=value
+        api_preparation_seconds=time.perf_counter()-build_started
+        solver_started=time.perf_counter()
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore',message='Unrecognized options detected.*')
             result=milp(c,integrality=np.r_[np.ones(self.n),np.zeros(len(pairs))],
@@ -128,6 +132,8 @@ class JointModel:
                          'mip_rel_gap':0.0,'threads':1})
         return self._finish_milp(incumbent,result.x,getattr(result,'mip_dual_bound',None),dict(
             status=int(result.status),message=result.message,
+            api_preparation_seconds=api_preparation_seconds,solver_seconds=time.perf_counter()-solver_started,
+            linear_model_build_seconds=self.linear_model_build_seconds,
             nodes=int(getattr(result,'mip_node_count',0) or 0),variables=len(c),constraints=len(lower),
             bound_scope='restricted neighborhood' if fixed else 'whole component',
             solver='scipy.optimize.milp/HiGHS'))
@@ -179,7 +185,10 @@ class JointModel:
                     best[0]=value;progress(candidate)
             h.cbMipImprovingSolution += checkpoint
         checked(h.setOptionValue('time_limit',max(.001,seconds-(time.perf_counter()-build_started))))
+        api_preparation_seconds=time.perf_counter()-build_started
+        solver_started=time.perf_counter()
         checked(h.run())
+        solver_seconds=time.perf_counter()-solver_started
         info=h.getInfo();status=h.getModelStatus()
         if strict_proof:
             solution=h.getSolution()
@@ -195,6 +204,8 @@ class JointModel:
         dual=info.mip_dual_bound if info.valid else None
         return self._finish_milp(incumbent,vector,dual,dict(status=h.modelStatusToString(status),
             nodes=int(info.mip_node_count),variables=len(c),constraints=len(lower),
+            api_preparation_seconds=api_preparation_seconds,solver_seconds=solver_seconds,
+            linear_model_build_seconds=self.linear_model_build_seconds,
             bound_scope='whole component',solver='highspy/HiGHS',solver_version=h.version(),feasible_mip_start=use_mip_start))
 
     def sdp(self, incumbent, seconds, seed=1, block_size=32, full_threshold=128):

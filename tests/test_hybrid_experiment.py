@@ -61,3 +61,22 @@ class HybridTests(unittest.TestCase):
         result=run_hybrid(f,initial,'milp_reclaim',10)
         self.assertEqual(len(result['component_diagnostics']),1)
         self.assertGreater(result['component_diagnostics'][0]['allocated_seconds'],9)
+
+    def test_allocation_and_backend_ablations_keep_global_optimum(self):
+        f=fixture_for(31)
+        m=JointModel(f,frozenset(chromosome_node_id(r) for r in f.chromosome_refs),f.chromosome_refs)
+        initial=initial_layout_state(f);initial=LayoutState(initial.chromosome_order,m.basis.base_assignment)
+        for scheduling in ('equal','weighted'):
+            for backend in ('highs','scipy'):
+                result=run_hybrid(f,initial,'milp_reclaim',5,scheduling=scheduling,backend=backend)
+                self.assertEqual(result['upper_bound'],result['lower_bound'])
+                self.assertEqual(result['global_search_restarts'],0)
+                self.assertEqual(result['backend'],backend)
+                for d in result['component_diagnostics']:
+                    if 'global_seconds' in d:
+                        self.assertGreaterEqual(d['global_seconds'],d['solver_seconds'])
+                        self.assertGreaterEqual(d['linear_model_build_seconds'],0)
+
+    def test_unsupported_scipy_hint_is_explicit(self):
+        with self.assertRaises(ValueError):
+            run_hybrid(None,None,'milp_hint',1,backend='scipy')

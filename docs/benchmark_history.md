@@ -163,11 +163,23 @@ All variants start from previous best layouts; comparison against the earlier
 experiment includes warmer starts and a backend change, so it is not a clean
 end-to-end speedup measurement.
 
+## Next controlled efficiency ablation
+
+The [efficiency ablation](../validation/benchmark/EFFICIENCY_ABLATION.md) is ready
+for Pegasus submission; no job IDs or outcomes are recorded yet. Six variants
+isolate allocation among unresolved components, backend/API, MIP starts, and
+three/adaptive neighborhoods. Public legal starts and historical pre-hybrid
+starts are frozen separately. All nine presentations get repeated 150-second
+runs; the largest three also get 600-second runs (252 tasks total, no throttle).
+A separate nine-task audit includes the new hybrid reported optima. Source
+snapshots, input hashes, stage costs, solver versions, memory and incumbent
+checkpoints accompany the results. The default solver remains unchanged.
+
 ## Promotion and remaining validation
 
 Promote a strategy only after legal-state/objective checks, reported-bound audit,
 matched-budget comparison, presentation invariance and visual reconstruction
-checks. The hybrid implementation currently has 111 passing unit tests, including
+checks. The hybrid implementation and efficiency instrumentation now have 116 passing unit tests, including
 exhaustive objective equivalence, transitivity, hinted solver reconstruction,
 strict-improvement checks and removal of proven-zero components.
 

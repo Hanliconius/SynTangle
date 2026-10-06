@@ -16,14 +16,17 @@ from syntangle.global_experiment import JointModel
 from benchmark_pipeline import atomic
 
 
-def audit(root,history,output,seconds=30):
+def audit(root,history,output,seconds=30,case_index=None):
     records=[]
-    entries=list(csv.DictReader((root/'benchmark_manifest.tsv').open(),delimiter='\t'))
+    with (root/'benchmark_manifest.tsv').open() as handle:
+        entries=list(csv.DictReader(handle,delimiter='\t'))
+    if case_index is not None:entries=[entries[case_index]]
     for entry in entries:
         case_id=entry['case_id'];fixture=load_validation_bundle(root/entry['case_dir'])
         candidates=[]
-        for run in sorted(history.glob('global_methods_*')):
-            for path in (run/case_id).glob('milp_*/result.json'):
+        runs=sorted(list(history.glob('global_methods_*'))+list(history.glob('hybrid_methods_*')))
+        for run in runs:
+            for path in (run/case_id).glob('*/result.json'):
                 result=json.loads(path.read_text())
                 state=decode_saved_layout(fixture,result['optimized_state'])
                 validate_saved_layout(fixture,state,orientation_basis(fixture,fixture.chromosome_refs))
@@ -59,4 +62,5 @@ def audit(root,history,output,seconds=30):
 if __name__=='__main__':
     p=argparse.ArgumentParser()
     p.add_argument('--root',required=True);p.add_argument('--history',required=True);p.add_argument('--output',required=True)
-    args=p.parse_args();audit(Path(args.root),Path(args.history),Path(args.output))
+    p.add_argument('--seconds',type=float,default=30);p.add_argument('--case-index',type=int)
+    args=p.parse_args();audit(Path(args.root),Path(args.history),Path(args.output),args.seconds,args.case_index)

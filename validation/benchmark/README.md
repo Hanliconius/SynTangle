@@ -14,7 +14,10 @@ comparison, performance changes, solver experiments and decisions. The
 [global-method results](results/2026-10-06-global-methods/summary.md) include
 machine-readable records and provenance in the same directory. See
 [global methods](GLOBAL_METHODS.md) and [hybrid methods](HYBRID_METHODS.md) for
-experiment procedures. The current hybrid results are pending.
+experiment procedures. [Hybrid results](results/2026-10-06-hybrid-methods/summary.md) now report matching
+global bounds on all nine stress presentations at the 600-second allowance.
+The next [efficiency ablation](EFFICIENCY_ABLATION.md) isolates stage contributions;
+its results and the raw proof-audit review remain pending.
 
 ## Benchmark sequence
 

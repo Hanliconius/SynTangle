@@ -32,7 +32,9 @@ def improve_neighborhoods(model, state, seconds, adaptive=False, progress=None):
                 after=model.objective(model.encode(state))
                 changed |= after<before;all_optimal &= info['status']==0
                 records.append(dict(width=width,center=center,before=int(before),after=int(after),
-                                    status=info['status'],fixed_decisions=len(fixed)))
+                                    status=info['status'],fixed_decisions=len(fixed),
+                                    nodes=info.get('nodes',0),solver_seconds=info.get('solver_seconds',0),
+                                    api_preparation_seconds=info.get('api_preparation_seconds',0)))
                 if progress and after<before:progress(state)
             # Stop repeating unchanged sweeps; adaptive version then expands.
             # This is a heuristic stopping decision, never a global exclusion.
@@ -41,9 +43,13 @@ def improve_neighborhoods(model, state, seconds, adaptive=False, progress=None):
                       stagnation_policy='expand 3 to 5 species' if adaptive else 'stop unchanged sweep')
 
 
-def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None):
+def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, *, scheduling="weighted", backend="highs"):
     if method not in ('milp_reclaim','milp_hint','hybrid_3','hybrid_adaptive'):
         raise ValueError(method)
+    if scheduling not in ("weighted", "equal") or backend not in ("highs", "scipy"):
+        raise ValueError("Unknown scheduling/backend")
+    if backend == "scipy" and method != "milp_reclaim":
+        raise ValueError("SciPy comparison does not support a feasible MIP start")
     started=time.perf_counter();deadline=started+seconds
     whole=orientation_basis(fixture,fixture.chromosome_refs)
     validate_saved_layout(fixture,starting_state,whole)
@@ -61,14 +67,18 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None):
                 component_lower=0,component_upper=0,retained_chromosomes=[r.label for r in refs],
                 reason='legal zero-crossing incumbent and nonnegative crossing objective'))
             continue
-        models.append((i,JointModel(fixture,nodes,refs)))
+        model_started=time.perf_counter()
+        model=JointModel(fixture,nodes,refs)
+        model.graph_preparation_seconds=time.perf_counter()-model_started
+        models.append((i,model))
     preparation=time.perf_counter()-started
     # Easy components first: their unused time flows directly to larger ones.
     models.sort(key=lambda item:(item[1].n+len(item[1].quadratic),item[0]))
-    weights=[max(1,m.n+len(m.quadratic)) for _,m in models]
+    weights=[max(1,m.n+len(m.quadratic)) if scheduling=="weighted" else 1 for _,m in models]
     for position,(i,model) in enumerate(models):
         record=dict(component=i,decision_variables=model.n,crossing_factors=model.graph.factor_count,
-            hard_orientation_groups=[[r.label for r in g] for g in model.basis.free_flip_groups])
+            hard_orientation_groups=[[r.label for r in g] for g in model.basis.free_flip_groups],
+            graph_preparation_seconds=model.graph_preparation_seconds)
         remaining=deadline-time.perf_counter()
         if remaining<=0:
             records.append({**record,'status':'deadline unstarted','component_lower':0});continue
@@ -82,8 +92,13 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None):
                                             method=='hybrid_adaptive',progress)
             record.update(neighborhood_search=info,neighborhood_seconds=time.perf_counter()-lns_started)
         global_budget=max(.001,component_deadline-time.perf_counter())
-        state,bound,info=model.highs(state,global_budget,progress=progress,
-                                    use_mip_start=method!='milp_reclaim')
+        global_started=time.perf_counter()
+        if backend=='highs':
+            state,bound,info=model.highs(state,global_budget,progress=progress,
+                                        use_mip_start=method!='milp_reclaim')
+        else:
+            state,bound,info=model.milp(state,global_budget)
+        record['global_seconds']=time.perf_counter()-global_started
         lower+=bound;record.update(info,component_seconds=time.perf_counter()-component_start,
                                   allocated_seconds=allocation,global_budget_seconds=global_budget)
         records.append(record)
@@ -96,6 +111,7 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None):
         upper_bound=upper,lower_bound=lower,optimality_gap=upper-lower,
         optimality_status='proven optimum' if upper==lower else 'bounded best known',
         seconds=time.perf_counter()-started,preparation_seconds=preparation,
+        scheduling=scheduling,backend=backend,
         component_diagnostics=records,
         whole_chromosome_order_changes={sp:[r.chromosome_id for r in state.chromosome_order[sp]]
             for sp in fixture.species_ids if state.chromosome_order[sp]!=starting_state.chromosome_order[sp]},

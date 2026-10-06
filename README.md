@@ -78,7 +78,10 @@ now reports all nine stress presentations solved to matching global bounds at
 600-second allowances. The three largest cases reach C=8377 in 428–501 seconds;
 adaptive neighborhoods yield better layouts at shorter budgets, while plain
 MILP also reaches the final optimum. Stage-by-stage efficiency attribution and
-the setup strict-improvement audit output still require review. Graph/GF(2) reductions and model
+the setup strict-improvement audit output still require review. The next
+[controlled efficiency ablation](validation/benchmark/EFFICIENCY_ABLATION.md)
+tests allocation, backend, MIP starts and neighborhoods using both public and
+historical starts, with stage profiles and a separate audit array. Graph/GF(2) reductions and model
 data are reused in the hybrid, but importing every residual-domain reduction
 and reconstruction mapping from the older exact backends has not yet been
 established. That handoff contract remains a requirement before claiming full
