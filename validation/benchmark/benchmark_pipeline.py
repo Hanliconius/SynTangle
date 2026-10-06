@@ -30,6 +30,8 @@ def worker(args):
     kwargs = dict(transition_cap_per_component=250000,
                   branch_node_cap_per_component=args.nodes, local_restarts=1,
                   local_max_improving_steps=5, component_workers=1, seed=args.seed)
+    if args.solve_seconds is not None:
+        kwargs['time_limit_seconds'] = args.solve_seconds
     if 'progress_callback' in inspect.signature(optimize_auto).parameters:
         kwargs['progress_callback'] = checkpoint
     result = optimize_auto(fixture, **kwargs)
@@ -106,6 +108,7 @@ def paired(args):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--solve-seconds', type=float)
     parser.add_argument('--require-identical', action='store_true')
     parser.add_argument('--worker', action='store_true')
     parser.add_argument('--root')

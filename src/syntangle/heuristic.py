@@ -329,6 +329,7 @@ def optimize_auto(
     local_max_improving_steps: int = 10000,
     seed: int = 1,
     component_workers: int = 1,
+    time_limit_seconds: float | None = None,
     progress_callback: Callable[[LayoutState, int], None] | None = None,
 ) -> AutoLayoutResult:
     """One component pipeline, with bounded continuation on reduced factors."""
@@ -340,4 +341,5 @@ def optimize_auto(
         branch_node_cap_per_component=branch_node_cap_per_component,
         local_restarts=local_restarts, local_max_improving_steps=local_max_improving_steps,
         seed=seed, component_workers=component_workers, progress_callback=progress_callback,
+        time_limit_seconds=time_limit_seconds,
     )

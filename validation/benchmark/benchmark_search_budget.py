@@ -18,7 +18,7 @@ def main():
     if not 0 <= args.index < 18:
         parser.error('index must be 0..17')
     case_index, level = divmod(args.index, 2)
-    nodes = (50, 500)[level]
+    nodes = (500, 5000)[level]
     root = Path(args.root).resolve()
     with (root/'benchmark_manifest.tsv').open() as handle:
         entry = list(csv.DictReader(handle, delimiter='\t'))[case_index]
@@ -27,16 +27,17 @@ def main():
     result_path = output/'result.json'
     command = [sys.executable, str(Path(__file__).with_name('benchmark_pipeline.py')),
                '--worker', '--case', str(root/entry['case_dir']),
-               '--output', str(result_path), '--seed', entry['seed'], '--nodes', str(nodes)]
+               '--output', str(result_path), '--seed', entry['seed'], '--nodes', str(nodes),
+               '--solve-seconds', '150']
     started = time.perf_counter()
     with (output/'solver.log').open('w') as log:
         try:
-            run = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, timeout=180)
+            run = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, timeout=210)
             status = 'complete' if run.returncode == 0 else f'failed:{run.returncode}'
         except subprocess.TimeoutExpired:
             status = 'timeout; solve unresolved'
     report = dict(case_id=entry['case_id'], nodes_per_component=nodes,
-                  cutoff_seconds=180, status=status, seconds=time.perf_counter()-started)
+                  cooperative_deadline_seconds=150, emergency_cutoff_seconds=210, status=status, seconds=time.perf_counter()-started)
     if status == 'complete':
         report['result'] = json.loads(result_path.read_text())
         result = report['result']
@@ -51,7 +52,7 @@ def main():
             report['incumbent'] = json.loads(checkpoint.read_text())
         print(f"{entry['case_id']} nodes={nodes} {status} "
               f"last_saved_incumbent={report.get('incumbent', {}).get('crossings', 'missing')} "
-              "final_bound=unavailable; no optimality claim", flush=True)
+              "final_bound=unavailable; emergency cutoff; no optimality claim", flush=True)
     saved = root/'comparison'/entry['case_id']/'results.tsv'
     if saved.exists():
         with saved.open() as handle:

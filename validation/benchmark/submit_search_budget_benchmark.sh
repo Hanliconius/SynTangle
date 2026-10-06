@@ -14,10 +14,10 @@ job=$(sbatch --parsable --chdir="$REPO" <<'SLURM'
 #!/bin/bash
 #SBATCH --job-name=st_search_budget
 #SBATCH --partition=nano
-#SBATCH --array=0-17%9
+#SBATCH --array=0-17%18
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
-#SBATCH --time=00:04:00
+#SBATCH --time=00:05:00
 #SBATCH --output=logs/st_search_budget.%A_%a.out
 #SBATCH --error=logs/st_search_budget.%A_%a.err
 set -euo pipefail

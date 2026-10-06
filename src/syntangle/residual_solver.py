@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .search_control import expired
+
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
 import multiprocessing as mp
@@ -393,6 +395,10 @@ def _eliminate_variable(
         item for item in union_scope if item != variable_id
     )
 
+    if budget.continuation_node_cap is not None and expired():
+        # Continue on the current reduced tables with zero further search;
+        # reconstruction records and scope proofs remain in the same stack.
+        raise SearchSpaceTooLarge('Cooperative deadline reached during elimination')
     entry_count = _table_size(union_scope, domains)
     budget.consume(entry_count, scope_size=len(union_scope))
 
@@ -510,7 +516,7 @@ def _bounded_factor_search(factors, domains, budget, diagnostics):
     root_lower = lower({})
     serial = 0
     heap = [(root_lower, serial, {})]
-    while heap and budget.continuation_nodes < budget.continuation_node_cap:
+    while heap and budget.continuation_nodes < budget.continuation_node_cap and not expired():
         bound, _, partial = heapq.heappop(heap)
         if bound >= upper:
             budget.continuation_pruned += 1

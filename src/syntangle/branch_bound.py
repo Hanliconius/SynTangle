@@ -9,6 +9,7 @@ import multiprocessing as mp
 from itertools import permutations
 from math import factorial
 
+from .search_control import expired, emit
 from .bounds import RelaxedCrossingBound, build_relaxed_crossing_bound
 from .heuristic import optimize_local_search
 from .incidence import build_incidence_graph, chromosome_node_id
@@ -114,14 +115,14 @@ class _Budget:
     used: int = 0
 
     def consume(self) -> bool:
-        if self.used >= self.cap:
+        if self.exhausted:
             return False
         self.used += 1
         return True
 
     @property
     def exhausted(self) -> bool:
-        return self.used >= self.cap
+        return self.used >= self.cap or expired()
 
 
 @dataclass(frozen=True)
@@ -467,6 +468,9 @@ def _reduce_orientation(
 
         changed = False
         for index, value in enumerate(working):
+            if expired():
+                return (_ReducedOrientation(tuple(working), lower(tuple(working)),
+                                            forced, False), memo_hits)
             if value is not None:
                 continue
 
@@ -624,6 +628,10 @@ def _search_orders_for_orientation(
     for pivot_order in _ordered_candidate_permutations(
         pivot_refs, preferred_pivot
     ):
+        if expired():
+            exhausted = False
+            open_lower = min(open_lower, relaxed_lower_bound)
+            break
         local_orders = {pivot: pivot_order}
         root_bound, hits = _frontier_lower_bound(
             fixture,
@@ -681,6 +689,7 @@ def _search_orders_for_orientation(
                 if exact_cost < best_upper:
                     best_upper = exact_cost
                     best_state = candidate
+                    emit(candidate)
                 elif exact_cost == best_upper:
                     candidate_key = tuple(
                         ref.label
@@ -744,6 +753,11 @@ def _search_orders_for_orientation(
             for target_order in _ordered_candidate_permutations(
                 target_refs, preferred
             ):
+                if expired():
+                    exhausted = False
+                    open_lower = min(open_lower, node_bound)
+                    stop_all = True
+                    return
                 next_orders = dict(orders)
                 next_orders[target] = target_order
                 next_state = _state_with_component_orders(

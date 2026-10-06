@@ -86,3 +86,37 @@ Faulthandler samples the live Python stack every 30 seconds. A controlled
 final solver result. These instrumented times are diagnostic, not speedup
 measurements. Missing final audits from earlier timeout jobs are explicitly
 reported as unknown, never taken as evidence of successful pruning.
+
+## Cooperative deadlines and live incumbents
+
+`optimize_auto(..., time_limit_seconds=150, component_workers=1)` now
+returns an ordinary bounded result when its cooperative deadline is reached.
+Branch-and-bound checks the deadline in orientation reduction, at accepted
+nodes, and during permutation scans (including candidates rejected by bounds).
+An incomplete ordering search retains its relaxed lower bound; the orientation
+frontier retains its open bounds. Completed components remain completed.
+Unstarted components keep the legal heuristic incumbent and lower bound zero.
+Deadline exhaustion is never recorded as a proof-based exclusion.
+
+Residual elimination can switch, at an elimination boundary, to bounded
+continuation on its current reduced factors. An expired deadline prevents
+further continuation expansion; eliminated variables and conditioning scopes
+are reconstructed through the existing stack. This does not restart the search.
+Preparation, factor materialization and individual scoring/DP operations are
+not asynchronously interrupted: the deadline is cooperative, not a hard wall
+clock guarantee. An external emergency cutoff remains useful as a backstop.
+Deadline-controlled multiprocessing is explicitly unsupported at present.
+
+Each strictly improved complete feasible component state discovered inside
+implicit ordering search is merged with the best retained states of all other
+components, canonically rescored, and sent to the existing progress callback.
+This saves improvements even if the external emergency cutoff eventually
+terminates the worker. Residual improvements are published when that component
+returns; individual partial factor assignments are not exported as layouts.
+
+`submit_search_budget_benchmark.sh` now launches all 18 tasks concurrently:
+500 and 5,000 nodes per component on each unchanged stress input, with a
+150-second cooperative deadline and 210-second emergency process cutoff.
+Completed records include layout, valid bounds, optimality gap and a deadline
+flag. Emergency cutoffs retain the last exported feasible incumbent and make
+no claim about a final bound.
