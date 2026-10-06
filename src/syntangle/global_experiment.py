@@ -87,9 +87,9 @@ class JointModel:
             raise AssertionError('Joint model differs from canonical crossing scorer')
         return result
 
-    def milp(self, incumbent, seconds, fixed=None):
-        build_started = time.perf_counter()
-        from scipy.optimize import Bounds, LinearConstraint, milp
+    def linear_model(self):
+        if hasattr(self,'_linear_cache'):
+            return self._linear_cache
         from scipy.sparse import coo_matrix
         pairs = list(self.quadratic)
         c = np.r_[self.linear, [self.quadratic[p] for p in pairs]]
@@ -105,35 +105,97 @@ class JointModel:
             add(((z,1),(a,-1)),-np.inf,0)
             add(((z,1),(b,-1)),-np.inf,0)
             add(((z,1),(a,-1),(b,-1)),-1,np.inf)
-        warm = self.encode(incumbent)
-        # Objective cutoff retains the supplied incumbent; no heuristic fixing.
-        add(enumerate(c),-np.inf,self.objective(warm)-self.constant)
-        lb,ub = np.zeros(len(c)),np.ones(len(c))
-        for i,value in (fixed or {}).items():
-            lb[i]=ub[i]=value
-        matrix = coo_matrix((values,(rows,cols)),shape=(len(lower),len(c))).tocsc()
+        matrix = coo_matrix((values,(rows,cols)),shape=(len(lower),len(c))).tocsr()
+        self._linear_cache=(c,matrix,np.asarray(lower),np.asarray(upper),pairs)
+        return self._linear_cache
+
+    def milp(self, incumbent, seconds, fixed=None):
+        build_started=time.perf_counter()
+        from scipy.optimize import Bounds, LinearConstraint, milp
+        from scipy.sparse import vstack, csr_matrix
+        c,matrix,lower,upper,pairs=self.linear_model()
+        warm=self.encode(incumbent)
+        matrix=vstack([matrix,csr_matrix(c.reshape(1,-1))],format='csc')
+        lower=np.r_[lower,-np.inf]
+        upper=np.r_[upper,self.objective(warm)-self.constant]
+        lb,ub=np.zeros(len(c)),np.ones(len(c))
+        for i,value in (fixed or {}).items():lb[i]=ub[i]=value
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore',message='Unrecognized options detected.*')
-            result = milp(c,integrality=np.r_[np.ones(self.n),np.zeros(len(pairs))],
-                          bounds=Bounds(lb,ub),constraints=LinearConstraint(matrix,lower,upper),
-                          options={'time_limit':max(.001,seconds-(time.perf_counter()-build_started)),
-                                   'mip_rel_gap':0.0,'threads':1})
-        state = incumbent
-        if result.x is not None:
-            if np.max(abs(result.x[:self.n]-np.rint(result.x[:self.n]))) > 1e-5:
-                raise AssertionError('Nonintegral MILP incumbent')
-            candidate = self.decode(result.x[:self.n],incumbent)
-            if self.objective(self.encode(candidate)) < self.objective(warm):
-                state = candidate
-        dual = getattr(result,'mip_dual_bound',None)
-        bound = max(0, math.ceil(float(dual)+self.constant-1e-5)) if dual is not None and np.isfinite(dual) else 0
-        score = int(round(self.objective(self.encode(state))))
-        if bound > score:
-            raise AssertionError('MILP lower bound exceeds retained incumbent')
-        return state, bound, dict(status=int(result.status),message=result.message,
+            result=milp(c,integrality=np.r_[np.ones(self.n),np.zeros(len(pairs))],
+                bounds=Bounds(lb,ub),constraints=LinearConstraint(matrix,lower,upper),
+                options={'time_limit':max(.001,seconds-(time.perf_counter()-build_started)),
+                         'mip_rel_gap':0.0,'threads':1})
+        return self._finish_milp(incumbent,result.x,getattr(result,'mip_dual_bound',None),dict(
+            status=int(result.status),message=result.message,
             nodes=int(getattr(result,'mip_node_count',0) or 0),variables=len(c),constraints=len(lower),
             bound_scope='restricted neighborhood' if fixed else 'whole component',
-            solver='scipy.optimize.milp/HiGHS')
+            solver='scipy.optimize.milp/HiGHS'))
+
+    def _finish_milp(self, incumbent, solution, dual, info):
+        state=incumbent;warm=self.encode(incumbent)
+        if solution is not None:
+            bits=np.asarray(solution[:self.n])
+            if np.max(abs(bits-np.rint(bits))) > 1e-5:
+                raise AssertionError('Nonintegral MILP incumbent')
+            candidate=self.decode(bits,incumbent)
+            if self.objective(self.encode(candidate)) < self.objective(warm):state=candidate
+        bound=max(0,math.ceil(float(dual)+self.constant-1e-5)) if dual is not None and np.isfinite(dual) else 0
+        score=int(round(self.objective(self.encode(state))))
+        if bound>score:raise AssertionError('MILP lower bound exceeds retained incumbent')
+        info.update(raw_dual_without_constant=float(dual) if dual is not None and np.isfinite(dual) else None,
+                    objective_constant=float(self.constant),component_lower=bound,component_upper=score)
+        return state,bound,info
+
+    def highs(self, incumbent, seconds, *, strict_proof=False, progress=None, use_mip_start=True):
+        """One global solve with a real feasible MIP start; no restart/handoff."""
+        build_started=time.perf_counter()
+        import highspy
+        from scipy.sparse import vstack, csr_matrix
+        c,matrix,lower,upper,pairs=self.linear_model()
+        bits=self.encode(incumbent);cutoff=self.objective(bits)-self.constant-int(strict_proof)
+        matrix=vstack([matrix,csr_matrix(c.reshape(1,-1))],format='csr')
+        lower=np.r_[lower,-np.inf];upper=np.r_[upper,cutoff]
+        h=highspy.Highs()
+        def checked(status):
+            if status==highspy.HighsStatus.kError:raise RuntimeError('HiGHS API error')
+        for key,value in [('output_flag',False),('threads',1),('mip_rel_gap',0.0)]:checked(h.setOptionValue(key,value))
+        checked(h.addCols(len(c),c,np.zeros(len(c)),np.ones(len(c)),0,np.zeros(len(c)+1,dtype=np.int32),np.array([],dtype=np.int32),np.array([],dtype=float)))
+        checked(h.addRows(len(lower),lower,upper,len(matrix.data),matrix.indptr.astype(np.int32),matrix.indices.astype(np.int32),matrix.data))
+        checked(h.changeColsIntegrality(self.n,np.arange(self.n,dtype=np.int32),np.ones(self.n,dtype=np.uint8)))
+        if not strict_proof and use_mip_start:
+            solution=np.r_[bits,[bits[a]*bits[b] for a,b in pairs]]
+            checked(h.setSolution(len(c),np.arange(len(c),dtype=np.int32),solution))
+        # Export canonically scored legal incumbents while the global tree runs.
+        if progress and not strict_proof:
+            best=[self.objective(bits)]
+            def checkpoint(event):
+                raw=event.data_out.mip_solution
+                if len(raw)<self.n:return
+                v=np.rint(np.asarray(raw[:self.n]))
+                value=self.objective(v)
+                if value<best[0]:
+                    candidate=self.decode(v,incumbent)
+                    best[0]=value;progress(candidate)
+            h.cbMipImprovingSolution += checkpoint
+        checked(h.setOptionValue('time_limit',max(.001,seconds-(time.perf_counter()-build_started))))
+        checked(h.run())
+        info=h.getInfo();status=h.getModelStatus()
+        if strict_proof:
+            solution=h.getSolution()
+            counterexample=None
+            if solution.value_valid:
+                candidate=self.decode(np.asarray(solution.col_value[:self.n]),incumbent)
+                counterexample=int(round(self.objective(self.encode(candidate))))
+            return dict(counterexample_crossings=counterexample,no_better_proven=status==highspy.HighsModelStatus.kInfeasible,
+                        status=h.modelStatusToString(status),cutoff_crossings=int(round(cutoff+self.constant)),
+                        nodes=int(info.mip_node_count),seconds=time.perf_counter()-build_started)
+        solution=h.getSolution()
+        vector=solution.col_value if solution.value_valid else None
+        dual=info.mip_dual_bound if info.valid else None
+        return self._finish_milp(incumbent,vector,dual,dict(status=h.modelStatusToString(status),
+            nodes=int(info.mip_node_count),variables=len(c),constraints=len(lower),
+            bound_scope='whole component',solver='highspy/HiGHS',solver_version=h.version(),feasible_mip_start=use_mip_start))
 
     def sdp(self, incumbent, seconds, seed=1, block_size=32, full_threshold=128):
         """Shared-moment block SDP; all pair costs retained, no bucket minima.

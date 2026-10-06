@@ -16,14 +16,14 @@ def choose_saved(fixture, case_id, history):
     best = None
     basis = orientation_basis(fixture, fixture.chromosome_refs)
     paths = []
-    for pattern in ('search_budget_*', 'pipeline_pair_*', 'branch_cache_pair_*', 'bound_pair_*', 'coupled_pair_*'):
+    for pattern in ('search_budget_*', 'pipeline_pair_*', 'branch_cache_pair_*', 'bound_pair_*', 'coupled_pair_*', 'global_methods_*', 'hybrid_methods_*'):
         for root in history.glob(pattern):
             case = root/case_id
             if case.is_dir():
                 paths.extend(case.rglob('*.json'))
     for path in sorted(paths):
         data = json.loads(path.read_text())
-        candidates = [data]
+        candidates = [data, data.get('result', {})]
         candidates += [row.get('result', {}) for row in data.get('methods', [])]
         candidates += [row.get('incumbent', {}) for row in data.get('methods', [])]
         for candidate in candidates:
@@ -33,7 +33,7 @@ def choose_saved(fixture, case_id, history):
             decoded = decode_saved_layout(fixture, state)
             validate_saved_layout(fixture, decoded, basis)
             score = score_crossings(fixture, decoded).crossings
-            recorded = candidate.get('optimized_score', {}).get('crossings', candidate.get('crossings'))
+            recorded = candidate.get('optimized_score', {}).get('crossings', candidate.get('crossings', candidate.get('upper_bound')))
             if score != recorded:
                 raise AssertionError(f'Saved evidence/score mismatch: {path}')
             key = (score, str(path))
