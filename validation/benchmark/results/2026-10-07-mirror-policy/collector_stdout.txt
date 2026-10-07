@@ -1,0 +1,268 @@
+[jjhanly@log004 SynTangle_pipeline_test]$ cat logs/st_policy_collect.*.{out,err}
+# Efficiency overview
+
+| Budget | Start | Variant | Complete/expected | Proven | Median wall s | Median LNS s | Median global s |
+|---:|---|---|---:|---:|---:|---:|---:|
+| 150 | pre_hybrid | adaptive_control | 9/9 | 6 | 1.93 | 0.52 | 0.71 |
+| 150 | pre_hybrid | direct_control | 9/9 | 6 | 1.47 | 0.00 | 0.72 |
+| 150 | pre_hybrid | mirror_adaptive | 9/9 | 6 | 1.82 | 0.48 | 0.29 |
+| 150 | pre_hybrid | mirror_direct | 9/9 | 6 | 1.32 | 0.00 | 0.22 |
+| 150 | pre_hybrid | mirror_selective | 9/9 | 6 | 1.32 | 0.00 | 0.27 |
+| 150 | pre_hybrid | mirror_three | 9/9 | 6 | 1.72 | 0.30 | 0.29 |
+| 150 | pre_hybrid | three_control | 9/9 | 6 | 1.72 | 0.29 | 0.71 |
+| 150 | public | adaptive_control | 9/9 | 6 | 3.12 | 1.46 | 0.60 |
+| 150 | public | direct_control | 9/9 | 6 | 1.67 | 0.00 | 0.60 |
+| 150 | public | mirror_adaptive | 9/9 | 6 | 2.97 | 1.34 | 0.46 |
+| 150 | public | mirror_direct | 9/9 | 6 | 1.62 | 0.00 | 0.59 |
+| 150 | public | mirror_selective | 9/9 | 6 | 1.72 | 0.00 | 0.71 |
+| 150 | public | mirror_three | 9/9 | 6 | 2.62 | 1.01 | 0.44 |
+| 150 | public | three_control | 9/9 | 6 | 2.77 | 0.99 | 0.61 |
+| 600 | pre_hybrid | adaptive_control | 6/6 | 6 | 292.73 | 26.33 | 263.59 |
+| 600 | pre_hybrid | direct_control | 6/6 | 6 | 275.59 | 0.00 | 271.81 |
+| 600 | pre_hybrid | mirror_adaptive | 6/6 | 6 | 262.61 | 31.57 | 230.67 |
+| 600 | pre_hybrid | mirror_direct | 6/6 | 6 | 241.17 | 0.00 | 237.35 |
+| 600 | pre_hybrid | mirror_selective | 6/6 | 6 | 248.18 | 1.31 | 243.14 |
+| 600 | pre_hybrid | mirror_three | 6/6 | 6 | 225.82 | 1.71 | 220.28 |
+| 600 | pre_hybrid | three_control | 6/6 | 6 | 252.37 | 1.72 | 246.72 |
+| 600 | public | adaptive_control | 6/6 | 6 | 299.46 | 36.68 | 260.02 |
+| 600 | public | direct_control | 6/6 | 6 | 274.71 | 0.00 | 270.95 |
+| 600 | public | mirror_adaptive | 6/6 | 6 | 239.56 | 35.81 | 200.71 |
+| 600 | public | mirror_direct | 6/6 | 6 | 271.81 | 0.00 | 268.03 |
+| 600 | public | mirror_selective | 6/6 | 6 | 220.04 | 6.69 | 210.33 |
+| 600 | public | mirror_three | 6/6 | 6 | 227.35 | 9.33 | 214.32 |
+| 600 | public | three_control | 6/6 | 6 | 280.91 | 9.65 | 267.93 |
+
+Medians describe this fixed mixture of fixtures; compare matched individual cases before ranking methods.
+
+# Efficiency ablation
+
+| Case | Start | Variant | Budget | Repeat | C | Lower | Proven | Prep s | LNS s | Global s | Nodes | RSS MiB | Mirror comps | Status |
+|---|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---|
+| stress_10sp_40chr_12ev_mild | pre_hybrid | adaptive_control | 150 | 0 | 14092 | 4343 | False | 3.28 | 24.40 | 122.21 | 6 | 151.0 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | adaptive_control | 600 | 0 | 8377 | 8377 | True | 3.22 | 24.58 | 267.63 | 7 | 437.3 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | adaptive_control | 600 | 1 | 8377 | 8377 | True | 3.27 | 24.15 | 261.57 | 7 | 437.9 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | adaptive_control | 150 | 0 | 16103 | 4343 | False | 3.18 | 31.80 | 114.96 | 6 | 155.1 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | adaptive_control | 600 | 0 | 8377 | 8377 | True | 3.20 | 39.58 | 262.26 | 7 | 438.3 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | adaptive_control | 600 | 1 | 8377 | 8377 | True | 7.64 | 62.92 | 472.73 | 7 | 435.7 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | direct_control | 150 | 0 | 17768 | 4343 | False | 3.30 | 0.00 | 146.58 | 6 | 134.9 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | direct_control | 600 | 0 | 8377 | 8377 | True | 3.30 | 0.00 | 273.95 | 7 | 422.6 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | direct_control | 600 | 1 | 8377 | 8377 | True | 3.25 | 0.00 | 269.67 | 7 | 425.8 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | direct_control | 150 | 0 | 74306 | 7995 | False | 3.20 | 0.00 | 146.81 | 6 | 393.9 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | direct_control | 600 | 0 | 8377 | 8377 | True | 3.23 | 0.00 | 277.01 | 7 | 415.4 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | direct_control | 600 | 1 | 8377 | 8377 | True | 6.67 | 0.00 | 466.26 | 7 | 415.5 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_adaptive | 150 | 0 | 14092 | 4343 | False | 3.30 | 24.50 | 122.09 | 6 | 152.1 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_adaptive | 600 | 0 | 8377 | 8377 | True | 3.31 | 24.68 | 262.86 | 7 | 638.4 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_adaptive | 600 | 1 | 8377 | 8377 | True | 3.32 | 24.24 | 254.18 | 7 | 640.4 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_adaptive | 150 | 0 | 16103 | 4343 | False | 3.33 | 37.59 | 108.91 | 6 | 150.8 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_adaptive | 600 | 0 | 8377 | 8377 | True | 3.29 | 39.97 | 194.29 | 7 | 668.8 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_adaptive | 600 | 1 | 8377 | 8377 | True | 3.22 | 32.78 | 151.75 | 7 | 676.8 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_direct | 150 | 0 | 17768 | 4343 | False | 3.28 | 0.00 | 146.59 | 6 | 134.8 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_direct | 600 | 0 | 8377 | 8377 | True | 3.26 | 0.00 | 266.04 | 7 | 613.1 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_direct | 600 | 1 | 8377 | 8377 | True | 3.26 | 0.00 | 256.46 | 7 | 613.7 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_direct | 150 | 0 | 74306 | 4343 | False | 3.22 | 0.00 | 146.70 | 6 | 135.1 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_direct | 600 | 0 | 8377 | 8377 | True | 3.22 | 0.00 | 187.04 | 7 | 571.8 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_direct | 600 | 1 | 8377 | 8377 | True | 7.78 | 0.00 | 309.15 | 7 | 559.7 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_selective | 150 | 0 | 14092 | 4343 | False | 3.22 | 11.18 | 135.49 | 6 | 154.8 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_selective | 600 | 0 | 8377 | 8377 | True | 3.27 | 1.13 | 221.25 | 7 | 640.7 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_selective | 600 | 1 | 8377 | 8377 | True | 3.27 | 1.20 | 258.96 | 7 | 635.1 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_selective | 150 | 0 | 16103 | 4343 | False | 3.29 | 19.69 | 126.89 | 6 | 149.1 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_selective | 600 | 0 | 8377 | 8377 | True | 3.29 | 5.20 | 212.27 | 7 | 671.4 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_selective | 600 | 1 | 8377 | 8377 | True | 3.21 | 4.55 | 159.97 | 7 | 673.4 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_three | 150 | 0 | 17768 | 4343 | False | 3.26 | 1.68 | 144.92 | 6 | 152.7 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_three | 600 | 0 | 8377 | 8377 | True | 3.26 | 1.69 | 265.91 | 7 | 635.3 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | mirror_three | 600 | 1 | 8377 | 8377 | True | 3.24 | 1.71 | 257.92 | 7 | 642.4 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_three | 150 | 0 | 23916 | 4343 | False | 3.27 | 7.26 | 139.33 | 6 | 155.0 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_three | 600 | 0 | 8377 | 8377 | True | 3.25 | 7.41 | 212.33 | 7 | 678.7 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | public | mirror_three | 600 | 1 | 8377 | 8377 | True | 3.23 | 6.12 | 159.10 | 7 | 677.4 | 7 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | three_control | 150 | 0 | 17768 | 4343 | False | 3.27 | 1.68 | 144.90 | 6 | 154.7 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | three_control | 600 | 0 | 8377 | 8377 | True | 3.27 | 1.73 | 271.70 | 7 | 439.6 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | pre_hybrid | three_control | 600 | 1 | 8377 | 8377 | True | 3.30 | 1.72 | 266.43 | 7 | 442.0 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | three_control | 150 | 0 | 23916 | 7912 | False | 3.23 | 5.67 | 141.20 | 6 | 403.7 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | three_control | 600 | 0 | 8377 | 8377 | True | 3.22 | 7.04 | 271.75 | 7 | 436.8 | 0 | complete |
+| stress_10sp_40chr_12ev_mild | public | three_control | 600 | 1 | 8377 | 8377 | True | 7.30 | 14.09 | 482.37 | 7 | 442.5 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | adaptive_control | 150 | 0 | 12346 | 4343 | False | 3.35 | 30.73 | 115.77 | 6 | 153.2 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | adaptive_control | 600 | 0 | 8377 | 8377 | True | 3.25 | 31.24 | 265.61 | 7 | 441.1 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | adaptive_control | 600 | 1 | 8377 | 8377 | True | 3.22 | 25.80 | 213.03 | 7 | 439.5 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | adaptive_control | 150 | 0 | 13550 | 4343 | False | 3.35 | 37.69 | 108.87 | 6 | 151.8 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | adaptive_control | 600 | 0 | 8377 | 8377 | True | 3.27 | 38.56 | 260.52 | 7 | 436.9 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | adaptive_control | 600 | 1 | 8377 | 8377 | True | 3.35 | 34.79 | 218.07 | 7 | 441.8 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | direct_control | 150 | 0 | 14394 | 4343 | False | 3.33 | 0.00 | 146.53 | 6 | 131.7 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | direct_control | 600 | 0 | 8377 | 8377 | True | 3.30 | 0.00 | 277.50 | 7 | 422.1 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | direct_control | 600 | 1 | 8377 | 8377 | True | 3.41 | 0.00 | 221.74 | 7 | 425.8 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | direct_control | 150 | 0 | 74306 | 4343 | False | 3.41 | 0.00 | 146.48 | 6 | 132.8 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | direct_control | 600 | 0 | 8377 | 8377 | True | 3.29 | 0.00 | 273.97 | 7 | 420.1 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | direct_control | 600 | 1 | 8377 | 8377 | True | 3.37 | 0.00 | 223.45 | 7 | 420.8 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_adaptive | 150 | 0 | 12346 | 4343 | False | 3.18 | 30.18 | 116.51 | 6 | 154.5 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_adaptive | 600 | 0 | 8377 | 8377 | True | 3.26 | 31.12 | 207.13 | 7 | 680.6 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_adaptive | 600 | 1 | 8377 | 8377 | True | 7.38 | 50.30 | 327.79 | 7 | 664.3 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_adaptive | 150 | 0 | 13550 | 4343 | False | 3.34 | 37.74 | 108.73 | 6 | 152.3 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_adaptive | 600 | 0 | 8377 | 8377 | True | 3.22 | 38.46 | 252.91 | 7 | 644.1 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_adaptive | 600 | 1 | 8377 | 8377 | True | 3.27 | 33.17 | 203.84 | 7 | 642.3 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_direct | 150 | 0 | 14394 | 7229 | False | 3.32 | 0.00 | 146.90 | 6 | 234.6 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_direct | 600 | 0 | 8377 | 8377 | True | 3.29 | 0.00 | 218.23 | 7 | 657.1 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_direct | 600 | 1 | 8377 | 8377 | True | 3.33 | 0.00 | 161.50 | 7 | 654.9 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_direct | 150 | 0 | 41965 | 7916 | False | 3.34 | 0.00 | 146.64 | 6 | 336.9 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_direct | 600 | 0 | 8377 | 8377 | True | 3.25 | 0.00 | 291.17 | 7 | 529.5 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_direct | 600 | 1 | 8377 | 8377 | True | 3.26 | 0.00 | 238.09 | 7 | 531.0 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_selective | 150 | 0 | 12346 | 4343 | False | 3.21 | 12.99 | 133.73 | 6 | 152.3 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_selective | 600 | 0 | 8377 | 8377 | True | 6.96 | 2.47 | 330.73 | 7 | 674.3 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_selective | 600 | 1 | 8377 | 8377 | True | 7.42 | 3.01 | 329.94 | 7 | 679.2 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_selective | 150 | 0 | 13550 | 4343 | False | 3.30 | 19.65 | 126.88 | 6 | 152.8 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_selective | 600 | 0 | 8377 | 8377 | True | 3.25 | 6.96 | 262.14 | 7 | 637.6 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_selective | 600 | 1 | 8377 | 8377 | True | 3.25 | 6.45 | 208.38 | 7 | 640.0 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_three | 150 | 0 | 14394 | 4343 | False | 3.18 | 1.62 | 145.13 | 6 | 152.8 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_three | 600 | 0 | 8377 | 8377 | True | 3.31 | 1.76 | 215.61 | 7 | 681.9 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | mirror_three | 600 | 1 | 8377 | 8377 | True | 3.32 | 1.61 | 158.24 | 7 | 673.1 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_three | 150 | 0 | 19230 | 4343 | False | 3.36 | 9.77 | 136.72 | 6 | 154.3 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_three | 600 | 0 | 8377 | 8377 | True | 3.25 | 9.75 | 261.03 | 7 | 638.9 | 7 | complete |
+| stress_10sp_40chr_12ev_random | public | mirror_three | 600 | 1 | 8377 | 8377 | True | 3.26 | 8.90 | 207.83 | 7 | 636.5 | 7 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | three_control | 150 | 0 | 14394 | 4343 | False | 3.32 | 1.81 | 144.75 | 6 | 151.7 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | three_control | 600 | 0 | 8377 | 8377 | True | 3.26 | 1.74 | 273.13 | 7 | 439.9 | 0 | complete |
+| stress_10sp_40chr_12ev_random | pre_hybrid | three_control | 600 | 1 | 8377 | 8377 | True | 3.24 | 1.60 | 215.16 | 7 | 443.8 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | three_control | 150 | 0 | 19230 | 4343 | False | 3.25 | 9.75 | 136.88 | 6 | 153.5 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | three_control | 600 | 0 | 8377 | 8377 | True | 3.26 | 9.69 | 271.03 | 7 | 440.6 | 0 | complete |
+| stress_10sp_40chr_12ev_random | public | three_control | 600 | 1 | 8377 | 8377 | True | 3.38 | 9.32 | 222.37 | 7 | 438.4 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | adaptive_control | 150 | 0 | 11600 | 4343 | False | 7.61 | 36.12 | 106.07 | 6 | 152.5 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | adaptive_control | 600 | 0 | 8377 | 8377 | True | 3.31 | 26.86 | 218.36 | 7 | 440.3 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | adaptive_control | 600 | 1 | 8377 | 8377 | True | 7.41 | 54.11 | 484.26 | 7 | 441.3 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | adaptive_control | 150 | 0 | 22696 | 4343 | False | 3.42 | 33.70 | 112.78 | 6 | 151.9 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | adaptive_control | 600 | 0 | 8377 | 8377 | True | 3.27 | 29.69 | 223.71 | 7 | 436.4 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | adaptive_control | 600 | 1 | 8377 | 8377 | True | 3.31 | 32.82 | 259.52 | 7 | 441.6 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | direct_control | 150 | 0 | 16605 | 4343 | False | 7.30 | 0.00 | 142.43 | 6 | 133.3 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | direct_control | 600 | 0 | 8377 | 8377 | True | 5.50 | 0.00 | 351.40 | 7 | 423.2 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | direct_control | 600 | 1 | 8377 | 8377 | True | 3.41 | 0.00 | 234.20 | 7 | 421.8 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | direct_control | 150 | 0 | 74306 | 4343 | False | 3.23 | 0.00 | 146.66 | 6 | 134.4 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | direct_control | 600 | 0 | 8377 | 8377 | True | 3.33 | 0.00 | 228.15 | 7 | 415.8 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | direct_control | 600 | 1 | 8377 | 8377 | True | 3.26 | 0.00 | 267.93 | 7 | 418.3 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_adaptive | 150 | 0 | 11582 | 4343 | False | 3.28 | 31.91 | 114.71 | 6 | 170.7 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_adaptive | 600 | 0 | 8377 | 8377 | True | 3.24 | 32.02 | 207.15 | 7 | 706.3 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_adaptive | 600 | 1 | 8377 | 8377 | True | 3.43 | 34.25 | 182.15 | 7 | 694.4 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_adaptive | 150 | 0 | 22699 | 4343 | False | 6.89 | 36.77 | 106.12 | 6 | 152.5 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_adaptive | 600 | 0 | 8377 | 8377 | True | 7.49 | 55.32 | 320.31 | 7 | 674.7 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_adaptive | 600 | 1 | 8377 | 8377 | True | 3.28 | 32.72 | 197.58 | 7 | 670.3 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_direct | 150 | 0 | 8389 | 8313 | False | 3.21 | 0.00 | 146.88 | 7 | 654.1 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_direct | 600 | 0 | 8377 | 8377 | True | 3.26 | 0.00 | 153.77 | 7 | 648.9 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_direct | 600 | 1 | 8377 | 8377 | True | 7.23 | 0.00 | 314.48 | 7 | 652.6 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_direct | 150 | 0 | 74306 | 4343 | False | 3.32 | 0.00 | 146.60 | 6 | 132.0 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_direct | 600 | 0 | 8377 | 8377 | True | 3.28 | 0.00 | 249.07 | 7 | 532.5 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_direct | 600 | 1 | 8377 | 8377 | True | 3.29 | 0.00 | 286.99 | 7 | 526.1 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_selective | 150 | 0 | 11582 | 4343 | False | 3.41 | 15.22 | 131.24 | 6 | 172.8 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_selective | 600 | 0 | 8377 | 8377 | True | 3.29 | 1.17 | 227.32 | 7 | 750.6 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_selective | 600 | 1 | 8377 | 8377 | True | 3.43 | 1.41 | 207.75 | 7 | 750.7 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_selective | 150 | 0 | 22741 | 4343 | False | 6.61 | 21.41 | 121.77 | 6 | 152.1 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_selective | 600 | 0 | 8377 | 8377 | True | 7.69 | 13.78 | 336.09 | 7 | 776.1 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_selective | 600 | 1 | 8377 | 8377 | True | 3.35 | 6.93 | 178.65 | 7 | 787.7 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_three | 150 | 0 | 10083 | 8313 | False | 3.21 | 1.52 | 145.18 | 7 | 541.0 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_three | 600 | 0 | 8377 | 8377 | True | 3.28 | 1.71 | 224.94 | 7 | 756.5 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | mirror_three | 600 | 1 | 8377 | 8377 | True | 3.47 | 2.07 | 206.73 | 7 | 750.7 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_three | 150 | 0 | 25540 | 4343 | False | 3.27 | 10.36 | 136.25 | 6 | 155.5 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_three | 600 | 0 | 8377 | 8377 | True | 7.01 | 18.46 | 344.76 | 7 | 783.1 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | public | mirror_three | 600 | 1 | 8377 | 8377 | True | 3.29 | 10.82 | 216.31 | 7 | 789.3 | 7 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | three_control | 150 | 0 | 16605 | 4343 | False | 7.71 | 3.52 | 138.56 | 6 | 151.9 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | three_control | 600 | 0 | 8377 | 8377 | True | 3.27 | 1.57 | 218.33 | 7 | 440.0 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | pre_hybrid | three_control | 600 | 1 | 8377 | 8377 | True | 3.31 | 1.83 | 227.01 | 7 | 439.7 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | three_control | 150 | 0 | 25540 | 4343 | False | 3.28 | 10.35 | 136.28 | 6 | 152.0 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | three_control | 600 | 0 | 8377 | 8377 | True | 3.23 | 9.62 | 225.18 | 7 | 436.8 | 0 | complete |
+| stress_10sp_40chr_12ev_strong | public | three_control | 600 | 1 | 8377 | 8377 | True | 3.31 | 10.64 | 264.83 | 7 | 435.9 | 0 | complete |
+| stress_6sp_20chr_5ev_mild | pre_hybrid | adaptive_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.71 | 5 | 50.7 | 0 | complete |
+| stress_6sp_20chr_5ev_mild | public | adaptive_control | 150 | 0 | 341 | 341 | True | 0.16 | 0.00 | 0.74 | 8 | 51.8 | 0 | complete |
+| stress_6sp_20chr_5ev_mild | pre_hybrid | direct_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.72 | 5 | 50.8 | 0 | complete |
+| stress_6sp_20chr_5ev_mild | public | direct_control | 150 | 0 | 341 | 341 | True | 0.16 | 0.00 | 0.76 | 8 | 51.8 | 0 | complete |
+| stress_6sp_20chr_5ev_mild | pre_hybrid | mirror_adaptive | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.70 | 4 | 50.2 | 5 | complete |
+| stress_6sp_20chr_5ev_mild | public | mirror_adaptive | 150 | 0 | 341 | 341 | True | 0.16 | 0.00 | 0.71 | 7 | 50.8 | 8 | complete |
+| stress_6sp_20chr_5ev_mild | pre_hybrid | mirror_direct | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.70 | 4 | 50.4 | 5 | complete |
+| stress_6sp_20chr_5ev_mild | public | mirror_direct | 150 | 0 | 341 | 341 | True | 0.16 | 0.00 | 0.75 | 7 | 50.8 | 8 | complete |
+| stress_6sp_20chr_5ev_mild | pre_hybrid | mirror_selective | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.09 | 4 | 50.3 | 5 | complete |
+| stress_6sp_20chr_5ev_mild | public | mirror_selective | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.71 | 7 | 50.6 | 8 | complete |
+| stress_6sp_20chr_5ev_mild | pre_hybrid | mirror_three | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.71 | 4 | 50.4 | 5 | complete |
+| stress_6sp_20chr_5ev_mild | public | mirror_three | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.71 | 7 | 50.7 | 8 | complete |
+| stress_6sp_20chr_5ev_mild | pre_hybrid | three_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.71 | 5 | 50.5 | 0 | complete |
+| stress_6sp_20chr_5ev_mild | public | three_control | 150 | 0 | 341 | 341 | True | 0.16 | 0.00 | 0.74 | 8 | 51.8 | 0 | complete |
+| stress_6sp_20chr_5ev_random | pre_hybrid | adaptive_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.10 | 5 | 50.5 | 0 | complete |
+| stress_6sp_20chr_5ev_random | public | adaptive_control | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.21 | 8 | 51.9 | 0 | complete |
+| stress_6sp_20chr_5ev_random | pre_hybrid | direct_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.10 | 5 | 50.9 | 0 | complete |
+| stress_6sp_20chr_5ev_random | public | direct_control | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.18 | 8 | 51.7 | 0 | complete |
+| stress_6sp_20chr_5ev_random | pre_hybrid | mirror_adaptive | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.09 | 4 | 50.3 | 5 | complete |
+| stress_6sp_20chr_5ev_random | public | mirror_adaptive | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.18 | 7 | 50.3 | 8 | complete |
+| stress_6sp_20chr_5ev_random | pre_hybrid | mirror_direct | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.09 | 4 | 50.4 | 5 | complete |
+| stress_6sp_20chr_5ev_random | public | mirror_direct | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.18 | 7 | 50.8 | 8 | complete |
+| stress_6sp_20chr_5ev_random | pre_hybrid | mirror_selective | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.09 | 4 | 50.5 | 5 | complete |
+| stress_6sp_20chr_5ev_random | public | mirror_selective | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.16 | 7 | 50.7 | 8 | complete |
+| stress_6sp_20chr_5ev_random | pre_hybrid | mirror_three | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.09 | 4 | 50.5 | 5 | complete |
+| stress_6sp_20chr_5ev_random | public | mirror_three | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.17 | 7 | 50.9 | 8 | complete |
+| stress_6sp_20chr_5ev_random | pre_hybrid | three_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.10 | 5 | 50.7 | 0 | complete |
+| stress_6sp_20chr_5ev_random | public | three_control | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.20 | 8 | 51.8 | 0 | complete |
+| stress_6sp_20chr_5ev_strong | pre_hybrid | adaptive_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.09 | 5 | 50.8 | 0 | complete |
+| stress_6sp_20chr_5ev_strong | public | adaptive_control | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.20 | 8 | 51.6 | 0 | complete |
+| stress_6sp_20chr_5ev_strong | pre_hybrid | direct_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.09 | 5 | 50.9 | 0 | complete |
+| stress_6sp_20chr_5ev_strong | public | direct_control | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.20 | 8 | 51.7 | 0 | complete |
+| stress_6sp_20chr_5ev_strong | pre_hybrid | mirror_adaptive | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.08 | 4 | 50.4 | 5 | complete |
+| stress_6sp_20chr_5ev_strong | public | mirror_adaptive | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.17 | 7 | 50.7 | 8 | complete |
+| stress_6sp_20chr_5ev_strong | pre_hybrid | mirror_direct | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.08 | 4 | 50.3 | 5 | complete |
+| stress_6sp_20chr_5ev_strong | public | mirror_direct | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.19 | 7 | 50.9 | 8 | complete |
+| stress_6sp_20chr_5ev_strong | pre_hybrid | mirror_selective | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.08 | 4 | 50.3 | 5 | complete |
+| stress_6sp_20chr_5ev_strong | public | mirror_selective | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.17 | 7 | 50.6 | 8 | complete |
+| stress_6sp_20chr_5ev_strong | pre_hybrid | mirror_three | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.08 | 4 | 50.5 | 5 | complete |
+| stress_6sp_20chr_5ev_strong | public | mirror_three | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.17 | 7 | 50.7 | 8 | complete |
+| stress_6sp_20chr_5ev_strong | pre_hybrid | three_control | 150 | 0 | 341 | 341 | True | 0.09 | 0.00 | 0.10 | 5 | 50.8 | 0 | complete |
+| stress_6sp_20chr_5ev_strong | public | three_control | 150 | 0 | 341 | 341 | True | 0.15 | 0.00 | 0.20 | 8 | 51.9 | 0 | complete |
+| stress_8sp_30chr_8ev_mild | pre_hybrid | adaptive_control | 150 | 0 | 1258 | 1258 | True | 1.57 | 1.70 | 1.09 | 8 | 81.3 | 0 | complete |
+| stress_8sp_30chr_8ev_mild | public | adaptive_control | 150 | 0 | 1258 | 1258 | True | 0.70 | 2.62 | 0.46 | 8 | 81.8 | 0 | complete |
+| stress_8sp_30chr_8ev_mild | pre_hybrid | direct_control | 150 | 0 | 1258 | 1258 | True | 1.42 | 0.00 | 0.73 | 8 | 60.3 | 0 | complete |
+| stress_8sp_30chr_8ev_mild | public | direct_control | 150 | 0 | 1258 | 1258 | True | 0.69 | 0.00 | 0.50 | 8 | 61.0 | 0 | complete |
+| stress_8sp_30chr_8ev_mild | pre_hybrid | mirror_adaptive | 150 | 0 | 1258 | 1258 | True | 0.72 | 0.57 | 0.29 | 8 | 79.8 | 8 | complete |
+| stress_8sp_30chr_8ev_mild | public | mirror_adaptive | 150 | 0 | 1258 | 1258 | True | 0.68 | 3.37 | 0.42 | 8 | 78.3 | 8 | complete |
+| stress_8sp_30chr_8ev_mild | pre_hybrid | mirror_direct | 150 | 0 | 1258 | 1258 | True | 0.71 | 0.00 | 0.22 | 8 | 56.3 | 8 | complete |
+| stress_8sp_30chr_8ev_mild | public | mirror_direct | 150 | 0 | 1258 | 1258 | True | 0.70 | 0.00 | 0.53 | 8 | 57.8 | 8 | complete |
+| stress_8sp_30chr_8ev_mild | pre_hybrid | mirror_selective | 150 | 0 | 1258 | 1258 | True | 0.73 | 0.00 | 0.29 | 8 | 58.8 | 8 | complete |
+| stress_8sp_30chr_8ev_mild | public | mirror_selective | 150 | 0 | 1258 | 1258 | True | 1.48 | 0.00 | 1.05 | 8 | 57.6 | 8 | complete |
+| stress_8sp_30chr_8ev_mild | pre_hybrid | mirror_three | 150 | 0 | 1258 | 1258 | True | 0.72 | 0.34 | 0.29 | 8 | 79.5 | 8 | complete |
+| stress_8sp_30chr_8ev_mild | public | mirror_three | 150 | 0 | 1258 | 1258 | True | 0.68 | 3.05 | 0.44 | 8 | 78.7 | 8 | complete |
+| stress_8sp_30chr_8ev_mild | pre_hybrid | three_control | 150 | 0 | 1258 | 1258 | True | 1.64 | 1.13 | 0.77 | 8 | 80.8 | 0 | complete |
+| stress_8sp_30chr_8ev_mild | public | three_control | 150 | 0 | 1258 | 1258 | True | 0.68 | 2.28 | 0.48 | 8 | 81.8 | 0 | complete |
+| stress_8sp_30chr_8ev_random | pre_hybrid | adaptive_control | 150 | 0 | 1258 | 1258 | True | 0.67 | 0.42 | 0.35 | 8 | 81.2 | 0 | complete |
+| stress_8sp_30chr_8ev_random | public | adaptive_control | 150 | 0 | 1258 | 1258 | True | 0.68 | 1.46 | 0.52 | 8 | 81.6 | 0 | complete |
+| stress_8sp_30chr_8ev_random | pre_hybrid | direct_control | 150 | 0 | 1258 | 1258 | True | 0.70 | 0.00 | 0.38 | 8 | 60.5 | 0 | complete |
+| stress_8sp_30chr_8ev_random | public | direct_control | 150 | 0 | 1258 | 1258 | True | 0.67 | 0.00 | 0.54 | 8 | 61.0 | 0 | complete |
+| stress_8sp_30chr_8ev_random | pre_hybrid | mirror_adaptive | 150 | 0 | 1258 | 1258 | True | 0.68 | 0.42 | 0.25 | 8 | 80.2 | 8 | complete |
+| stress_8sp_30chr_8ev_random | public | mirror_adaptive | 150 | 0 | 1258 | 1258 | True | 0.70 | 1.21 | 0.42 | 8 | 78.5 | 8 | complete |
+| stress_8sp_30chr_8ev_random | pre_hybrid | mirror_direct | 150 | 0 | 1258 | 1258 | True | 0.67 | 0.00 | 0.19 | 8 | 56.8 | 8 | complete |
+| stress_8sp_30chr_8ev_random | public | mirror_direct | 150 | 0 | 1258 | 1258 | True | 0.69 | 0.00 | 0.50 | 8 | 57.8 | 8 | complete |
+| stress_8sp_30chr_8ev_random | pre_hybrid | mirror_selective | 150 | 0 | 1258 | 1258 | True | 0.67 | 0.00 | 0.26 | 8 | 59.0 | 8 | complete |
+| stress_8sp_30chr_8ev_random | public | mirror_selective | 150 | 0 | 1258 | 1258 | True | 0.69 | 0.00 | 0.48 | 8 | 57.7 | 8 | complete |
+| stress_8sp_30chr_8ev_random | pre_hybrid | mirror_three | 150 | 0 | 1258 | 1258 | True | 0.69 | 0.25 | 0.25 | 8 | 80.2 | 8 | complete |
+| stress_8sp_30chr_8ev_random | public | mirror_three | 150 | 0 | 1258 | 1258 | True | 0.68 | 0.99 | 0.44 | 8 | 78.5 | 8 | complete |
+| stress_8sp_30chr_8ev_random | pre_hybrid | three_control | 150 | 0 | 1258 | 1258 | True | 0.70 | 0.29 | 0.36 | 8 | 81.2 | 0 | complete |
+| stress_8sp_30chr_8ev_random | public | three_control | 150 | 0 | 1258 | 1258 | True | 0.69 | 0.97 | 0.54 | 8 | 81.8 | 0 | complete |
+| stress_8sp_30chr_8ev_strong | pre_hybrid | adaptive_control | 150 | 0 | 1258 | 1258 | True | 0.68 | 0.52 | 0.36 | 8 | 81.2 | 0 | complete |
+| stress_8sp_30chr_8ev_strong | public | adaptive_control | 150 | 0 | 1258 | 1258 | True | 0.72 | 1.35 | 0.60 | 8 | 81.9 | 0 | complete |
+| stress_8sp_30chr_8ev_strong | pre_hybrid | direct_control | 150 | 0 | 1258 | 1258 | True | 0.68 | 0.00 | 0.37 | 8 | 60.7 | 0 | complete |
+| stress_8sp_30chr_8ev_strong | public | direct_control | 150 | 0 | 1258 | 1258 | True | 0.73 | 0.00 | 0.60 | 8 | 60.9 | 0 | complete |
+| stress_8sp_30chr_8ev_strong | pre_hybrid | mirror_adaptive | 150 | 0 | 1258 | 1258 | True | 0.69 | 0.48 | 0.27 | 8 | 80.1 | 8 | complete |
+| stress_8sp_30chr_8ev_strong | public | mirror_adaptive | 150 | 0 | 1258 | 1258 | True | 0.73 | 1.34 | 0.46 | 8 | 77.7 | 8 | complete |
+| stress_8sp_30chr_8ev_strong | pre_hybrid | mirror_direct | 150 | 0 | 1258 | 1258 | True | 0.68 | 0.00 | 0.18 | 8 | 56.5 | 8 | complete |
+| stress_8sp_30chr_8ev_strong | public | mirror_direct | 150 | 0 | 1258 | 1258 | True | 0.72 | 0.00 | 0.59 | 8 | 57.6 | 8 | complete |
+| stress_8sp_30chr_8ev_strong | pre_hybrid | mirror_selective | 150 | 0 | 1258 | 1258 | True | 0.69 | 0.00 | 0.27 | 8 | 59.1 | 8 | complete |
+| stress_8sp_30chr_8ev_strong | public | mirror_selective | 150 | 0 | 1258 | 1258 | True | 0.72 | 0.00 | 0.55 | 8 | 57.6 | 8 | complete |
+| stress_8sp_30chr_8ev_strong | pre_hybrid | mirror_three | 150 | 0 | 1258 | 1258 | True | 0.68 | 0.30 | 0.27 | 8 | 79.8 | 8 | complete |
+| stress_8sp_30chr_8ev_strong | public | mirror_three | 150 | 0 | 1258 | 1258 | True | 0.73 | 1.01 | 0.43 | 8 | 77.2 | 8 | complete |
+| stress_8sp_30chr_8ev_strong | pre_hybrid | three_control | 150 | 0 | 1258 | 1258 | True | 0.69 | 0.28 | 0.36 | 8 | 81.1 | 0 | complete |
+| stress_8sp_30chr_8ev_strong | public | three_control | 150 | 0 | 1258 | 1258 | True | 0.72 | 0.99 | 0.61 | 8 | 81.7 | 0 | complete |
+
+Expected 210 tasks; found 210. Audit case records: 9/9.
+Completion is not proof; only matching global bounds count as reported optima.
+Equal vs weighted allocation both retain proven-zero components and visit small unresolved models first.
+The pre_hybrid start is frozen historical evidence, not the latest known optimum.
+Repeat counts and fixture subsets are recorded in tasks.json. Timing differences need repeated confirmation.
+Stage timings overlap. Incumbent trajectories are improvements, not global bound trajectories.
+AUDIT stress_6sp_20chr_5ev_mild: strict-improvement infeasibility verified
+AUDIT stress_6sp_20chr_5ev_strong: strict-improvement infeasibility verified
+AUDIT stress_6sp_20chr_5ev_random: strict-improvement infeasibility verified
+AUDIT stress_8sp_30chr_8ev_mild: strict-improvement infeasibility verified
+AUDIT stress_8sp_30chr_8ev_strong: strict-improvement infeasibility verified
+AUDIT stress_8sp_30chr_8ev_random: strict-improvement infeasibility verified
+AUDIT stress_10sp_40chr_12ev_mild: strict-improvement infeasibility verified
+AUDIT stress_10sp_40chr_12ev_strong: strict-improvement infeasibility verified
+AUDIT stress_10sp_40chr_12ev_random: strict-improvement infeasibility verified
+[jjhanly@log004 SynTangle_pipeline_test]$ 
+[jjhanly@log004 SynTangle_pipeline_test]$ 

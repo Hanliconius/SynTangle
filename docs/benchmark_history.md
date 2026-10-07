@@ -214,16 +214,40 @@ Seven variants include unchanged direct/three/adaptive controls and paired
 mirror versions. All nine presentations receive both previously frozen starts
 at 150 s once; the largest receive 600 s twice (210 tasks, no throttle).
 A separate nine-task unanchored strict audit now allows 600 s per positive-score
-component. New outcomes and job IDs are pending. Production defaults are unchanged.
+component. Completed results are recorded below; exact run identifiers were not
+included in the supplied stdout. Production defaults are unchanged.
 
 ## Promotion and remaining validation
 
 Promote a strategy only after legal-state/objective checks, reported-bound audit,
 matched-budget comparison, presentation invariance and visual reconstruction
-checks. The hybrid implementation and efficiency instrumentation now have 123 passing unit tests, including
+checks. The hybrid implementation and efficiency instrumentation now have 135 passing unit tests, including
 exhaustive objective equivalence, transitivity, hinted solver reconstruction,
 strict-improvement checks and removal of proven-zero components.
 
 Still outstanding: more independent biology seeds, the orthogonal scaling
 profile, real synteny inputs, visual audits of the newly improved layouts, and
 an explicit residual-domain/reconstruction contract before any backend handoff.
+
+## Completed mirror/policy comparison (collector received 2026-10-07)
+
+The [210-task archive](../validation/benchmark/results/2026-10-07-mirror-policy/summary.md)
+contains all expected complete records and 168 matching reported global bounds.
+All 84 largest-case 600-second runs reach C*=8377. All nine separate unanchored
+strict-improvement audits now report infeasibility verified, closing the three
+previously unresolved largest audits under the longer audit allowance.
+These checks use the same numerical backend; raw component records remain on
+Pegasus, and no independent rational certificate is inferred from stdout.
+
+Mirror symmetry delivers incremental efficiency, not new biology/proof coverage.
+Matched global-stage median speedups are 1.041x / 1.084x / 1.062x for direct /
+three-species / adaptive controls; not every pair improves. Public-start largest
+pooled median wall time is 220.04 s for selective vs 274.71 s direct, but two
+repeats per presentation and timing variability limit general rankings.
+Selective preserves essentially adaptive's short-budget scores with less
+neighborhood time and skips small-model overhead. Its bundled thresholds remain
+experimental. Peak RSS is 789.3 MiB under the same 16G allocation.
+
+The uploaded collector does not identify exact source commit, old job IDs or
+result directory. Do not assign the new concurrently submitted 138406327–138406330
+jobs to this earlier evidence. Production defaults remain unchanged.

@@ -60,8 +60,10 @@ failures. It also needs paired presentations of identical biology to measure
 avoidable drawing artifacts. Structural solvability analysis should record
 reduced component size, graph width/separators, decision/factor counts and shared
 ordering conflicts alongside bounds, runtime and proof status. Those experiments
-are future work, not established by these tests. Pending mirror/policy experiment
-results must be reviewed before adopting their defaults.
+are future work, not established by these tests. The [completed mirror/policy report](../validation/benchmark/results/2026-10-07-mirror-policy/summary.md)
+provides successful reported strict-improvement audits for all nine stress
+presentations. These are the same three paired biology rungs; broad validation
+and raw component-record review remain necessary before adopting defaults.
 
 Run the contracts with:
 

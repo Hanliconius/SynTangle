@@ -83,7 +83,11 @@ A separate nine-task strict-improvement audit keeps the unanchored formulation,
 now allowing 600 seconds per positive-score component. It re-scores historical
 reported optima and remains explicitly unresolved if that allowance is exhausted.
 Audit uses the same numerical backend, not an independent rational proof checker.
-No outcome or new default is inferred before these runs complete.
+The completed collector is now [archived](results/2026-10-07-mirror-policy/summary.md):
+210/210 tasks complete, all largest 600-second runs close their gaps, and all
+nine strict-improvement audits report verification. Mirror gains are incremental
+and selective work preserves short-budget quality with less neighborhood time.
+No production default changes accompany this evidence.
 
 ## Run on Pegasus
 

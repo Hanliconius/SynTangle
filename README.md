@@ -13,8 +13,11 @@ neighborhood solvers. See the [benchmark history](docs/benchmark_history.md) for
 methods, tested commits, job IDs, results and limitations, and the
 [archived global-method comparison](validation/benchmark/results/2026-10-06-global-methods/summary.md)
 for the complete collector output. The latest hybrid comparison reports matching global bounds on all nine stress
-presentations, including the largest cases at C=8377. These experiments have not
-replaced the default production solver; raw proof/audit review remains outstanding.
+presentations, including the largest cases at C=8377. The completed
+[210-task mirror/policy comparison](validation/benchmark/results/2026-10-07-mirror-policy/summary.md)
+also reports successful unanchored strict-improvement audits for all nine
+presentations. These experiments have not replaced the default production
+solver; raw component proof records and visual reconstruction review remain outstanding.
 
 SynTangle now has an executable exact/bounded solver stack: canonical fixture
 parsing, chromosome↔homology incidence components, GF(2) orientation
@@ -54,7 +57,8 @@ bounds to optimizing chromosome order and orientation jointly across species.
 Joint MILP reported matching layout scores and global bounds at C=341 on the
 6-species stress cases and C=1258 on the 8-species cases. On the 10-species
 cases, multi-species neighborhood search found better layouts than the tested
-MILP and pipeline runs, but the global proof gaps remain large. See the
+MILP and pipeline runs in the earlier global-method comparison. Subsequent
+hybrid and policy runs close those gaps at C=8377 with 600-second allowances. See the
 [benchmark history](docs/benchmark_history.md) for matched results and caveats.
 
 The next candidate combines these strengths:
@@ -85,10 +89,12 @@ repeated matching-bound results from public starts as well as historical layouts
 Neighborhoods substantially improved early large-case layouts; plain MILP was
 already efficient on easier cases. Separate strict-improvement checks verified
 the six smaller presentations; the largest three audits remained unresolved
-within their 120-second allowance. The next
+within their 120-second allowance. The completed
 [mirror/policy experiment](validation/benchmark/MIRROR_POLICY.md) tests a proved
-mirror equivalence reduction and selective heuristic work, with repeated longer
-runs and extended audits. Its results are pending. Graph/GF(2) reductions and model
+mirror equivalence reduction and selective heuristic work. Its extended audits
+report strict-improvement infeasibility verified for all nine presentations;
+mirror timing gains are incremental, and selective work preserves short-budget
+layout quality with less neighborhood time. Graph/GF(2) reductions and model
 data are reused in the hybrid, but importing every residual-domain reduction
 and reconstruction mapping from the older exact backends has not yet been
 established. That handoff contract remains a requirement before claiming full
