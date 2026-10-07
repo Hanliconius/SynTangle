@@ -215,13 +215,8 @@ def build_residual_factorization(
     """Build the residual decision-factor graph for the current objective."""
 
     if prepared_components is None:
-        graph = build_incidence_graph(fixture)
-        incidence_components = graph.connected_components()
-        component_of: dict[ChromosomeRef, int] = {}
-        for component_id, nodes in enumerate(incidence_components):
-            for ref in fixture.chromosome_refs:
-                if chromosome_node_id(ref) in nodes:
-                    component_of[ref] = component_id
+        from .component_space import optimization_component_map
+        incidence_components, component_of = optimization_component_map(fixture)
     else:
         incidence_components, component_of = prepared_components
 

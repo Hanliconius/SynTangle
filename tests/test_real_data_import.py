@@ -22,3 +22,13 @@ class ImportTests(unittest.TestCase):
         with self.assertRaises(ValueError):m.convert([row()],['A','B'],'test')
     def test_invalid_coordinates_fail(self):
         with self.assertRaises(ValueError):m.signature(row(lo1='nan'))
+
+    def test_orientation_conflict_is_explicit_without_deleting_geometry(self):
+        direct=row();reverse=row('B','A','2','1','20','11','1','10');reverse['orient']='+'
+        data,p=m.convert([direct,reverse],['A','B'],'test')
+        self.assertEqual(p['retained_links'],1)
+        self.assertTrue(p['edges'][0]['orientation_conflict'])
+        self.assertEqual(p['edges'][0]['source_orientation'],'-')
+        self.assertEqual(p['edges'][0]['reciprocal_orientation_counts'],{'+':1})
+        self.assertEqual(len(p['pair_audit'][0]['orientation_conflicts']),1)
+        self.assertEqual(data['orientation_constraints'],[])

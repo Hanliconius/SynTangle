@@ -33,15 +33,20 @@ def convert(rows, species, case_id):
         direct=[(i,x) for i,x in enumerate(rows,2) if (x['gen1'],x['gen2'])==(a,b)]
         reverse=[(i,x) for i,x in enumerate(rows,2) if (x['gen1'],x['gen2'])==(b,a)]
         if not direct or not reverse: raise ValueError(f'Missing directional pair {a}/{b}')
-        if Counter(signature(x) for _,x in direct)!=Counter(signature(x,True) for _,x in reverse):
+        if Counter(signature(x)[:-1] for _,x in direct)!=Counter(signature(x,True)[:-1] for _,x in reverse):
             raise ValueError(f'Reciprocal evidence differs for {a}/{b}; manual inspection required, no silent deduplication')
-        audit.append(dict(pair=[a,b],retained=len(direct),verified_reciprocal_rows=len(reverse)))
+        reciprocal=defaultdict(Counter)
+        for _,x in reverse:reciprocal[signature(x,True)[:-1]][x['orient']]+=1
+        direct_annotations=defaultdict(Counter)
+        for _,x in direct:direct_annotations[signature(x)[:-1]][x['orient']]+=1
+        conflicts=[dict(geometry=key,direct_orientations=dict(value),reciprocal_orientations=dict(reciprocal[key])) for key,value in direct_annotations.items() if value!=reciprocal[key]]
+        audit.append(dict(pair=[a,b],retained=len(direct),verified_reciprocal_rows=len(reverse),orientation_conflicts=conflicts))
         for i,x in direct:
             sig=signature(x); hid=f'row_{i}_{a}_{b}'
             for sp,side in zip((a,b),sig[:2]):
                 chrom,start,end=side
                 chromosomes[sp][chrom].append(dict(occurrence_id=hid+'_'+sp,homology_id=hid,start=start,end=end,strand='?'))
-            edges.append(dict(homology_id=hid,source_line=i,source_block_id=x['blkID'],source_orientation=x['orient']))
+            edges.append(dict(homology_id=hid,source_line=i,source_block_id=x['blkID'],source_orientation=x['orient'],reciprocal_orientation_counts=dict(reciprocal[sig[:-1]]),orientation_conflict=direct_annotations[sig[:-1]]!=reciprocal[sig[:-1]]))
     data=dict(fixture_version=1,id=case_id,title=case_id,purpose='Archived observed block-link chain; chromosome movements only',species=[],orientation_constraints=[])
     for sp in species:
         data['species'].append(dict(id=sp,chromosomes=[dict(id=ch,length=max(x['end'] for x in chromosomes[sp][ch]),display_rank=j+1,blocks=chromosomes[sp][ch]) for j,ch in enumerate(sorted(chromosomes[sp],key=natural))]))
@@ -52,7 +57,7 @@ def convert(rows, species, case_id):
         display_order='Natural chromosome-name order; NOT recovered published drawing',
         objective='Unweighted crossings between block midpoints of adjacent species; NOT gene-anchor crossings',
         ambiguity='Overlapping, repeated and duplicated-coordinate block links retained as separate observed edges; no orthogroup equivalence inferred',
-        orientation='Pairwise source orientation retained in edge provenance, not imposed as a hard whole-chromosome parity constraint',
+        orientation='Both directional orientation annotations retained in edge provenance; conflicts explicit; neither imposed as a hard whole-chromosome parity constraint',
         scope='Linked chromosomes only; self-comparisons, reciprocal copies and nonadjacent species comparisons explicitly outside this benchmark')
     return data,provenance
 
@@ -75,6 +80,7 @@ def main():
     data,provenance=convert(rows,d['species'],d['id'])
     provenance.update(source=d,repository=m['repository'],commit=m['commit'],paper=m['paper'],sha256=hashlib.sha256(raw).hexdigest())
     (out/'fixture.json').write_text(json.dumps(data,indent=2)+'\n');(out/'provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
-    print(f"PREPARED {d['id']}: {len(provenance['edges'])} observed links; {sum(len(s['chromosomes']) for s in data['species'])} linked chromosomes",flush=True)
+    conflicts=sum(len(x['orientation_conflicts']) for x in provenance['pair_audit'])
+    print(f"PREPARED {d['id']}: {len(provenance['edges'])} observed links; {sum(len(s['chromosomes']) for s in data['species'])} linked chromosomes; orientation_conflicts={conflicts}",flush=True)
 
 if __name__=='__main__':main()

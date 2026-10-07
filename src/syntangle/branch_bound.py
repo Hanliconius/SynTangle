@@ -153,14 +153,8 @@ class _ReducedOrientation:
 def _component_map(
     fixture: Fixture,
 ) -> tuple[tuple[frozenset[str], ...], dict[ChromosomeRef, int]]:
-    graph = build_incidence_graph(fixture)
-    components = graph.connected_components()
-    component_of: dict[ChromosomeRef, int] = {}
-    for component_id, nodes in enumerate(components):
-        for ref in fixture.chromosome_refs:
-            if chromosome_node_id(ref) in nodes:
-                component_of[ref] = component_id
-    return components, component_of
+    from .component_space import optimization_component_map
+    return optimization_component_map(fixture)
 
 
 def _component_refs_by_species(

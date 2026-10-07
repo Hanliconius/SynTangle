@@ -51,6 +51,8 @@ cat logs/st_real_compare.*.{out,err}
   must be admissible, including interrupted solves.
 - Imported source bytes must match pinned Git blob SHAs; both directions must
   describe the same multiset of geometric links. Otherwise import fails.
+  Conflicting directional orientation annotations are preserved and flagged;
+  neither is used as a hard whole-chromosome parity constraint.
 - Evidence fingerprints must remain unchanged and returned states must be legal.
 - The never-worse guard is a product guarantee, NOT a raw solver win. Report raw
   outcomes, ties and regressions separately.
@@ -68,3 +70,20 @@ Before a paper: use multiple independent studies, benchmark gene-anchor and
 block-level objectives separately, repeat timing on comparable nodes, and audit
 exact published layouts. No solver default changes are authorized by a passing
 suite alone.
+
+## First final-check run and correction
+
+Run final_NFyQeq (setup 138406721, checks 138406722, prep 138406723) failed the
+new exhaustive test because a legal hard orientation equation crossed homology
+components. Solver decision partitions now merge homology components linked by
+hard equations. Layout, local/auto, branch, layer DP and residual paths share this
+partition helper. Biological incidence graphs and their metrics are unchanged.
+New regression tests compare a hard-coupled, homology-disconnected fixture against
+independent brute force. These are pending Pegasus verification, not claimed passes.
+
+The third check group also lacked an already-committed test module in the restored
+Pegasus worktree. Rerun from a complete isolated checkout, not a partial set of
+restored files. The launcher optionally copies a previous real_data preparation
+folder via SCT_REUSE_PREP; all pinned hashes/import checks are repeated, but
+existing source files are not downloaded again. Original failed-run files remain
+unchanged.

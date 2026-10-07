@@ -4,6 +4,10 @@ SCT_REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 cd "$SCT_REPO"
 mkdir -p logs local_results
 export SCT_FINAL_ROOT=$(mktemp -d "$SCT_REPO/local_results/final_XXXXXX")
+if [[ -n "${SCT_REUSE_PREP:-}" ]]; then
+    test -d "$SCT_REUSE_PREP"
+    cp -a "$SCT_REUSE_PREP" "$SCT_FINAL_ROOT/real_data"
+fi
 export SCT_FINAL_CODE="$SCT_FINAL_ROOT/code"
 export SCT_MAMBA=${MAMBA_EXE:-$(type -P micromamba)}
 test -x "$SCT_MAMBA"
@@ -49,7 +53,7 @@ cd "$SCT_FINAL_CODE"
 case "$SLURM_ARRAY_TASK_ID" in
  0) "$SCT_FINAL_ROOT/venv/bin/python" -m unittest discover -s tests -v ;;
  1) "$SCT_FINAL_ROOT/venv/bin/python" -m unittest test_final_exhaustive -v ;;
- 2) "$SCT_FINAL_ROOT/venv/bin/python" -m unittest test_real_data_import test_search_pipeline test_search_deadline test_tangledness_refinement -v ;;
+ 2) "$SCT_FINAL_ROOT/venv/bin/python" -m unittest test_real_data_import test_constraint_components test_search_pipeline test_search_deadline test_tangledness_refinement -v ;;
 esac
 printf 'PASS final validation group %s\n' "$SLURM_ARRAY_TASK_ID"
 SLURM

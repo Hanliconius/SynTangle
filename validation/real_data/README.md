@@ -29,8 +29,9 @@ We can download these block tables directly: no assemblies, protein extraction,
 OrthoFinder, MCScanX or all-versus-all alignment reruns are needed. The importer
 normalizes the two endpoint spans and emits the existing SynTangle fixture
 schema. Every retained directed row becomes one pair-specific observed ribbon.
-Reciprocal geometry, orientation and multiplicity must agree exactly before the
-reverse-direction copy is excluded. Identical rows within the retained direction
+Reciprocal geometry and multiplicity must agree exactly before the reverse-
+direction copy is excluded. Both directional orientation annotations are retained;
+disagreements are flagged explicitly and never become hard flip constraints. Identical rows within the retained direction
 remain distinct links. No transitive orthogroup union is inferred.
 
 The manifest fixes the species chain. Only adjacent pairs are scored; other
@@ -76,3 +77,16 @@ JCVI format reference: https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-ve
 
 See ../benchmark/FINAL_VALIDATION.md for the Pegasus submission commands and
 acceptance gates. No figure generation is performed by either launcher.
+
+## First Pegasus preparation (final_NFyQeq)
+
+Five panels imported: cotton_split 71 links / 39 linked chromosomes; intact
+cotton 663 / 80; maize 36 / 30; grasses 453 / 32; vertebrates 871 / 80.
+The rho importer initially rejected Sorghum/maize reciprocal annotations.
+Inspection of the pinned source found 618 links in each direction with identical
+geometric multisets, but one link has + versus - orientation annotations:
+Sorghum Chr08:56666140–56906563 / maize 4:1332953–3505204.
+The updated importer preserves both annotations and flags this disagreement.
+Its block-midpoint objective does not use those annotations as hard parity.
+Geometric or multiplicity discrepancies still cause import failure. This is
+a source annotation discrepancy, not an optimisation result.
