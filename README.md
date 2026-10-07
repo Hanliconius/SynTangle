@@ -45,6 +45,8 @@ disconnected residual pieces are solved separately, small articulation
 variables are conditioned, and min-fill elimination is used only for the
 irreducible remainder. No solver should contradict [RULES.md](RULES.md).
 
+Scientific validation now also includes [intrinsic/visual tangledness contracts](docs/tangledness_metrics.md): exact or bounded avoidable-crossing metrics and an opt-in validated reference-layout refinement guard. Synthetic contract tests do not establish consistent wins against native GENESPACE; broader matched comparisons remain required.
+
 ## Current development direction
 
 The latest Pegasus experiments shift the emphasis from refining branch-search

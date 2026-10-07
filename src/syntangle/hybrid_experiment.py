@@ -116,7 +116,10 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, 
     upper=score_crossings(fixture,state).crossings
     if upper>score_crossings(fixture,starting_state).crossings or lower>upper:
         raise AssertionError('Hybrid reconstruction/bounds lost incumbent')
+    from .tangledness import tangledness_metrics
+    metrics=tangledness_metrics(score_crossings(fixture,starting_state).crossings,upper,lower)
     return dict(method=method,optimized_state=state.to_dict(),starting_state=starting_state.to_dict(),
+        tangledness=metrics,
         upper_bound=upper,lower_bound=lower,optimality_gap=upper-lower,
         optimality_status='proven optimum' if upper==lower else 'bounded best known',
         seconds=time.perf_counter()-started,preparation_seconds=preparation,
