@@ -12,16 +12,19 @@ from .saved_layout import validate_saved_layout
 from .layout import canonicalize_component_order, score_crossings
 
 
-def improve_neighborhoods(model, state, seconds, adaptive=False, progress=None):
+def improve_neighborhoods(model, state, seconds, adaptive=False, progress=None, *, deduplicate=False):
     deadline=time.perf_counter()+seconds;records=[]
     species=model.fixture.species_ids
     for width in ((3,5) if adaptive else (3,)):
         while time.perf_counter()<deadline:
-            changed=False;all_optimal=True
+            changed=False;all_optimal=True;seen_windows=set()
             for center in range(len(species)):
                 if time.perf_counter()>=deadline:break
                 left=max(0,min(center-width//2,len(species)-width))
-                active=set(species[left:left+width])
+                window=tuple(species[left:left+width])
+                if deduplicate and window in seen_windows:continue
+                seen_windows.add(window)
+                active=set(window)
                 bits=model.encode(state)
                 free={j for (a,b),j in model.orders.items() if a.species_id in active}
                 free.update(j for j,group in enumerate(model.basis.free_flip_groups)
@@ -39,17 +42,22 @@ def improve_neighborhoods(model, state, seconds, adaptive=False, progress=None):
             # Stop repeating unchanged sweeps; adaptive version then expands.
             # This is a heuristic stopping decision, never a global exclusion.
             if not changed:break
-    return state,dict(subsolves=len(records),neighborhoods=records,
+    return state,dict(subsolves=len(records),neighborhoods=records,unique_windows_per_sweep=deduplicate,
                       stagnation_policy='expand 3 to 5 species' if adaptive else 'stop unchanged sweep')
 
 
-def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, *, scheduling="weighted", backend="highs"):
+def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, *, scheduling="weighted", backend="highs",
+               mirror_symmetry=False, neighborhood_min_decisions=128, neighborhood_fraction=.25,
+               neighborhood_max_seconds=60, deduplicate_neighborhoods=False):
     if method not in ('milp_reclaim','milp_hint','hybrid_3','hybrid_adaptive'):
         raise ValueError(method)
     if scheduling not in ("weighted", "equal") or backend not in ("highs", "scipy"):
         raise ValueError("Unknown scheduling/backend")
     if backend == "scipy" and method != "milp_reclaim":
         raise ValueError("SciPy comparison does not support a feasible MIP start")
+    if not 0<=neighborhood_fraction<=1 or neighborhood_max_seconds<0 or neighborhood_min_decisions<0:
+        raise ValueError('Invalid neighborhood limits')
+    if mirror_symmetry and backend!='highs':raise ValueError('Mirror reduction requires the direct global API')
     started=time.perf_counter();deadline=started+seconds
     whole=orientation_basis(fixture,fixture.chromosome_refs)
     validate_saved_layout(fixture,starting_state,whole)
@@ -86,16 +94,17 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, 
         component_deadline=time.perf_counter()+allocation
         component_start=time.perf_counter()
         # Small models already solve quickly: no costly heuristic prelude.
-        if method.startswith('hybrid') and model.n>128:
+        if method.startswith('hybrid') and model.n>neighborhood_min_decisions:
             lns_started=time.perf_counter()
-            state,info=improve_neighborhoods(model,state,min(60,allocation*.25),
-                                            method=='hybrid_adaptive',progress)
+            state,info=improve_neighborhoods(model,state,min(neighborhood_max_seconds,allocation*neighborhood_fraction),
+                                            method=='hybrid_adaptive',progress,
+                                            deduplicate=deduplicate_neighborhoods)
             record.update(neighborhood_search=info,neighborhood_seconds=time.perf_counter()-lns_started)
         global_budget=max(.001,component_deadline-time.perf_counter())
         global_started=time.perf_counter()
         if backend=='highs':
             state,bound,info=model.highs(state,global_budget,progress=progress,
-                                        use_mip_start=method!='milp_reclaim')
+                                        use_mip_start=method!='milp_reclaim',mirror_symmetry=mirror_symmetry)
         else:
             state,bound,info=model.milp(state,global_budget)
         record['global_seconds']=time.perf_counter()-global_started
@@ -112,6 +121,9 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, 
         optimality_status='proven optimum' if upper==lower else 'bounded best known',
         seconds=time.perf_counter()-started,preparation_seconds=preparation,
         scheduling=scheduling,backend=backend,
+        requested_mirror_symmetry=mirror_symmetry,
+        neighborhood_policy=dict(min_decisions=neighborhood_min_decisions,fraction=neighborhood_fraction,
+            max_seconds=neighborhood_max_seconds,deduplicate=deduplicate_neighborhoods),
         component_diagnostics=records,
         whole_chromosome_order_changes={sp:[r.chromosome_id for r in state.chromosome_order[sp]]
             for sp in fixture.species_ids if state.chromosome_order[sp]!=starting_state.chromosome_order[sp]},

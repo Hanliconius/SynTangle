@@ -11,6 +11,8 @@ import time
 from statistics import median
 from benchmark_pipeline import atomic
 
+WORKER_ENTRY=Path(__file__).resolve()
+
 VARIANTS = {
     'equal_nohint': ('milp_reclaim', 'equal', 'highs'),
     'weighted_nohint': ('milp_reclaim', 'weighted', 'highs'),
@@ -47,7 +49,11 @@ def prepare(args):
     with (root/'benchmark_manifest.tsv').open() as handle:
         entries = list(csv.DictReader(handle, delimiter='\t'))
     if len(entries) != 9: raise ValueError('Expected the unchanged nine-case stress manifest')
-    if args.warm_run:
+    reference=Path(args.reference_run) if args.reference_run else None
+    if reference:
+        warm_run=reference
+        reference_hashes={r['case_id']:r['input_files'] for r in json.loads((reference/'inputs.json').read_text())}
+    elif args.warm_run:
         warm_run = Path(args.warm_run)
     else:
         runs = [p for p in Path(args.history).glob('hybrid_methods_*')
@@ -60,7 +66,14 @@ def prepare(args):
         basis = orientation_basis(fixture, fixture.chromosome_refs)
         raw = initial_layout_state(fixture)
         public = canonicalize_component_order(fixture, LayoutState(raw.chromosome_order, basis.base_assignment))
-        warm_path = warm_run/(entry['case_id']+'.warm.json')
+        if reference:
+            if fingerprint(fixture_dir)!=reference_hashes[entry['case_id']]:
+                raise AssertionError('Input fingerprint changed since reference run')
+            public_frozen=json.loads((reference/(entry['case_id']+'.public.json')).read_text())
+            public=decode_saved_layout(fixture,public_frozen['state'])
+            if score_crossings(fixture,public).crossings!=public_frozen['score']:
+                raise AssertionError('Reference public score mismatch')
+        warm_path = warm_run/(entry['case_id']+('.pre_hybrid.json' if reference else '.warm.json'))
         frozen = json.loads(warm_path.read_text())
         warm = decode_saved_layout(fixture, frozen['state'])
         for name, state in (('public', public), ('pre_hybrid', warm)):
@@ -69,14 +82,15 @@ def prepare(args):
             if name == 'pre_hybrid' and score != frozen['score']:
                 raise AssertionError('Historical frozen start score mismatch')
             atomic(output/(entry['case_id']+'.'+name+'.json'), dict(
-                score=score, state=state.to_dict(), source=str(warm_path) if name=='pre_hybrid'
-                else 'public chromosome order + propagated hard orientation base assignment'))
+                score=score, state=state.to_dict(), source=str(warm_path) if name=='pre_hybrid' else
+                (str(reference/(entry['case_id']+'.public.json')) if reference else
+                 'public chromosome order + propagated hard orientation base assignment')))
             print('FROZEN', entry['case_id'], name, 'C='+str(score), flush=True)
         provenance.append(dict(case_id=entry['case_id'], input_files=fingerprint(fixture_dir),
                                frozen_warm_source=str(warm_path), historical_source=frozen.get('source')))
     atomic(output/'inputs.json', provenance)
     atomic(output/'tasks.json', design(entries))
-    print('Prepared 252 tasks; warm run:', warm_run, flush=True)
+    print('Prepared',len(design(entries)),'tasks; frozen start source:',warm_run,flush=True)
 
 
 def worker(args):
@@ -85,6 +99,11 @@ def worker(args):
     from syntangle.hybrid_experiment import run_hybrid
     import scipy, highspy, numpy
     fixture = load_validation_bundle(args.case)
+    input_record=Path(args.result).parents[2]/'inputs.json'
+    if input_record.exists():
+        records=json.loads(input_record.read_text())
+        expected=next(r['input_files'] for r in records if r['case_id']==Path(args.result).parents[1].name)
+        if fingerprint(Path(args.case))!=expected:raise AssertionError('Input evidence changed after setup')
     frozen = json.loads(Path(args.warm).read_text()); state = decode_saved_layout(fixture, frozen['state'])
     started = time.perf_counter(); trajectory = []
     def checkpoint(candidate):
@@ -94,9 +113,12 @@ def worker(args):
         atomic(Path(args.result).with_suffix('.incumbent.json'), dict(
             crossings=score, state=candidate.to_dict(), trajectory=trajectory))
     checkpoint(state)
-    method, scheduling, backend = VARIANTS[args.variant]
+    specification=VARIANTS[args.variant]
+    method,scheduling,backend=specification[:3]
+    options=specification[3] if len(specification)>3 else {}
+    if method=='budget_selective':method='hybrid_adaptive' if args.seconds<300 else 'hybrid_3'
     result = run_hybrid(fixture, state, method, args.seconds, args.seed, checkpoint,
-                        scheduling=scheduling, backend=backend)
+                        scheduling=scheduling, backend=backend,**options)
     checkpoint(decode_saved_layout(fixture, result['optimized_state']))
     diagnostics = result['component_diagnostics']
     result['profile'] = dict(
@@ -107,6 +129,7 @@ def worker(args):
         global_seconds=sum(d.get('global_seconds', 0) for d in diagnostics),
         global_solver_seconds=sum(d.get('solver_seconds', 0) for d in diagnostics),
         global_nodes=sum(d.get('nodes', 0) for d in diagnostics),
+        mirror_reduced_components=sum(d.get('mirror_reduction',{}).get('applied',False) for d in diagnostics),
         neighborhood_subsolves=sum(d.get('neighborhood_search', {}).get('subsolves', 0) for d in diagnostics),
         neighborhood_solver_seconds=sum(n.get('solver_seconds',0) for d in diagnostics
             for n in d.get('neighborhood_search',{}).get('neighborhoods',[])),
@@ -128,7 +151,7 @@ def task(args):
     warm = output/(row['case_id']+'.'+row['start']+'.json'); result_path = destination/'result.json'
     report = dict(row, starting_crossings=json.loads(warm.read_text())['score'], status='started')
     atomic(destination/'task.json', report)
-    command = [sys.executable, str(Path(__file__).resolve()), '--worker', '--case',
+    command = [sys.executable, str(WORKER_ENTRY), '--worker', '--case',
                str(Path(args.root)/entry['case_dir']), '--warm', str(warm), '--result', str(result_path),
                '--variant', row['variant'], '--seconds', str(row['budget']), '--seed', entry['seed']]
     started = time.perf_counter()
@@ -154,8 +177,8 @@ def task(args):
 def collect(args):
     output = Path(args.output); records = []
     lines = ['# Efficiency ablation', '',
-             '| Case | Start | Variant | Budget | Repeat | C | Lower | Proven | Prep s | LNS s | Global s | Nodes | RSS MiB | Status |',
-             '|---|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---|']
+             '| Case | Start | Variant | Budget | Repeat | C | Lower | Proven | Prep s | LNS s | Global s | Nodes | RSS MiB | Mirror comps | Status |',
+             '|---|---|---|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---|']
     for p in sorted(output.glob('*/*/task.json')):
         row = json.loads(p.read_text()); records.append(row)
         r = row.get('result', {}); profile = r.get('profile', {})
@@ -165,16 +188,21 @@ def collect(args):
         lines.append(f"| {row['case_id']} | {row['start']} | {row['variant']} | {row['budget']} | {row['repeat']} | "
                      f"{upper} | {lower} | {proven} | {profile.get('preparation_seconds',0):.2f} | "
                      f"{profile.get('neighborhood_seconds',0):.2f} | {profile.get('global_seconds',0):.2f} | "
-                     f"{profile.get('global_nodes',0)} | {profile.get('peak_rss_kib',0)/1024:.1f} | {row['status']} |")
+                     f"{profile.get('global_nodes',0)} | {profile.get('peak_rss_kib',0)/1024:.1f} | "
+                     f"{profile.get('mirror_reduced_components',0)} | {row['status']} |")
     audits = []
     for path in sorted((output/'audits').glob('*.json')): audits.extend(json.loads(path.read_text()))
-    lines += ['', f'Expected 252 tasks; found {len(records)}. Audit case records: {len(audits)}/9.',
+    lines += ['', f'Expected {len(json.loads((output/"tasks.json").read_text()))} tasks; found {len(records)}. Audit case records: {len(audits)}/9.',
               'Completion is not proof; only matching global bounds count as reported optima.',
               'Equal vs weighted allocation both retain proven-zero components and visit small unresolved models first.',
               'The pre_hybrid start is frozen historical evidence, not the latest known optimum.',
-              'Two repeats at 150 s; one per largest case/variant/start at 600 s. Timing differences need repeated confirmation.',
+              'Repeat counts and fixture subsets are recorded in tasks.json. Timing differences need repeated confirmation.',
               'Stage timings overlap. Incumbent trajectories are improvements, not global bound trajectories.']
     for audit in audits: lines.append(f"AUDIT {audit['case_id']}: {audit['status']}")
+    expected_groups={}
+    for task in json.loads((output/'tasks.json').read_text()):
+        key=(task['budget'],task['start'],task['variant'])
+        expected_groups[key]=expected_groups.get(key,0)+1
     groups={}
     for row in records:
         groups.setdefault((row['budget'],row['start'],row['variant']),[]).append(row)
@@ -183,7 +211,7 @@ def collect(args):
         '|---:|---|---|---:|---:|---:|---:|---:|']
     for (budget,start,variant),rows in sorted(groups.items()):
         good=[r for r in rows if r['status']=='complete' and 'result' in r]
-        expected=18 if budget==150 else 3
+        expected=expected_groups[(budget,start,variant)]
         proven=sum(r['result']['upper_bound']==r['result']['lower_bound'] for r in good)
         if not good:continue
         overview.append(f"| {budget} | {start} | {variant} | {len(good)}/{expected} | {proven} | "
@@ -200,7 +228,7 @@ def collect(args):
 def main():
     p = argparse.ArgumentParser()
     for name in ('prepare','worker','collect'): p.add_argument('--'+name, action='store_true')
-    for name in ('root','output','history','warm-run','case','warm','result','variant'): p.add_argument('--'+name)
+    for name in ('root','output','history','warm-run','reference-run','case','warm','result','variant'): p.add_argument('--'+name)
     p.add_argument('--index', type=int); p.add_argument('--seconds', type=float)
     p.add_argument('--seed', type=int, default=1)
     args = p.parse_args()

@@ -153,7 +153,35 @@ class JointModel:
                     objective_constant=float(self.constant),component_lower=bound,component_upper=score)
         return state,bound,info
 
-    def highs(self, incumbent, seconds, *, strict_proof=False, progress=None, use_mip_start=True):
+    def mirror_certificate(self):
+        """Exact polynomial check for the legal full-complement involution.
+
+        Complementing all order bits reverses each complete row and preserves
+        every transitivity inequality. Complementing all free GF(2) group bits
+        stays inside the legal hard-orientation basis. For quadratic E, the
+        integer identity 2*l_i + sum_j q_ij = 0 proves E(1-x)=E(x).
+        No numerical tolerance or heuristic preference authorizes this reduction.
+        """
+        if not self.n:
+            return dict(verified=False,reason='no free decisions')
+        coefficients=list(self.linear)+list(self.quadratic.values())
+        if any(not np.isfinite(v) or float(v)!=int(v) for v in coefficients):
+            return dict(verified=False,reason='noninteger coefficient; exact check unavailable')
+        residual=[2*int(v) for v in self.linear]
+        for (a,b),q in self.quadratic.items():
+            residual[a]+=int(q);residual[b]+=int(q)
+        if any(residual):
+            return dict(verified=False,reason='objective is not full-complement invariant')
+        degree=[0]*self.n
+        for (a,b),q in self.quadratic.items():
+            degree[a]+=abs(int(q));degree[b]+=abs(int(q))
+        anchor=max(range(self.n),key=lambda i:(degree[i],-i))
+        return dict(verified=True,anchor_index=anchor,anchor_weighted_degree=degree[anchor],
+                    reason='exact integer complement identity and closed legal order/GF2 domains',
+                    paired_states=2,retained_representative='one anchored free bit',
+                    reconstruction='complete legal layout retained; excluded mate obtained by complementing all primary bits')
+
+    def highs(self, incumbent, seconds, *, strict_proof=False, progress=None, use_mip_start=True, mirror_symmetry=False):
         """One global solve with a real feasible MIP start; no restart/handoff."""
         build_started=time.perf_counter()
         import highspy
@@ -166,7 +194,16 @@ class JointModel:
         def checked(status):
             if status==highspy.HighsStatus.kError:raise RuntimeError('HiGHS API error')
         for key,value in [('output_flag',False),('threads',1),('mip_rel_gap',0.0)]:checked(h.setOptionValue(key,value))
-        checked(h.addCols(len(c),c,np.zeros(len(c)),np.ones(len(c)),0,np.zeros(len(c)+1,dtype=np.int32),np.array([],dtype=np.int32),np.array([],dtype=float)))
+        col_lower=np.zeros(len(c));col_upper=np.ones(len(c))
+        mirror=dict(requested=mirror_symmetry,applied=False)
+        if mirror_symmetry:
+            certificate=self.mirror_certificate();mirror.update(certificate)
+            if certificate['verified']:
+                # Anchor the current incumbent's mate, so it remains feasible.
+                anchor=certificate['anchor_index']
+                col_lower[anchor]=col_upper[anchor]=bits[anchor]
+                mirror.update(applied=True,anchor_value=int(bits[anchor]))
+        checked(h.addCols(len(c),c,col_lower,col_upper,0,np.zeros(len(c)+1,dtype=np.int32),np.array([],dtype=np.int32),np.array([],dtype=float)))
         checked(h.addRows(len(lower),lower,upper,len(matrix.data),matrix.indptr.astype(np.int32),matrix.indices.astype(np.int32),matrix.data))
         checked(h.changeColsIntegrality(self.n,np.arange(self.n,dtype=np.int32),np.ones(self.n,dtype=np.uint8)))
         if not strict_proof and use_mip_start:
@@ -198,7 +235,7 @@ class JointModel:
                 counterexample=int(round(self.objective(self.encode(candidate))))
             return dict(counterexample_crossings=counterexample,no_better_proven=status==highspy.HighsModelStatus.kInfeasible,
                         status=h.modelStatusToString(status),cutoff_crossings=int(round(cutoff+self.constant)),
-                        nodes=int(info.mip_node_count),seconds=time.perf_counter()-build_started)
+                        nodes=int(info.mip_node_count),seconds=time.perf_counter()-build_started,mirror_reduction=mirror)
         solution=h.getSolution()
         vector=solution.col_value if solution.value_valid else None
         dual=info.mip_dual_bound if info.valid else None
@@ -206,7 +243,7 @@ class JointModel:
             nodes=int(info.mip_node_count),variables=len(c),constraints=len(lower),
             api_preparation_seconds=api_preparation_seconds,solver_seconds=solver_seconds,
             linear_model_build_seconds=self.linear_model_build_seconds,
-            bound_scope='whole component',solver='highspy/HiGHS',solver_version=h.version(),feasible_mip_start=use_mip_start))
+            bound_scope='whole component',solver='highspy/HiGHS',solver_version=h.version(),feasible_mip_start=use_mip_start,mirror_reduction=mirror))
 
     def sdp(self, incumbent, seconds, seed=1, block_size=32, full_threshold=128):
         """Shared-moment block SDP; all pair costs retained, no bucket minima.

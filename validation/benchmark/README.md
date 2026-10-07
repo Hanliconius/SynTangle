@@ -16,8 +16,10 @@ machine-readable records and provenance in the same directory. See
 [global methods](GLOBAL_METHODS.md) and [hybrid methods](HYBRID_METHODS.md) for
 experiment procedures. [Hybrid results](results/2026-10-06-hybrid-methods/summary.md) now report matching
 global bounds on all nine stress presentations at the 600-second allowance.
-The next [efficiency ablation](EFFICIENCY_ABLATION.md) isolates stage contributions;
-its results and the raw proof-audit review remain pending.
+The completed [efficiency ablation](results/2026-10-06-efficiency/summary.md)
+records 252 tasks and nine audit outcomes. The next
+[mirror/policy experiment](MIRROR_POLICY.md) tests exact mirror equivalence and
+selective neighborhood work; its outcomes and raw proof review remain pending.
 
 ## Benchmark sequence
 

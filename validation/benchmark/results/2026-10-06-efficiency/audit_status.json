@@ -1,0 +1,38 @@
+[
+  {
+    "case_id": "stress_6sp_20chr_5ev_mild",
+    "status": "strict-improvement infeasibility verified"
+  },
+  {
+    "case_id": "stress_6sp_20chr_5ev_strong",
+    "status": "strict-improvement infeasibility verified"
+  },
+  {
+    "case_id": "stress_6sp_20chr_5ev_random",
+    "status": "strict-improvement infeasibility verified"
+  },
+  {
+    "case_id": "stress_8sp_30chr_8ev_mild",
+    "status": "strict-improvement infeasibility verified"
+  },
+  {
+    "case_id": "stress_8sp_30chr_8ev_strong",
+    "status": "strict-improvement infeasibility verified"
+  },
+  {
+    "case_id": "stress_8sp_30chr_8ev_random",
+    "status": "strict-improvement infeasibility verified"
+  },
+  {
+    "case_id": "stress_10sp_40chr_12ev_mild",
+    "status": "re-score passed; proof unresolved within audit budget"
+  },
+  {
+    "case_id": "stress_10sp_40chr_12ev_strong",
+    "status": "re-score passed; proof unresolved within audit budget"
+  },
+  {
+    "case_id": "stress_10sp_40chr_12ev_random",
+    "status": "re-score passed; proof unresolved within audit budget"
+  }
+]

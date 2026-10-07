@@ -39,6 +39,7 @@ not describe the archived stdout as an independently checked proof certificate.
 | Conditional-order probe | 138384046; implementation f7228c8 | Substantial conflicts between the two neighbors' preferred shared order; sampled triangle lifts zero | Target shared ordering across layers; do not treat conditional bounds as global |
 | Coupled factor buckets | Implementation a3a57dc; job ID not retained | 6-species lower bound 276→298; 8-species +1; largest branch work ~1571→122 without better layouts | Park bucket refinement; cost outweighed pruning |
 | Global methods | Array 138387348, setup 138387347, collector 138387349; implementation 5618814 | Joint MILP established reported C*=341 at 6 species and C*=1258 at 8; neighborhoods best on largest cases | Prioritize joint formulation and hybrid neighborhoods |
+| Efficiency ablation | Implementation 4d634e4; job IDs not supplied | 252/252 complete; all 36 largest-case 600 s runs report C=lower=8377, including public starts; 179 matching-bound records overall; six strict audits verified, largest three unresolved | Keep joint formulation; neighborhoods useful for early layout quality; do not infer universal timing winner or increased-memory benefit |
 | Hybrid optimization | Implementation a8c0bde; job IDs not supplied | 108/108 complete; all three largest presentations report C=lower=8377 within 428–501 s at 600 s allowance | Joint global solve now closes largest proof gaps; adaptive neighborhoods improve shorter-budget layouts; setup audit output still needed |
 
 Earlier pilot task 138371248_9 failed with exit 124 after 25:01 and ~435 MB RSS,
@@ -163,23 +164,63 @@ All variants start from previous best layouts; comparison against the earlier
 experiment includes warmer starts and a backend change, so it is not a clean
 end-to-end speedup measurement.
 
-## Next controlled efficiency ablation
+## Completed efficiency ablation
 
-The [efficiency ablation](../validation/benchmark/EFFICIENCY_ABLATION.md) is ready
-for Pegasus submission; no job IDs or outcomes are recorded yet. Six variants
-isolate allocation among unresolved components, backend/API, MIP starts, and
-three/adaptive neighborhoods. Public legal starts and historical pre-hybrid
-starts are frozen separately. All nine presentations get repeated 150-second
-runs; the largest three also get 600-second runs (252 tasks total, no throttle).
-A separate nine-task audit includes the new hybrid reported optima. Source
-snapshots, input hashes, stage costs, solver versions, memory and incumbent
-checkpoints accompany the results. The default solver remains unchanged.
+The [252-record archive](../validation/benchmark/results/2026-10-06-efficiency/summary.md)
+includes machine-readable scores, reported bounds, stage timings, memory and
+nine audit outcomes. All tasks completed; 179 had matching reported global
+bounds. All 36 largest-case 600-second runs reached C*=8377 from both historical
+and public legal starts. This repeats proof coverage on the same three biology
+rungs; it does not add independent biological datasets.
+
+At 150 seconds, public-start weighted no-hint MILP returned C about 74306 in the
+largest presentations, versus adaptive neighborhood scores
+16103–17016 / 22696 / 13550–13868 for mild / strong / random.
+That is about 69–82% fewer crossings. With historical starts, improvements
+were smaller but still material. Plain MILP was already fast on smaller models;
+neighborhood preludes added overhead there.
+
+Equal and weighted unresolved-component allocation were similar. This does not
+isolate the earlier benefit of removing zero components or changing visit order.
+Feasible MIP starts were not uniformly helpful: poor public starts sometimes
+produced worse short-budget layouts than no hint. Direct HiGHS generally beat
+the SciPy path on largest-case proof times, but backend/API and hardware/runtime
+variation remain part of that comparison.
+
+Public-start largest-case median wall time was 239.89 s for three-species
+neighborhoods, versus 465.14 s for weighted no-hint MILP. Each long comparison
+ran once per presentation: this is promising, not a universal timing ranking.
+The pooled 150-second medians mix six fast and three hard presentations, so
+they should not describe performance on the hard cases alone. Worker memory
+peaks were below about 550 MiB despite a 16G request; increasing memory is not
+the demonstrated source of improvement.
+
+Separate strict-improvement audits verified all six small/medium presentations.
+The largest three passed canonical re-scoring but remained unresolved within
+120 seconds per positive-score component. No counterexample was reported.
+Raw component records/certificates remain on Pegasus; collector stdout does
+not independently establish a rational proof certificate.
+
+## Next optimization: mirror equivalence and selective work
+
+The [mirror/policy experiment](../validation/benchmark/MIRROR_POLICY.md) adds
+an optional exact integer check that proves full decision-complement symmetry
+before anchoring one primary bit in global search. It also tests a shorter,
+budget-sensitive neighborhood prelude that skips smaller models and avoids
+duplicate edge windows. Heuristic thresholds do not exclude global choices.
+The mirror fixing persists through one global solve, with no backend restart.
+
+Seven variants include unchanged direct/three/adaptive controls and paired
+mirror versions. All nine presentations receive both previously frozen starts
+at 150 s once; the largest receive 600 s twice (210 tasks, no throttle).
+A separate nine-task unanchored strict audit now allows 600 s per positive-score
+component. New outcomes and job IDs are pending. Production defaults are unchanged.
 
 ## Promotion and remaining validation
 
 Promote a strategy only after legal-state/objective checks, reported-bound audit,
 matched-budget comparison, presentation invariance and visual reconstruction
-checks. The hybrid implementation and efficiency instrumentation now have 116 passing unit tests, including
+checks. The hybrid implementation and efficiency instrumentation now have 123 passing unit tests, including
 exhaustive objective equivalence, transitivity, hinted solver reconstruction,
 strict-improvement checks and removal of proven-zero components.
 

@@ -77,11 +77,16 @@ The [hybrid comparison](validation/benchmark/results/2026-10-06-hybrid-methods/s
 now reports all nine stress presentations solved to matching global bounds at
 600-second allowances. The three largest cases reach C=8377 in 428–501 seconds;
 adaptive neighborhoods yield better layouts at shorter budgets, while plain
-MILP also reaches the final optimum. Stage-by-stage efficiency attribution and
-the setup strict-improvement audit output still require review. The next
-[controlled efficiency ablation](validation/benchmark/EFFICIENCY_ABLATION.md)
-tests allocation, backend, MIP starts and neighborhoods using both public and
-historical starts, with stage profiles and a separate audit array. Graph/GF(2) reductions and model
+MILP also reaches the final optimum. The completed
+[efficiency ablation](validation/benchmark/results/2026-10-06-efficiency/summary.md)
+repeated matching-bound results from public starts as well as historical layouts.
+Neighborhoods substantially improved early large-case layouts; plain MILP was
+already efficient on easier cases. Separate strict-improvement checks verified
+the six smaller presentations; the largest three audits remained unresolved
+within their 120-second allowance. The next
+[mirror/policy experiment](validation/benchmark/MIRROR_POLICY.md) tests a proved
+mirror equivalence reduction and selective heuristic work, with repeated longer
+runs and extended audits. Its results are pending. Graph/GF(2) reductions and model
 data are reused in the hybrid, but importing every residual-domain reduction
 and reconstruction mapping from the older exact backends has not yet been
 established. That handoff contract remains a requirement before claiming full
