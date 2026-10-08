@@ -59,6 +59,52 @@ def add_deposited_reference_anchors(fixture, prepared, native_input):
     return result
 
 
+def direct_reference_colours(fixture, prepared, provenance):
+    """Colour-only projection through direct reference block overlap; no inferred links."""
+    from collections import defaultdict
+    reference = provenance.get('colour_reference', fixture.species_ids[0])
+    intervals = defaultdict(list)
+    source = prepared / 'published_block_coordinates.tsv'
+    if not source.exists():
+        raise ValueError('Direct reference coordinates needed for colour projection')
+    with source.open() as f:
+        for row in csv.DictReader(f, delimiter='\t'):
+            for i, j in ((1,2),(2,1)):
+                if row[f'genome{i}'] == reference:
+                    lo, hi = sorted((float(row[f'startBp{j}']), float(row[f'endBp{j}'])))
+                    intervals[row[f'genome{j}'],row[f'chr{j}']].append((lo,hi,row[f'chr{i}']))
+    votes = defaultdict(lambda:defaultdict(float))
+    direct = {}
+    for c in fixture.chromosomes:
+        for b in c.blocks:
+            if c.ref.species_id == reference:
+                direct[b.homology_id] = c.ref.chromosome_id
+            # Merge overlap intervals within each reference chromosome to avoid double counting.
+            by_ref = defaultdict(list)
+            for lo,hi,ref in intervals[c.ref.species_id,c.ref.chromosome_id]:
+                lo,hi=max(lo,b.start),min(hi,b.end)
+                if hi>lo:by_ref[ref].append((lo,hi))
+            for ref,spans in by_ref.items():
+                merged=[]
+                for lo,hi in sorted(spans):
+                    if merged and lo<=merged[-1][1]:merged[-1]=(merged[-1][0],max(hi,merged[-1][1]))
+                    else:merged.append((lo,hi))
+                votes[b.homology_id][ref]+=sum(hi-lo for lo,hi in merged)/(b.end-b.start)
+    assignments=dict(direct);ambiguous=[]
+    for hid,v in votes.items():
+        if hid in direct:continue
+        ranked=sorted(v.items(),key=lambda t:(-t[1],t[0]))
+        if ranked and (len(ranked)==1 or ranked[0][1]>ranked[1][1]+1e-9):
+            assignments[hid]=ranked[0][0]
+        else:ambiguous.append(hid)
+    provenance['homology_colour_reference']=assignments
+    provenance['colour_reference']=reference
+    provenance['colour_note']='Colours project dominant direct Bombyx block overlap; tied/unassigned links grey. Colour only, not a shared orthology claim.'
+    return dict(reference=reference,assigned_ids=assignments,ambiguous_ids=ambiguous,
+                rule='union overlap per reference chromosome, normalized by block span, summed across endpoints',
+                source_sha256=hashlib.sha256(source.read_bytes()).hexdigest())
+
+
 def render(fixture, panels, output, provenance):
     fig, axes = plt.subplots(2, 2, figsize=(19, max(11, 1.8 * len(fixture.species_ids))))
     expected = sum(len(_unambiguous_links(fixture, a, b))
@@ -66,7 +112,7 @@ def render(fixture, panels, output, provenance):
     if expected != provenance['retained_links']:
         raise ValueError('Renderer would omit imported links')
     reference = provenance.get('colour_reference', 'schMedS3h1' if 'schMedS3h1' in fixture.species_ids else fixture.species_ids[0])
-    palette = ['#009E73', '#D55E00', '#56B4E9', '#E6AB02', '#0072B2', '#CC79A7', '#777777', '#E69F00']
+    palette = [c for i,c in enumerate(plt.get_cmap('tab20').colors) if i not in (14,15)] + list(plt.get_cmap('tab20b').colors)
     import re
     refs = sorted([r for r in fixture.chromosome_refs if r.species_id == reference],
                   key=lambda r: [int(t) if t.isdigit() else t for t in re.split(r'(\d+)', r.chromosome_id)])
@@ -110,7 +156,7 @@ def render(fixture, panels, output, provenance):
     fig.legend(handles=[Patch(facecolor=colour, label=chrom) for chrom, colour in ref_colours.items()] +
                [Patch(facecolor='#9A9A9A', label='Unassigned')],
                title=f'Colour reference: {reference}', loc='upper center', bbox_to_anchor=(.56, .95),
-               ncol=min(9, len(ref_colours) + 1), fontsize=7, title_fontsize=8, frameon=False)
+               ncol=min(14, len(ref_colours) + 1), fontsize=7, title_fontsize=8, frameon=False)
     source_note = provenance.get('source_kind', 'archived GENESPACE block evidence')
     extent_note = provenance.get('chromosome_extent', 'Maximum observed block endpoint; NOT assembly chromosome lengths')
     fig.suptitle(f'{fixture.fixture_id}: {source_note}', x=.12, ha='left', fontsize=15)
@@ -125,7 +171,7 @@ def render(fixture, panels, output, provenance):
              'GS uses block proxy anchors, including source nonadjacent blocks when available (ordering only). All panels share the adjacent-link objective.\n'
              'This is NOT a gene-level GENESPACE rerun. ' + provenance.get('colour_note', 'Colours track reference-chromosome membership; other links are grey.'),
              fontsize=8, color='#465363')
-    fig.subplots_adjust(left=.12, right=.98, top=.87, bottom=.14, hspace=.4, wspace=.25)
+    fig.subplots_adjust(left=.12, right=.98, top=.82, bottom=.14, hspace=.4, wspace=.25)
     temporary = output / 'comparison.partial.pdf'
     fig.savefig(temporary, format='pdf')
     temporary.replace(output / 'comparison.pdf')
@@ -195,3 +241,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

@@ -9,7 +9,7 @@ mkdir -p "$SCT_FILTER/plot_code/validation/real_data" "$SCT_FILTER/plot_code/val
 cp validation/real_data/{plot_block_filter.py,benchmark_block_filter.py,plot_comparison.py} "$SCT_FILTER/plot_code/validation/real_data/"
 cp validation/benchmark/{compare_genespace.py,visual_summary.py} "$SCT_FILTER/plot_code/validation/benchmark/"
 export SCT_REPO SCT_SOURCE SCT_FILTER
-sbatch --partition=nano --cpus-per-task=1 --mem=4G --time=00:10:00 --job-name=st_filter_fig --output="$SCT_REPO/logs/st_filter_fig.%j.out" --error="$SCT_REPO/logs/st_filter_fig.%j.err" <<'SLURM'
+sbatch --partition=cpu --cpus-per-task=1 --mem=4G --time=00:10:00 --job-name=st_filter_fig --output="$SCT_REPO/logs/st_filter_fig.%j.out" --error="$SCT_REPO/logs/st_filter_fig.%j.err" <<'SLURM'
 #!/usr/bin/env bash
 set -euo pipefail
 export PYTHONPATH="$SCT_FILTER/code/src"

@@ -9,7 +9,7 @@ from syntangle.fixtures import load_fixture
 from syntangle.saved_layout import decode_saved_layout, validate_saved_layout
 from syntangle.orientation_space import orientation_basis
 from benchmark_block_filter import metrics, atomic
-from plot_comparison import render
+from plot_comparison import render, direct_reference_colours
 
 
 def main():
@@ -56,7 +56,9 @@ def main():
     panels.append((decode_saved_layout(fixture,best['best_state']),'SynTangle: staged filtering',
                    f"all links restored; L={lower:,}; U={upper:,}; {summary['optimality_status']}"))
     provenance=dict(old['provenance'])
-    provenance['colour_note']='Grey means no assigned Bombyx colour; all links are scored. Filtering changes search guidance only.'
+    colour_audit=direct_reference_colours(fixture,prepared,provenance)
+    atomic(output/'colour_audit.json',colour_audit)
+    summary['colour_scope']=provenance['colour_note']
     render(fixture,panels,output,provenance)
     atomic(output/'summary.json',summary)
     lines=['# Full-evidence filtering comparison','',f'Full-data bound: {lower} <= C* <= {upper}; {summary["optimality_status"]}.','',
