@@ -140,3 +140,12 @@ The updated importer preserves both annotations and flags this disagreement.
 Its block-midpoint objective does not use those annotations as hard parity.
 Geometric or multiplicity discrepancies still cause import failure. This is
 a source annotation discrepancy, not an optimisation result.
+
+## Published-paper scope
+
+See [PAPER_DATA_ACCESS.md](PAPER_DATA_ACCESS.md) for the active shortlist.
+Use `bash validation/real_data/submit_published_inputs.sh` on Pegasus to prepare
+the deposited planarian block projection and download the four Leptidea male
+assemblies concurrently. Leptidea still needs gene annotation/collinearity
+reconstruction; the planarian import is not yet an exact published-display
+replica. Other candidates are deferred until finished plotting inputs suffice.
