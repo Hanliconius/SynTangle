@@ -106,6 +106,24 @@ leave a partial comparison PDF; only a case with `COMPLETE` has finished all fou
 panels. The launcher does not recreate the paper's plotted order or gene-level
 GENESPACE pipeline. All source links and overlapping block spans are retained.
 
+The block projection contains pair-specific links rather than multispecies
+orthogroups. End-species references may therefore return incomplete orders.
+The real-data launcher skips such variants wholesale and records missing
+chromosomes/errors in `native_variant_audit.tsv`; it never fills an omitted
+chromosome with an invented position or drops it from the fixture. At least one
+complete native variant is required. Labels and audit identify this restricted
+comparison. The synthetic benchmark helper remains strict by default.
+
+An `afterany` collector creates `SynTangle_real_comparisons.zip` with individual
+PDFs, prepared inputs, saved layouts/results/audits and an explicit completion
+manifest. Its combined PDF includes completed cases only. The ZIP is also copied
+to `local_results/SynTangle_real_comparisons.zip` for a single stable download
+path. Download from a local terminal using the same host/alias as normal SSH:
+
+```bash
+scp 'jjhanly@YOUR_PEGASUS_HOST:/absolute/checkout/path/local_results/SynTangle_real_comparisons.zip' .
+```
+
 See [PAPER_DATA_ACCESS.md](PAPER_DATA_ACCESS.md) for access and preparation status
 of independent published figure candidates, including the required 2023
 Leptidea example.

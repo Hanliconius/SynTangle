@@ -79,7 +79,8 @@ def main():
     render(fixture, panels, a.output, provenance)
     export_native_input(fixture, a.output / 'native_input')
     subprocess.run(['Rscript', str(BENCHMARK / 'genespace_native_order.R'),
-                    str(a.output / 'native_input'), str(a.output)], check=True, timeout=180)
+                    str(a.output / 'native_input'), str(a.output),
+                    '--skip-incomplete-variants'], check=True, timeout=180)
     variants = list(load_native_states(fixture, a.output / 'native_orders.tsv'))
     if not variants:
         raise ValueError('No GENESPACE ordering variants')
@@ -88,7 +89,7 @@ def main():
     assisted = [(v, improve_flips(fixture, state, 1 + i)[0])
                 for i, (v, metadata, state) in enumerate(variants)]
     flips = min(assisted, key=lambda v: (score(v[1]), v[0]))
-    panels += [(native[2], 'GENESPACE ordering function', 'best reference/weight; block proxy anchors'),
+    panels += [(native[2], 'GENESPACE ordering function', 'best complete reference/weight; block proxy anchors'),
                (flips[1], 'GENESPACE ordering + our flip assistance', 'fixed chromosome order; heuristic')]
     render(fixture, panels, a.output, provenance)
     start = min([initial, native[2], flips[1]], key=score)
@@ -113,6 +114,7 @@ def main():
         'fixture_sha256': hashlib.sha256((a.prepared / 'fixture.json').read_bytes()).hexdigest(),
         'panels': [{'title': title, 'crossings': score(state), 'state': state.to_dict()} for state, title, note in panels],
         'provenance': provenance,
+        'native_variant_audit': (a.output / 'native_variant_audit.tsv').read_text(),
         'scope': 'Real block projection; not reproduction of the published drawing or native gene-level workflow'})
     (a.output / 'COMPLETE').write_text('PASS\n')
     print(f"{fixture.fixture_id}: input={score(initial)} GS={score(native[2])} GS+flips={score(flips[1])} ST={score(final)} L={result['lower_bound']} {result['optimality_status']}", flush=True)

@@ -1,6 +1,8 @@
 # Execute the installed GENESPACE ordering code, without its rendering stack.
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) != 2L) stop("Usage: genespace_native_order.R INPUT OUTPUT")
+if (!(length(args) %in% c(2L, 3L))) stop("Usage: genespace_native_order.R INPUT OUTPUT [--skip-incomplete-variants]")
+skipIncomplete <- length(args) == 3L && args[[3]] == "--skip-incomplete-variants"
+if (length(args) == 3L && !skipIncomplete) stop("Unknown optional argument")
 library(data.table)
 ns <- asNamespace("GENESPACE")
 version <- as.character(packageVersion("GENESPACE"))
@@ -29,17 +31,38 @@ if (!all(required %in% names(bed))) stop("Invalid public-evidence bed")
 if (anyDuplicated(bed[, .(genome, og)])) stop("Pilot requires unique homology per species")
 
 rows <- list()
+variantAudit <- list()
 for (reference in species) {
   for (weight in c(1, 0.5)) {
+    id <- sprintf("%s_w%s", reference, weight)
     started <- proc.time()[["elapsed"]]
-    order <- native_order(reference, copy(bed), copy(clens), weight)
+    order <- tryCatch(native_order(reference, copy(bed), copy(clens), weight),
+                      error = function(e) {
+                        if (!skipIncomplete) stop(e)
+                        structure(list(message = conditionMessage(e)), class = "native_order_error")
+                      })
     seconds <- proc.time()[["elapsed"]] - started
-    if (nrow(order) != nrow(clens) ||
-        !setequal(paste(order$genome, order$chr), paste(clens$genome, clens$chr))) {
-      stop("GENESPACE omitted chromosomes; evidence will not be silently dropped")
+    expected <- paste(clens$genome, clens$chr, sep = "::")
+    failed <- inherits(order, "native_order_error")
+    returned <- if (failed) character() else paste(order$genome, order$chr, sep = "::")
+    missing <- setdiff(expected, returned)
+    extra <- setdiff(returned, expected)
+    complete <- !failed && length(returned) == length(expected) &&
+      !anyDuplicated(returned) && length(missing) == 0L && length(extra) == 0L
+    variantAudit[[length(variantAudit) + 1L]] <- data.table(
+      variant = id, reference = reference, synteny_weight = weight,
+      complete = complete, expected_chromosomes = length(expected),
+      returned_chromosomes = length(returned), missing = paste(missing, collapse = ";"),
+      extra = paste(extra, collapse = ";"),
+      error = if (failed) order$message else "", ordering_seconds = seconds)
+    fwrite(rbindlist(variantAudit), file.path(output, "native_variant_audit.tsv"), sep = "\t")
+    if (!complete) {
+      if (!skipIncomplete) stop("GENESPACE omitted chromosomes; evidence will not be silently dropped")
+      message("SKIP ", id, ": incomplete native result; missing=", length(missing),
+              "; no incomplete layout enters the comparison")
+      next
     }
     if (anyDuplicated(order[, .(genome, chr)])) stop("Duplicate output chromosomes")
-    id <- sprintf("%s_w%s", reference, weight)
     order[, `:=`(variant = id, reference = reference, synteny_weight = weight,
                  ordering_seconds = seconds)]
     rows[[length(rows) + 1L]] <- order[, .(
@@ -47,6 +70,7 @@ for (reference in species) {
     )]
   }
 }
+if (length(rows) == 0L) stop("No complete GENESPACE ordering variant; inspect native_variant_audit.tsv")
 fwrite(rbindlist(rows), file.path(output, "native_orders.tsv"), sep = "\t")
 writeLines(deparse(native_order), file.path(output, "installed_ordering_function.R"))
 writeLines(c(paste("GENESPACE", version), R.version.string,

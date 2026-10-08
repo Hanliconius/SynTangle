@@ -30,7 +30,7 @@ set -euo pipefail
 eval "$("$SCT_REAL_MAMBA" shell hook --shell bash)"
 micromamba activate syntangle_test
 python -m venv "$SCT_REAL_OUTPUT/venv"
-"$SCT_REAL_OUTPUT/venv/bin/python" -m pip install -r "$SCT_REAL_OUTPUT/code/validation/benchmark/hybrid_methods_requirements.txt" matplotlib==3.10.8
+"$SCT_REAL_OUTPUT/venv/bin/python" -m pip install -r "$SCT_REAL_OUTPUT/code/validation/benchmark/hybrid_methods_requirements.txt" matplotlib==3.10.8 pypdf==6.1.1
 SLURM
 )
 SCT_REAL_ARRAY=$(sbatch --parsable --dependency="afterok:${SCT_REAL_SETUP%%;*}" --chdir="$SCT_REAL_REPO" <<'SLURM'
@@ -57,4 +57,19 @@ PY
   --output "$SCT_REAL_OUTPUT/figures/$SCT_REAL_CASE" --seconds "$SCT_REAL_SECONDS"
 SLURM
 )
-printf 'Setup: %s\nComparison array (all 6 concurrently): %s\nPDF directory: %s/figures\n' "${SCT_REAL_SETUP%%;*}" "${SCT_REAL_ARRAY%%;*}" "$SCT_REAL_OUTPUT"
+SCT_REAL_COLLECT=$(sbatch --parsable --dependency="afterany:${SCT_REAL_ARRAY%%;*}" --chdir="$SCT_REAL_REPO" <<'SLURM'
+#!/bin/bash
+#SBATCH --job-name=st_real_fig_collect
+#SBATCH --partition=nano
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=4G
+#SBATCH --time=00:10:00
+#SBATCH --output=logs/st_real_fig_collect.%j.out
+#SBATCH --error=logs/st_real_fig_collect.%j.err
+set -euo pipefail
+"$SCT_REAL_OUTPUT/venv/bin/python" "$SCT_REAL_OUTPUT/code/validation/real_data/collect_comparisons.py" \
+  --run "$SCT_REAL_OUTPUT" --manifest "$SCT_REAL_OUTPUT/code/validation/real_data/datasets.json" \
+  --latest-archive "$SCT_REAL_REPO/local_results/SynTangle_real_comparisons.zip"
+SLURM
+)
+printf 'Setup: %s\nComparison array (all 6 concurrently): %s\nCollector: %s\nPDF directory: %s/figures\nDownload archive: %s/local_results/SynTangle_real_comparisons.zip\n' "${SCT_REAL_SETUP%%;*}" "${SCT_REAL_ARRAY%%;*}" "${SCT_REAL_COLLECT%%;*}" "$SCT_REAL_OUTPUT" "$SCT_REAL_REPO"
