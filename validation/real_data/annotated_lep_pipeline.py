@@ -3,6 +3,8 @@ import argparse, csv, gzip, hashlib, itertools, json, re, subprocess
 from collections import defaultdict
 from pathlib import Path
 from urllib.parse import unquote
+import shutil
+import zipfile
 from prepare_published_inputs import download, digest
 
 
@@ -24,20 +26,52 @@ def fasta(path):
 def prepare(run, manifest):
     for d in manifest['species']:
         out = run/'sources'/d['id']; out.mkdir(parents=True, exist_ok=True)
-        acc = d['accession']; digits = acc.split('_')[1].split('.')[0]
+        acc = d['accession']
         prefix = acc+'_'+d['assembly_name']
-        base = f'https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/{digits[:3]}/{digits[3:6]}/{digits[6:]}/{prefix}/'
-        files = {}
-        for suffix in ['_genomic.gff.gz', '_protein.faa.gz', '_assembly_report.txt']:
-            p = out/(prefix+suffix); download(base+p.name, p)
-            files[suffix] = dict(url=base+p.name, sha256=digest(p))
-        # RefSeq accession and chromosome lengths come from the assembly report.
+        url = (f'https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/{acc}/download'
+               '?include_annotation_type=GENOME_GFF&include_annotation_type=PROT_FASTA'
+               '&include_annotation_type=SEQUENCE_REPORT')
+        archive = out / (acc + '_annotations.datasets.zip')
+        download(url, archive)
+        files = {'datasets_archive': dict(url=url, sha256=digest(archive))}
         chroms = {}
-        for line in (out/(prefix+'_assembly_report.txt')).read_text().splitlines():
-            if line.startswith('#'): continue
-            cols = line.split('\t')
-            if len(cols) >= 9 and cols[1] == 'assembled-molecule' and cols[3] == 'Chromosome' and cols[2] != 'MT':
-                chroms[cols[6]] = dict(id=cols[2], length=int(cols[8]))
+        with zipfile.ZipFile(archive) as z:
+            bad = z.testzip()
+            if bad is not None: raise ValueError('Corrupt NCBI ZIP member: '+bad)
+            root = f'ncbi_dataset/data/{acc}/'
+            required = [root + name for name in ('genomic.gff', 'protein.faa', 'sequence_report.jsonl')]
+            if not set(required).issubset(z.namelist()):
+                raise ValueError(f'NCBI package missing requested annotation files for {acc}: {z.namelist()}')
+            for member, suffix in [(root+'genomic.gff', '_genomic.gff.gz'),
+                                   (root+'protein.faa', '_protein.faa.gz')]:
+                dest = out / (prefix + suffix)
+                tmp = dest.with_name(dest.name + '.partial')
+                try:
+                    with z.open(member) as src, gzip.open(tmp, 'wb') as dst:
+                        shutil.copyfileobj(src, dst)
+                    tmp.replace(dest)
+                finally: tmp.unlink(missing_ok=True)
+                files[suffix] = dict(url=url, archive_member=member,
+                                     sha256=digest(dest),
+                                     source_uncompressed_sha256=hashlib.sha256(z.read(member)).hexdigest())
+            member = root + 'sequence_report.jsonl'
+            report = z.read(member)
+            (out / 'sequence_report.jsonl').write_bytes(report)
+            files['sequence_report'] = dict(url=url, archive_member=member,
+                                           sha256=hashlib.sha256(report).hexdigest())
+            for line in report.splitlines():
+                row = json.loads(line)
+                if row.get('assemblyAccession') != acc:
+                    raise ValueError('NCBI package returned a different assembly accession')
+                if (row.get('role') == 'assembled-molecule'
+                    and row.get('assignedMoleculeLocationType') == 'Chromosome'
+                    and row.get('chrName') != 'MT'):
+                    ref = row.get('refseqAccession')
+                    chrom = row.get('chrName')
+                    length = int(row['length'])
+                    if not ref or not chrom or length <= 0 or ref in chroms:
+                        raise ValueError('Invalid/duplicate NCBI sequence-report chromosome')
+                    chroms[ref] = dict(id=chrom, length=length)
         if not chroms: raise ValueError('No chromosome sequences in '+acc)
         genes, protein_gene, excluded = {}, {}, defaultdict(int)
         with gzip.open(out/(prefix+'_genomic.gff.gz'), 'rt') as f:
