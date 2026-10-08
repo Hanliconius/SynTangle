@@ -149,3 +149,27 @@ the deposited planarian block projection and download the four Leptidea male
 assemblies concurrently. Leptidea still needs gene annotation/collinearity
 reconstruction; the planarian import is not yet an exact published-display
 replica. Other candidates are deferred until finished plotting inputs suffice.
+
+## Planarian comparison after preparation
+
+```bash
+bash validation/real_data/submit_planarian_comparison.sh
+cat logs/st_planarian_fig*.{out,err}
+```
+
+The script reads `local_results/latest_published_inputs_run.txt`, submits setup,
+comparison and collector jobs, and reuses the prepared data. An optional first
+argument chooses a specific published-input preparation run. SynTangle gets
+150 seconds by default (`SCT_REAL_SECONDS`); Slurm allows 20 minutes for the
+complete comparison, baseline trials and PDFs. Four vector panels compare input
+chromosome-name order, GENESPACE ordering, GENESPACE plus our flips and SynTangle.
+All 585 scored links are retained. Deposited nonadjacent blocks supplement
+GENESPACE's reference ordering only; their use is logged in
+`native_input/reference_anchor_audit.json`. This is the installed GENESPACE
+1.3.1 ordering function on block proxy anchors, not the original 1.0.8
+gene-level plotting run. Original published chromosome order/flips remain
+unrecovered. The collector bundles results, bounds, provenance and PDFs at
+`local_results/SynTangle_planarian_comparisons.zip`; inspect its completion status
+before interpreting partial PDFs.
+
+For the remaining Leptidea work, see [LEPTIDEA_ANNOTATIONS.md](LEPTIDEA_ANNOTATIONS.md).

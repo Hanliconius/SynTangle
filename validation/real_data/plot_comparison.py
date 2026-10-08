@@ -1,5 +1,6 @@
 """Pegasus-only real block-projection comparison; no homology discovery rerun."""
 import argparse
+import csv
 import hashlib
 import json
 import subprocess
@@ -14,7 +15,7 @@ from syntangle.visualize import _unambiguous_links
 
 BENCHMARK = Path(__file__).resolve().parents[1] / 'benchmark'
 sys.path.insert(0, str(BENCHMARK))
-from compare_genespace import export_native_input, load_native_states, improve_flips
+from compare_genespace import export_native_input, load_native_states, improve_flips, read_tsv, write_tsv
 from visual_summary import riparian
 import matplotlib.pyplot as plt
 
@@ -23,6 +24,36 @@ def atomic_json(path, value):
     tmp = path.with_suffix('.tmp')
     tmp.write_text(json.dumps(value, indent=2) + '\n')
     tmp.replace(path)
+
+
+def add_deposited_reference_anchors(fixture, prepared, native_input):
+    """Supply directly observed nonadjacent blocks, never transitive homology."""
+    source = prepared / 'published_block_coordinates.tsv'
+    if not source.exists():
+        return {'source': 'adjacent scored block links only', 'additional_anchors': 0}
+    allowed = {(ref.species_id, ref.chromosome_id) for ref in fixture.chromosome_refs}
+    adjacent = {frozenset((a, b)) for a, b in zip(fixture.species_ids, fixture.species_ids[1:])}
+    bed = read_tsv(native_input / 'bed.tsv')
+    audit = []
+    with source.open() as f:
+        for line, row in enumerate(csv.DictReader(f, delimiter='\t'), 2):
+            a, b = row['genome1'], row['genome2']
+            if a == b or frozenset((a, b)) in adjacent: continue
+            sides = [(row[f'genome{i}'], row[f'chr{i}']) for i in (1, 2)]
+            if not all(side in allowed for side in sides): continue
+            hid = f'deposited_nonadjacent_row_{line}'
+            for i, (sp, chrom) in enumerate(sides, 1):
+                midpoint = (float(row[f'startBp{i}']) + float(row[f'endBp{i}'])) / 2
+                bed.append(dict(genome=sp, chr=chrom, ord=midpoint, og=hid,
+                                noAnchor='FALSE', isArrayRep='TRUE'))
+            audit.append(dict(source_row=line, source_block_id=row['blkID'], genomes=[a, b]))
+    write_tsv(native_input / 'bed.tsv', bed)
+    result = {'source': 'deposited adjacent plus nonadjacent block proxy anchors',
+              'additional_anchors': len(audit), 'additional_blocks': audit,
+              'use': 'GENESPACE ordering only; every method rescored on the same adjacent fixture links',
+              'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest()}
+    atomic_json(native_input / 'reference_anchor_audit.json', result)
+    return result
 
 
 def render(fixture, panels, output, provenance):
@@ -47,12 +78,17 @@ def render(fixture, panels, output, provenance):
                 x += width + gap
     for ax in list(axes.flat)[len(panels):]:
         ax.axis('off')
-    conflicts = sum(len(p['orientation_conflicts']) for p in provenance['pair_audit'])
+    pair_audit = provenance['pair_audit']
+    if all('orientation_conflicts' in p for p in pair_audit):
+        orientation_note = f"Source reciprocal orientation conflicts: {sum(len(p['orientation_conflicts']) for p in pair_audit)}."
+    else:
+        orientation_note = 'Reciprocal orientation conflicts not audited; source orientations retained in provenance.'
     fig.suptitle(f'{fixture.fixture_id}: archived GENESPACE block evidence', x=.12, ha='left', fontsize=17)
     fig.text(.12, .025,
-             f'All {expected} imported adjacent-pair links retained in every panel; source orientation conflicts: {conflicts}.\n'
+             f'All {expected} imported adjacent-pair links retained in every panel. {orientation_note}\n'
              'C counts block-midpoint crossings. Input uses chromosome-name order; it is NOT the published drawing.\n'
-             'Chromosome extents are observed block endpoints, not full assembly lengths. GS ordering uses block links as proxy anchors;\n'
+             'Chromosome extents are observed block endpoints, not full assembly lengths. GS uses block proxy anchors (including deposited\n'
+             'nonadjacent blocks when available; ordering only). All panels share the adjacent-link crossing objective.\n'
              'this is NOT a gene-level GENESPACE rerun. Ribbon spans retain coordinates; source strands remain annotations in provenance.',
              fontsize=8, color='#465363')
     fig.subplots_adjust(left=.12, right=.98, top=.87, bottom=.14, hspace=.4, wspace=.25)
@@ -78,6 +114,7 @@ def main():
     # A usable vector figure exists even if a subsequent solver is interrupted.
     render(fixture, panels, a.output, provenance)
     export_native_input(fixture, a.output / 'native_input')
+    native_anchor_audit = add_deposited_reference_anchors(fixture, a.prepared, a.output / 'native_input')
     subprocess.run(['Rscript', str(BENCHMARK / 'genespace_native_order.R'),
                     str(a.output / 'native_input'), str(a.output),
                     '--skip-incomplete-variants'], check=True, timeout=180)
@@ -114,6 +151,7 @@ def main():
         'fixture_sha256': hashlib.sha256((a.prepared / 'fixture.json').read_bytes()).hexdigest(),
         'panels': [{'title': title, 'crossings': score(state), 'state': state.to_dict()} for state, title, note in panels],
         'provenance': provenance,
+        'native_anchor_audit': native_anchor_audit,
         'native_variant_audit': (a.output / 'native_variant_audit.tsv').read_text(),
         'scope': 'Real block projection; not reproduction of the published drawing or native gene-level workflow'})
     (a.output / 'COMPLETE').write_text('PASS\n')
