@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-SCT_F_REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+export SCT_F_REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 cd "$SCT_F_REPO"
 export SCT_F_PREVIOUS=${1:-$(cat local_results/latest_planarian_visual_run.txt)}
 SCT_F_PREVIOUS=$(cd "$SCT_F_PREVIOUS" && pwd)
@@ -34,3 +34,4 @@ micromamba activate "$SCT_REAL_GS_ENV"
 "$SCT_F_PREVIOUS/venv/bin/python" "$SCT_F_RUN/code/validation/real_data/collect_comparisons.py" --run "$SCT_F_RUN" --manifest "$SCT_F_RUN/comparison_manifest.json" --latest-archive "$SCT_F_REPO/local_results/SynTangle_flatworms_fig4f.zip"
 SLURM
 printf 'Results: %s\nArchive when complete: %s/local_results/SynTangle_flatworms_fig4f.zip\n' "$SCT_F_RUN" "$SCT_F_REPO"
+

@@ -9,8 +9,8 @@ from syntangle.saved_layout import decode_saved_layout
 from plot_comparison import render, atomic_json
 
 ORDERS = {
-    'schMedS3h1': ['chr1', 'chr2', 'chr3', 'chr4'],
-    'schMedS3h2': ['chr1', 'chr2', 'chr3', 'chr4'],
+    'schMedS3h1': ['chr1_h1', 'chr2_h1', 'chr3_h1', 'chr4_h1'],
+    'schMedS3h2': ['chr1_h2', 'chr2_h2', 'chr3_h2', 'chr4_h2'],
     'schPol2': ['chr3', 'chr4', 'chr1', 'chr2'],
     'schNov1': ['chr3', 'chr1', 'chr2'],
     'schLug1': ['chr1', 'chr2', 'chr3', 'chr4'],
@@ -27,7 +27,7 @@ def main():
     refs = {(r.species_id, r.chromosome_id): r for r in fixture.chromosome_refs}
     expected = {(sp, c) for sp, cs in ORDERS.items() for c in cs}
     if set(refs) != expected:
-        raise ValueError('Fixture differs from the 19 labelled chromosomes in Fig. 4b')
+        raise ValueError(f'Fig. 4b chromosome mismatch: missing={sorted(expected - set(refs))}; extra={sorted(set(refs) - expected)}')
     paper = LayoutState(
         {sp: tuple(refs[sp, c] for c in ORDERS[sp]) for sp in fixture.species_ids},
         {r: 1 for r in fixture.chromosome_refs})
@@ -106,3 +106,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
