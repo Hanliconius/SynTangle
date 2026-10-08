@@ -78,6 +78,38 @@ JCVI format reference: https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-ve
 See ../benchmark/FINAL_VALIDATION.md for the Pegasus submission commands and
 acceptance gates. No figure generation is performed by either launcher.
 
+## Successful final Pegasus validation and the first comparison PDFs
+
+User-reported run 138413416 passed all three groups: 144 discovery tests,
+2 exhaustive tests, and 35 focused tests (groups overlap). Run 138413417 imported
+all six panels, including rho with one explicitly preserved orientation conflict.
+This establishes preparation and validation, not real-panel solver results.
+
+Submit comparison and vector plotting on Pegasus only:
+
+```bash
+bash validation/real_data/submit_comparison.sh
+```
+
+The launcher defaults to `local_results/latest_final_run.txt`; an explicit final
+run directory can be supplied as its first argument. It reuses prepared inputs,
+snapshots code/data, installs plotting dependencies in a separate venv, then
+submits all six cases concurrently. Default solve allowance is 150 seconds per
+case, configurable with `SCT_REAL_SECONDS`. GENESPACE 1.3.1 is read from
+`lep_busco_painter_clean`, configurable with `SCT_REAL_GS_ENV`.
+
+Each case writes `comparison.pdf`, saved states, bounds and audit JSON. Four
+panels show natural-name input, the installed GENESPACE ordering function on
+block proxy anchors, our fixed-order flip assistance, and SynTangle. Input and
+baseline PDFs are checkpointed before solving. An interrupted job may therefore
+leave a partial comparison PDF; only a case with `COMPLETE` has finished all four
+panels. The launcher does not recreate the paper's plotted order or gene-level
+GENESPACE pipeline. All source links and overlapping block spans are retained.
+
+See [PAPER_DATA_ACCESS.md](PAPER_DATA_ACCESS.md) for access and preparation status
+of independent published figure candidates, including the required 2023
+Leptidea example.
+
 ## First Pegasus preparation (final_NFyQeq)
 
 Five panels imported: cotton_split 71 links / 39 linked chromosomes; intact
