@@ -22,16 +22,25 @@ def colour(h):
     return COLORS[(int(m.group(1))-1 if m else sum(map(ord,h)))%20]
 
 
-def riparian(ax,fixture,state,title,subtitle):
-    validate_saved_layout(fixture,state,orientation_basis(fixture,fixture.chromosome_refs))
-    score=score_crossings(fixture,state).crossings
+def chromosome_geometry(fixture,state,*,independent_rows=False):
+    """Display coordinates only; leave evidence and layout states untouched."""
     chroms={c.ref:c for c in fixture.chromosomes};gap=max(c.length for c in fixture.chromosomes)*.08
-    span=max(sum(chroms[r].length for r in state.chromosome_order[sp])+gap*(len(state.chromosome_order[sp])-1) for sp in fixture.species_ids)
+    spans={sp:sum(chroms[r].length for r in state.chromosome_order[sp])+gap*(len(state.chromosome_order[sp])-1) for sp in fixture.species_ids}
+    common_span=max(spans.values())
     geom={}
     for i,sp in enumerate(fixture.species_ids):
+        span=spans[sp] if independent_rows else common_span
         x=0
         for ref in state.chromosome_order[sp]:
             geom[ref]=(x/span,chroms[ref].length/span,i);x+=chroms[ref].length+gap
+    return geom
+
+
+def riparian(ax,fixture,state,title,subtitle,*,independent_rows=False):
+    validate_saved_layout(fixture,state,orientation_basis(fixture,fixture.chromosome_refs))
+    score=score_crossings(fixture,state).crossings
+    chroms={c.ref:c for c in fixture.chromosomes}
+    geom=chromosome_geometry(fixture,state,independent_rows=independent_rows)
     def interval(c,b):
         x,w,y=geom[c.ref];a=b.start/c.length;d=b.end/c.length
         if state.chromosome_orientation[c.ref]<0:a,d=1-d,1-a
@@ -137,3 +146,4 @@ def main():
     print(json.dumps(results,indent=2));print(pdf)
 
 if __name__=='__main__':main()
+

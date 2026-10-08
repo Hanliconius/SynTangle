@@ -106,6 +106,7 @@ def direct_reference_colours(fixture, prepared, provenance):
 
 
 def render(fixture, panels, output, provenance):
+    independent_rows = provenance.get('independent_row_scaling', False)
     fig, axes = plt.subplots(2, 2, figsize=(19, max(11, 1.8 * len(fixture.species_ids))))
     expected = sum(len(_unambiguous_links(fixture, a, b))
                    for a, b in zip(fixture.species_ids, fixture.species_ids[1:]))
@@ -128,21 +129,16 @@ def render(fixture, panels, output, provenance):
         previous_colour = visual_summary.colour
         visual_summary.colour = reference_colour
         try:
-            riparian(ax, fixture, state, title, note)
+            riparian(ax, fixture, state, title, note, independent_rows=independent_rows)
         finally:
             visual_summary.colour = previous_colour
-        chroms = {c.ref: c for c in fixture.chromosomes}
-        gap = max(c.length for c in fixture.chromosomes) * .08
-        span = max(sum(chroms[r].length for r in state.chromosome_order[s]) +
-                   gap * (len(state.chromosome_order[s]) - 1) for s in fixture.species_ids)
+        geometry = visual_summary.chromosome_geometry(fixture, state, independent_rows=independent_rows)
         for y, species in enumerate(fixture.species_ids):
-            x = 0
             for ref in state.chromosome_order[species]:
-                width = chroms[ref].length
+                x, width, _ = geometry[ref]
                 label = ref.chromosome_id + (' (-)' if state.chromosome_orientation[ref] < 0 else '')
-                ax.text((x + width / 2) / span, y - .12, label, ha='center',
+                ax.text(x + width / 2, y - .12, label, ha='center',
                         va='bottom', rotation=60, fontsize=5, zorder=6)
-                x += width + gap
     if provenance.get('display_top_to_bottom') == list(reversed(fixture.species_ids)):
         for ax in axes.flat:
             ax.invert_yaxis()
@@ -164,10 +160,12 @@ def render(fixture, panels, output, provenance):
                    if provenance.get('paper_order_reconstruction') else
                    'Input uses chromosome-name order; it is NOT the published drawing.')
     layout_note = provenance.get('input_layout_note', layout_note)
+    scaling_note = ('Rows scaled independently to equal total width; chromosome lengths proportional within each species.'
+                    if independent_rows else 'Rows share a common length scale.')
     fig.text(.12, .025,
              f'All {expected} imported adjacent-pair links retained in every panel. {orientation_note}\n'
              f'C counts block-midpoint crossings. {layout_note}\n'
-             f'Chromosome lengths: {extent_note}.\n'
+             f'Chromosome lengths: {extent_note}. {scaling_note}\n'
              'GS uses block proxy anchors, including source nonadjacent blocks when available (ordering only). All panels share the adjacent-link objective.\n'
              'This is NOT a gene-level GENESPACE rerun. ' + provenance.get('colour_note', 'Colours track reference-chromosome membership; other links are grey.'),
              fontsize=8, color='#465363')

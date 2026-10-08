@@ -57,6 +57,8 @@ def main():
                    f"all links restored; L={lower:,}; U={upper:,}; {summary['optimality_status']}"))
     provenance=dict(old['provenance'])
     colour_audit=direct_reference_colours(fixture,prepared,provenance)
+    provenance['independent_row_scaling']=True
+    summary['display_scaling']='Independent row scales; proportional chromosome lengths within species; equal total row width'
     atomic(output/'colour_audit.json',colour_audit)
     summary['colour_scope']=provenance['colour_note']
     render(fixture,panels,output,provenance)
