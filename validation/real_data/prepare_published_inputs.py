@@ -6,6 +6,8 @@ import hashlib
 import json
 from pathlib import Path
 import urllib.request
+import shutil
+import subprocess
 import zipfile
 
 PLANARIAN_URL = ('https://media.springernature.com/original/springer-static/esm/'
@@ -29,10 +31,21 @@ def download(url, path):
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists(): return
     tmp = path.with_name(path.name + '.partial')
+    print(f'DOWNLOADING {url}', flush=True)
     try:
-        request = urllib.request.Request(url, headers={'User-Agent': 'SynTangle-public-input-preparation/1'})
-        with urllib.request.urlopen(request, timeout=180) as r, tmp.open('wb') as f:
-            while chunk := r.read(1024 * 1024): f.write(chunk)
+        if shutil.which('curl'):
+            subprocess.run([
+                'curl', '--fail', '--location', '--show-error',
+                '--retry', '3', '--retry-all-errors', '--retry-delay', '2',
+                '--connect-timeout', '60', '--max-time', '600',
+                '--output', str(tmp), url,
+            ], check=True)
+        else:
+            request = urllib.request.Request(url, headers={'User-Agent': 'SynTangle-public-input-preparation/1'})
+            with urllib.request.urlopen(request, timeout=180) as r, tmp.open('wb') as f:
+                while chunk := r.read(1024 * 1024): f.write(chunk)
+        if not tmp.stat().st_size:
+            raise ValueError(f'Empty download: {url}')
         tmp.replace(path)
     finally: tmp.unlink(missing_ok=True)
 

@@ -10,7 +10,14 @@ export SCT_LEP_REPO SCT_LEP_MAMBA=${MAMBA_EXE:-$(type -P micromamba)}
 export SCT_REAL_GS_ENV=${SCT_REAL_GS_ENV:-lep_busco_painter_clean}
 export SCT_REAL_SECONDS=${SCT_REAL_SECONDS:-150}
 mkdir -p logs local_results
-export SCT_LEP_RUN=$(mktemp -d "$SCT_LEP_REPO/local_results/annotated_lep_XXXXXX")
+if [[ -n "${1:-}" ]]; then
+    export SCT_LEP_RUN=$(cd "$1" && pwd)
+    test -f "$SCT_LEP_RUN/comparison_manifest.json"
+    test -x "$SCT_LEP_RUN/tools/bin/python"
+    printf 'Resuming existing annotation run: %s\n' "$SCT_LEP_RUN"
+else
+    export SCT_LEP_RUN=$(mktemp -d "$SCT_LEP_REPO/local_results/annotated_lep_XXXXXX")
+fi
 mkdir -p "$SCT_LEP_RUN/code"
 cp -a src validation "$SCT_LEP_RUN/code/"
 git rev-parse HEAD > "$SCT_LEP_RUN/checkout_head.txt"
@@ -26,7 +33,11 @@ SCT_LEP_SETUP=$(sbatch --parsable --chdir="$SCT_LEP_REPO" <<'SLURM'
 #SBATCH --output=logs/st_lep_setup.%j.out
 #SBATCH --error=logs/st_lep_setup.%j.err
 set -euo pipefail
-"$SCT_LEP_MAMBA" create -y -p "$SCT_LEP_RUN/tools" -c conda-forge -c bioconda python=3.11 pip blast mcscanx
+if [[ ! -x "$SCT_LEP_RUN/tools/bin/python" ]]; then
+    "$SCT_LEP_MAMBA" create -y -p "$SCT_LEP_RUN/tools" -c conda-forge -c bioconda python=3.11 pip blast mcscanx
+fi
+test -x "$SCT_LEP_RUN/tools/bin/blastp"
+test -x "$SCT_LEP_RUN/tools/bin/MCScanX"
 "$SCT_LEP_MAMBA" list -p "$SCT_LEP_RUN/tools" --json > "$SCT_LEP_RUN/tool_versions.json"
 "$SCT_LEP_RUN/tools/bin/python" -m pip install -r "$SCT_LEP_RUN/code/validation/benchmark/hybrid_methods_requirements.txt" matplotlib==3.10.8 pypdf==6.1.1
 export PYTHONPATH="$SCT_LEP_RUN/code/src" PYTHONUNBUFFERED=1
