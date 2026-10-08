@@ -60,8 +60,10 @@ def main():
     colour_audit=(direct_reference_colours(fixture,prepared,provenance)
                   if a.case=='annotated_lep_reanalysis' else
                   {'rule':'Saved source reference membership', 'reference':provenance.get('colour_reference')})
-    provenance['independent_row_scaling']=True
-    summary['display_scaling']='Independent row scales; proportional chromosome lengths within species; equal total row width'
+    provenance['independent_row_scaling']=(a.case=='annotated_lep_reanalysis')
+    summary['display_scaling']=('Independent row scales; proportional chromosome lengths within species; equal total row width'
+                               if provenance['independent_row_scaling'] else
+                               'Common row scale; original fixture chromosome extents retained')
     atomic(output/'colour_audit.json',colour_audit)
     summary['colour_scope']=provenance.get('colour_note','Saved source reference membership; unassigned links grey')
     summary['original_syntangle_crossings']=min(p['crossings'] for p in old['panels'])
