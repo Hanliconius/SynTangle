@@ -17,6 +17,8 @@ BENCHMARK = Path(__file__).resolve().parents[1] / 'benchmark'
 sys.path.insert(0, str(BENCHMARK))
 from compare_genespace import export_native_input, load_native_states, improve_flips, read_tsv, write_tsv
 from visual_summary import riparian
+import visual_summary
+from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 
 
@@ -58,13 +60,31 @@ def add_deposited_reference_anchors(fixture, prepared, native_input):
 
 
 def render(fixture, panels, output, provenance):
-    fig, axes = plt.subplots(2, 2, figsize=(19, 11))
+    fig, axes = plt.subplots(2, 2, figsize=(19, max(11, 1.8 * len(fixture.species_ids))))
     expected = sum(len(_unambiguous_links(fixture, a, b))
                    for a, b in zip(fixture.species_ids, fixture.species_ids[1:]))
     if expected != provenance['retained_links']:
         raise ValueError('Renderer would omit imported links')
+    reference = provenance.get('colour_reference', 'schMedS3h1' if 'schMedS3h1' in fixture.species_ids else fixture.species_ids[0])
+    palette = ['#009E73', '#D55E00', '#56B4E9', '#E6AB02', '#0072B2', '#CC79A7', '#777777', '#E69F00']
+    import re
+    refs = sorted([r for r in fixture.chromosome_refs if r.species_id == reference],
+                  key=lambda r: [int(t) if t.isdigit() else t for t in re.split(r'(\d+)', r.chromosome_id)])
+    ref_colours = {r.chromosome_id: palette[i % len(palette)] for i, r in enumerate(refs)}
+    homology_reference = dict(provenance.get('homology_colour_reference', {}))
+    for chromosome in fixture.chromosomes:
+        if chromosome.ref.species_id == reference:
+            for block in chromosome.blocks:
+                homology_reference[block.homology_id] = chromosome.ref.chromosome_id
+    def reference_colour(h):
+        return ref_colours.get(homology_reference.get(h), '#9A9A9A')
     for ax, (state, title, note) in zip(axes.flat, panels):
-        riparian(ax, fixture, state, title, note)
+        previous_colour = visual_summary.colour
+        visual_summary.colour = reference_colour
+        try:
+            riparian(ax, fixture, state, title, note)
+        finally:
+            visual_summary.colour = previous_colour
         chroms = {c.ref: c for c in fixture.chromosomes}
         gap = max(c.length for c in fixture.chromosomes) * .08
         span = max(sum(chroms[r].length for r in state.chromosome_order[s]) +
@@ -77,6 +97,9 @@ def render(fixture, panels, output, provenance):
                 ax.text((x + width / 2) / span, y - .12, label, ha='center',
                         va='bottom', rotation=60, fontsize=5, zorder=6)
                 x += width + gap
+    if provenance.get('display_top_to_bottom') == list(reversed(fixture.species_ids)):
+        for ax in axes.flat:
+            ax.invert_yaxis()
     for ax in list(axes.flat)[len(panels):]:
         ax.axis('off')
     pair_audit = provenance['pair_audit']
@@ -84,15 +107,23 @@ def render(fixture, panels, output, provenance):
         orientation_note = f"Source reciprocal orientation conflicts: {sum(len(p['orientation_conflicts']) for p in pair_audit)}."
     else:
         orientation_note = 'Reciprocal orientation conflicts not audited; source orientations retained in provenance.'
+    fig.legend(handles=[Patch(facecolor=colour, label=chrom) for chrom, colour in ref_colours.items()] +
+               [Patch(facecolor='#9A9A9A', label='Unassigned')],
+               title=f'Colour reference: {reference}', loc='upper center', bbox_to_anchor=(.56, .95),
+               ncol=min(9, len(ref_colours) + 1), fontsize=7, title_fontsize=8, frameon=False)
     source_note = provenance.get('source_kind', 'archived GENESPACE block evidence')
     extent_note = provenance.get('chromosome_extent', 'Maximum observed block endpoint; NOT assembly chromosome lengths')
     fig.suptitle(f'{fixture.fixture_id}: {source_note}', x=.12, ha='left', fontsize=15)
+    layout_note = ('Paper Fig. 4b chromosome order reconstructed; native orientations assumed, not independently verified.'
+                   if provenance.get('paper_order_reconstruction') else
+                   'Input uses chromosome-name order; it is NOT the published drawing.')
+    layout_note = provenance.get('input_layout_note', layout_note)
     fig.text(.12, .025,
              f'All {expected} imported adjacent-pair links retained in every panel. {orientation_note}\n'
-             'C counts block-midpoint crossings. Input uses chromosome-name order; it is NOT the published drawing.\n'
+             f'C counts block-midpoint crossings. {layout_note}\n'
              f'Chromosome lengths: {extent_note}.\n'
              'GS uses block proxy anchors, including source nonadjacent blocks when available (ordering only). All panels share the adjacent-link objective.\n'
-             'this is NOT a gene-level GENESPACE rerun. Ribbon spans retain coordinates; source strands remain annotations in provenance.',
+             'This is NOT a gene-level GENESPACE rerun. ' + provenance.get('colour_note', 'Colours track reference-chromosome membership; other links are grey.'),
              fontsize=8, color='#465363')
     fig.subplots_adjust(left=.12, right=.98, top=.87, bottom=.14, hspace=.4, wspace=.25)
     temporary = output / 'comparison.partial.pdf'
