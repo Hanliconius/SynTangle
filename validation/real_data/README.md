@@ -173,3 +173,24 @@ unrecovered. The collector bundles results, bounds, provenance and PDFs at
 before interpreting partial PDFs.
 
 For the remaining Leptidea work, see [LEPTIDEA_ANNOTATIONS.md](LEPTIDEA_ANNOTATIONS.md).
+
+## Annotated Lepidoptera replacement
+
+```bash
+bash validation/real_data/submit_annotated_lep.sh
+cat logs/st_lep*.{out,err}
+```
+
+This submits the entire annotation-to-block-to-comparison workflow. All six
+pairwise jobs run without an array throttle. Assembly accessions are pinned in
+`annotated_lep.json`; actual GFF/protein downloads were checked at NCBI. All
+computation occurs in Slurm jobs, with a private tool environment and code
+snapshot. The resulting four-species dataset is a fresh analysis, not a
+reproduction of the paper. The archive is
+`local_results/SynTangle_annotated_lep_comparisons.zip`. Detailed BLAST/MCScanX
+outputs and raw downloads remain in the run's `pairs` and `sources` directories.
+
+When refreshing files in a selectively restored checkout, also restore
+`validation/benchmark/genespace_native_order.R`: Python now uses its optional
+`--skip-incomplete-variants` flag. The submission scripts check for that option
+before allocating jobs.

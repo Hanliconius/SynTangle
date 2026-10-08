@@ -1,0 +1,10 @@
+{
+  "id": "annotated_lep_reanalysis",
+  "scope": "Fresh synteny analysis using annotated chromosome assemblies; not reproduction of the Leptidea paper",
+  "species": [
+    {"id": "Bombyx_mori", "accession": "GCF_014905235.1", "assembly_name": "Bmori_2016v1.0"},
+    {"id": "Melitaea_cinxia", "accession": "GCF_905220565.1", "assembly_name": "ilMelCinx1.1"},
+    {"id": "Pieris_napi", "accession": "GCF_905475465.1", "assembly_name": "ilPieNapi1.2"},
+    {"id": "Leptidea_sinapis", "accession": "GCF_905404315.1", "assembly_name": "ilLepSina1.1"}
+  ]
+}

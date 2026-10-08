@@ -2,6 +2,10 @@
 set -euo pipefail
 SCT_REAL_REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 cd "$SCT_REAL_REPO"
+if ! grep -q -- '--skip-incomplete-variants' validation/benchmark/genespace_native_order.R; then
+    printf '%s\n' 'Outdated R helper. Restore validation/benchmark/genespace_native_order.R from the fetched branch before submitting.' >&2
+    false
+fi
 SCT_REAL_FINAL=${1:-$(cat local_results/latest_published_inputs_run.txt)}
 SCT_REAL_FINAL=$(cd "$SCT_REAL_FINAL" && pwd)
 test -f "$SCT_REAL_FINAL/prepared/planarians/fixture.json"

@@ -66,3 +66,21 @@ transcript/protein evidence, with SNAP/Augustus training. The paper used MAKER
 the original gene/block set. A new annotation or DNA-alignment route must be
 labelled a reanalysis, not reproduction of Fig. 1. Do not start it merely because
 the assembly download has finished.
+
+## Adopted replacement, 2026-10-08
+
+The user chose available annotated assemblies instead of contacting authors.
+`annotated_lep.json` pins nuclear chromosome assemblies for L. sinapis,
+M. cinxia, P. napi and B. mori. Their actual NCBI FTP directories were checked
+and contain gene-coordinate GFF and protein FASTA files. NCBI's feature-count
+files for the four original paper accessions each report zero protein-coding
+genes; those summary tables cannot supply coordinates or proteins.
+
+`submit_annotated_lep.sh` downloads and checks annotation coordinates, selects
+one longest supplied protein per GeneID, submits all six pairwise reciprocal
+BLASTP/MCScanX jobs concurrently, and then submits comparison/PDF collection.
+This does not reconstruct the four original Leptidea karyotypes: the replacement
+has one Leptidea assembly and three other annotated species. It is a new
+analysis, with nuclear chromosome lengths from assembly reports. Unplaced
+sequences, mitochondria, unmatched proteins and unlinked chromosomes are
+recorded explicitly. Source files are hashed; original IDs are retained.

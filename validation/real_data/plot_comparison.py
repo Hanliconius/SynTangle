@@ -48,7 +48,8 @@ def add_deposited_reference_anchors(fixture, prepared, native_input):
                                 noAnchor='FALSE', isArrayRep='TRUE'))
             audit.append(dict(source_row=line, source_block_id=row['blkID'], genomes=[a, b]))
     write_tsv(native_input / 'bed.tsv', bed)
-    result = {'source': 'deposited adjacent plus nonadjacent block proxy anchors',
+    prepared_provenance = json.loads((prepared / 'provenance.json').read_text())
+    result = {'source': prepared_provenance.get('source_kind', 'Deposited block evidence'),
               'additional_anchors': len(audit), 'additional_blocks': audit,
               'use': 'GENESPACE ordering only; every method rescored on the same adjacent fixture links',
               'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest()}
@@ -83,12 +84,14 @@ def render(fixture, panels, output, provenance):
         orientation_note = f"Source reciprocal orientation conflicts: {sum(len(p['orientation_conflicts']) for p in pair_audit)}."
     else:
         orientation_note = 'Reciprocal orientation conflicts not audited; source orientations retained in provenance.'
-    fig.suptitle(f'{fixture.fixture_id}: archived GENESPACE block evidence', x=.12, ha='left', fontsize=17)
+    source_note = provenance.get('source_kind', 'archived GENESPACE block evidence')
+    extent_note = provenance.get('chromosome_extent', 'Maximum observed block endpoint; NOT assembly chromosome lengths')
+    fig.suptitle(f'{fixture.fixture_id}: {source_note}', x=.12, ha='left', fontsize=15)
     fig.text(.12, .025,
              f'All {expected} imported adjacent-pair links retained in every panel. {orientation_note}\n'
              'C counts block-midpoint crossings. Input uses chromosome-name order; it is NOT the published drawing.\n'
-             'Chromosome extents are observed block endpoints, not full assembly lengths. GS uses block proxy anchors (including deposited\n'
-             'nonadjacent blocks when available; ordering only). All panels share the adjacent-link crossing objective.\n'
+             f'Chromosome lengths: {extent_note}.\n'
+             'GS uses block proxy anchors, including source nonadjacent blocks when available (ordering only). All panels share the adjacent-link objective.\n'
              'this is NOT a gene-level GENESPACE rerun. Ribbon spans retain coordinates; source strands remain annotations in provenance.',
              fontsize=8, color='#465363')
     fig.subplots_adjust(left=.12, right=.98, top=.87, bottom=.14, hspace=.4, wspace=.25)
@@ -153,7 +156,7 @@ def main():
         'provenance': provenance,
         'native_anchor_audit': native_anchor_audit,
         'native_variant_audit': (a.output / 'native_variant_audit.tsv').read_text(),
-        'scope': 'Real block projection; not reproduction of the published drawing or native gene-level workflow'})
+        'scope': provenance.get('scope', 'Real block projection; not reproduction of the published drawing or native gene-level workflow')})
     (a.output / 'COMPLETE').write_text('PASS\n')
     print(f"{fixture.fixture_id}: input={score(initial)} GS={score(native[2])} GS+flips={score(flips[1])} ST={score(final)} L={result['lower_bound']} {result['optimality_status']}", flush=True)
     print(a.output / 'comparison.pdf', flush=True)
