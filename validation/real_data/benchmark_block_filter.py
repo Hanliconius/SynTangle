@@ -25,12 +25,12 @@ def links(fixture):
             for link in _unambiguous_links(fixture,a,b)]
 
 def sizes(fixture):
-    result = {}
+    spans = {}
     for hid,(a,x),(b,y) in links(fixture):
-        if hid in result: raise ValueError('This pilot requires pair-specific one-to-one block IDs')
         # Require substantial span on both assemblies; raw bp, not BLAST scores.
-        result[hid] = math.sqrt((x.end-x.start)*(y.end-y.start))
-    return result
+        spans.setdefault(hid, []).extend((x.end-x.start,y.end-y.start))
+    return {h:math.exp(sum(math.log(max(v,1e-300)) for v in values)/len(values))
+            for h,values in spans.items()}
 
 def filtered(fixture, importance, fraction):
     ordered = sorted(importance, key=lambda h:(importance[h],h))
@@ -59,18 +59,28 @@ def metrics(fixture, state):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--index',type=int,required=True)
+    p.add_argument('--case',default='annotated_lep_reanalysis')
+    p.add_argument('--start-panel',type=int,default=None)
     args=p.parse_args(); fraction=FRACTIONS[args.index]
-    prepared=args.source/'prepared/annotated_lep_reanalysis'
-    figure=args.source/'figures/annotated_lep_reanalysis'
+    prepared=args.source/'prepared'/args.case
+    figure=args.source/'figures'/args.case
     fixture=load_fixture(prepared/'fixture.json')
     audit=json.loads((figure/'comparison_audit.json').read_text())
     sha=hashlib.sha256((prepared/'fixture.json').read_bytes()).hexdigest()
     assert audit['fixture_sha256']==sha
-    baseline=min(audit['panels'],key=lambda x:x['crossings'])
+    baseline=(min(audit['panels'],key=lambda x:x['crossings']) if args.start_panel is None
+              else audit['panels'][args.start_panel])
     start=decode_saved_layout(fixture,baseline['state'])
     assert score_crossings(fixture,start).crossings==baseline['crossings']
     destination=args.output/f'task_{args.index}';destination.mkdir(parents=True,exist_ok=False)
     importance=sizes(fixture);best=start;visual_best=start;started=time.perf_counter();events=[]
+    importance_note='geometric mean link endpoint spans; globally ranked, lexical ties'
+    provenance=json.loads((prepared/'provenance.json').read_text())
+    if 'original_coordinates' in provenance:
+        importance={h:math.exp(sum(math.log(r['end']-r['start']) for r in rows)/len(rows))
+                    for h,rows in provenance['original_coordinates'].items()}
+        if set(importance)!=set(sizes(fixture)):raise ValueError('Source gene spans differ from retained evidence')
+        importance_note='geometric mean deposited BUSCO gene span in bp; remove whole shared BUSCO across rows; lexical ties'
     def checkpoint(state):
         nonlocal best,visual_best
         measured=metrics(fixture,state)
@@ -101,7 +111,8 @@ def main():
         visual_best=metrics(fixture,visual_best),visual_best_state=visual_best.to_dict(),
         full_lower_bound=full_lower,full_gap=final['crossings']-full_lower,
         proof_scope='full-data bound only; filtered optima are not full-data certificates',
-        importance='geometric mean block span in bp; globally ranked, lexical ties',
+        importance=importance_note,
+        start_panel=args.start_panel,case=args.case,
         visual_metric='crossing pair weight sqrt(w_i*w_j); w=geometric mean fractional chromosome span',
         events=events,stages=stages,wall_seconds=time.perf_counter()-started))
     (destination/'COMPLETE').write_text('PASS\n')

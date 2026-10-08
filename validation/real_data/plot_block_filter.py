@@ -15,10 +15,11 @@ from plot_comparison import render, direct_reference_colours
 def main():
     p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True)
     p.add_argument('--run',type=Path,required=True);p.add_argument('--latest-archive',type=Path,required=True)
-    a=p.parse_args();prepared=a.source/'prepared/annotated_lep_reanalysis'
+    p.add_argument('--case',default='annotated_lep_reanalysis')
+    a=p.parse_args();prepared=a.source/'prepared'/a.case
     fixture=load_fixture(prepared/'fixture.json');basis=orientation_basis(fixture,fixture.chromosome_refs)
     sha=hashlib.sha256((prepared/'fixture.json').read_bytes()).hexdigest()
-    old=json.loads((a.source/'figures/annotated_lep_reanalysis/comparison_audit.json').read_text())
+    old=json.loads((a.source/'figures'/a.case/'comparison_audit.json').read_text())
     if old['fixture_sha256']!=sha:raise ValueError('Original comparison fixture differs')
     output=a.run/'visual_summary';output.mkdir(exist_ok=True)
     reports=[];incomplete=[]
@@ -56,11 +57,18 @@ def main():
     panels.append((decode_saved_layout(fixture,best['best_state']),'SynTangle: staged filtering',
                    f"all links restored; L={lower:,}; U={upper:,}; {summary['optimality_status']}"))
     provenance=dict(old['provenance'])
-    colour_audit=direct_reference_colours(fixture,prepared,provenance)
+    colour_audit=(direct_reference_colours(fixture,prepared,provenance)
+                  if a.case=='annotated_lep_reanalysis' else
+                  {'rule':'Saved source reference membership', 'reference':provenance.get('colour_reference')})
     provenance['independent_row_scaling']=True
     summary['display_scaling']='Independent row scales; proportional chromosome lengths within species; equal total row width'
     atomic(output/'colour_audit.json',colour_audit)
-    summary['colour_scope']=provenance['colour_note']
+    summary['colour_scope']=provenance.get('colour_note','Saved source reference membership; unassigned links grey')
+    summary['original_syntangle_crossings']=min(p['crossings'] for p in old['panels'])
+    summary['recovered_saved_best']=upper<=summary['original_syntangle_crossings']
+    original_output=output/'saved_comparison';original_output.mkdir(exist_ok=True)
+    render(fixture,[(decode_saved_layout(fixture,p['state']),p['title'],'saved full-evidence layout')
+                    for p in old['panels']],original_output,provenance)
     render(fixture,panels,output,provenance)
     atomic(output/'summary.json',summary)
     lines=['# Full-evidence filtering comparison','',f'Full-data bound: {lower} <= C* <= {upper}; {summary["optimality_status"]}.','',
@@ -77,8 +85,8 @@ def main():
     shutil.copy2(prepared/'provenance.json',output/'provenance.json')
     archive=a.run/'SynTangle_filter_comparisons.zip';temp=archive.with_suffix('.partial.zip')
     with zipfile.ZipFile(temp,'w',zipfile.ZIP_DEFLATED) as z:
-        for f in sorted(output.iterdir()):
-            if f.is_file():z.write(f,'visual_summary/'+f.name)
+        for f in sorted(output.rglob('*')):
+            if f.is_file():z.write(f,'visual_summary/'+str(f.relative_to(output)))
         for i,d in reports:z.write(a.run/f'task_{i}/report.json',f'task_{i}/report.json')
         z.write(Path(__file__),'code/plot_block_filter.py')
         z.write(Path(__file__).with_name('benchmark_block_filter.py'),'code/benchmark_block_filter.py')
