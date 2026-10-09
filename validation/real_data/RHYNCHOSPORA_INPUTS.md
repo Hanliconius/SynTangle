@@ -40,3 +40,31 @@ Source identities: Nature DOI 10.1038/s41586-026-11057-7; Edmond deposits
 `eae73b27ea4730da6a26477a8edf6dce79f3e011`.
 
 The production optimizer and independent certification branch are unchanged.
+
+## Annotation and mapping follow-up
+
+`bash validation/real_data/submit_rhynchospora_followup.sh` uses the verified
+inputs from `rhynchospora_inputs_UkAKU9` and geometry from
+`rhynchospora_sources_ACs9FQ`; optional arguments override both directories.
+Setup, Liftoff, and an annotation audit run on Pegasus CPU nodes. Detailed
+environment and Liftoff logs stay in the result directory. This code has syntax
+checks only here; biological execution and validation happen on Pegasus.
+
+The exact breviuscula assembly receives a **new** annotation transferred from
+the deposited tenuis GFF. Liftoff uses 0.5 coverage/identity to record a broad
+candidate set, without its extra-copy search; a separately retained strict set
+requires unique recognized donor gene IDs, at least 0.9 coverage and identity,
+no partial-mapping flag, and valid target coordinates. This subset is not an
+orthology proof and does not recreate the publication's gene predictions.
+All transferred GFF records remain available alongside the explicit exclusions.
+
+The mapping diagnostic ranks ordered three-sequence selections from the nine
+austrobrasiliensis sequences by similarity to the published bar-length ratios.
+It writes ten candidate mappings and the entire original sequence inventory.
+Length matching is suggestive only; none of these candidates is automatically
+selected, renamed, joined, or passed to an optimizer. A different plotted scale
+or a composite chromosome representation can invalidate this diagnostic.
+
+No optimized PDF is claimed by this stage. The original GENESPACE block table
+and confirmed chromosome mapping are still required for exact figure replication;
+an analysis of recomputed evidence must be identified as such.
