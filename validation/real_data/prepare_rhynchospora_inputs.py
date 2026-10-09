@@ -8,9 +8,9 @@ from collections import Counter
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 
 from capture_rhynchospora_fig1a import ASSETS, inventory_sequences
-from prepare_published_inputs import download
 
 
 def verify(path, record):
@@ -34,10 +34,44 @@ def asset_path(run, record):
     return run / 'sources' / group / filename
 
 
+def download_asset(path, record):
+    """Resume timed-out transfers; promote only checksum-verified downloads."""
+    if path.exists():
+        verify(path, record)
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    partial = path.with_name(path.name + '.partial')
+    url = f"https://edmond.mpg.de/api/access/datafile/{record['id']}"
+    for attempt in range(1, 4):
+        if partial.exists() and partial.stat().st_size == record['bytes']:
+            verify(partial, record)
+            partial.replace(path)
+            return
+        offset = partial.stat().st_size if partial.exists() else 0
+        if offset > record['bytes']:
+            raise ValueError(f'Oversized partial file: {partial}')
+        print(f'DOWNLOAD attempt={attempt}/3 resume_bytes={offset} {path.name}', flush=True)
+        result = subprocess.run([
+            'curl', '--fail', '--location', '--silent', '--show-error',
+            '--continue-at', '-', '--connect-timeout', '60', '--max-time', '3600',
+            '--output', str(partial), url,
+        ])
+        if result.returncode == 0:
+            verify(partial, record)
+            partial.replace(path)
+            return
+        if result.returncode == 33:
+            # A server refusing range requests cannot support this partial.
+            print('Server refused resume; restarting this partial download.', flush=True)
+            partial.unlink(missing_ok=True)
+        elif result.returncode not in {5, 6, 7, 18, 28, 35, 52, 55, 56}:
+            raise RuntimeError(f'curl failed with code {result.returncode}; partial retained at {partial}')
+    raise RuntimeError(f'Download retries exhausted; reusable partial retained at {partial}')
+
+
 def prepare_asset(run, record):
     path = asset_path(run, record)
-    download(f"https://edmond.mpg.de/api/access/datafile/{record['id']}", path)
-    verify(path, record)
+    download_asset(path, record)
     receipt = {'record': record, 'path': str(path), 'verified': True}
     if path.suffix == '.fasta':
         receipt['sequences'] = inventory_sequences(path)

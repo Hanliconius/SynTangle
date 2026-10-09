@@ -10,6 +10,12 @@ hap1 FASTA/GFF, austrobrasiliensis FASTA/GFF, and companion breviuscula hap1
 FASTA from Edmond. Sizes and MD5 checksums are pinned from the inspected
 deposit inventory. Existing files are checked too; invalid caches fail rather
 than being accepted. An optional run-directory argument reuses those downloads.
+Downloads allow up to three one-hour attempts and resume retained partial
+files after connection/time-out failures. Only verified files are promoted
+to the final filename. A server that refuses range requests triggers a restart
+of that partial; failed transfers otherwise remain available for a later retry.
+The download jobs have a four-hour wall-time allocation, not extra memory.
+Completed files are verified and reused when the same run directory is supplied.
 No large source archive is produced. Detailed names/lengths and GFF coordinate
 checks are saved in `input_readiness.json`.
 

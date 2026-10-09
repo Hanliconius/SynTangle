@@ -11,7 +11,7 @@ SCT_PYTHON=$(type -P python)
 "$SCT_PYTHON" -c 'import sys; assert sys.version_info >= (3, 10)'
 export SCT_REPO SCT_RUN SCT_PYTHON
 printf '%s\n' "$SCT_RUN" > local_results/latest_rhynchospora_inputs_run.txt
-SCT_ARRAY=$(sbatch --parsable --partition=cpu --array=0-4 --cpus-per-task=1 --mem=4G --time=01:00:00 --job-name=st_rhync_in --output="$SCT_REPO/logs/st_rhync_input.%A_%a.out" --error="$SCT_REPO/logs/st_rhync_input.%A_%a.err" <<'SLURM'
+SCT_ARRAY=$(sbatch --parsable --partition=cpu --array=0-4 --cpus-per-task=1 --mem=4G --time=04:00:00 --job-name=st_rhync_in --output="$SCT_REPO/logs/st_rhync_input.%A_%a.out" --error="$SCT_REPO/logs/st_rhync_input.%A_%a.err" <<'SLURM'
 #!/usr/bin/env bash
 set -euo pipefail
 "$SCT_PYTHON" "$SCT_RUN/code/prepare_rhynchospora_inputs.py" --run "$SCT_RUN" --manifest "$SCT_RUN/code/rhynchospora_input_manifest.json" --task "$SLURM_ARRAY_TASK_ID"
