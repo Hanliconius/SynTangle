@@ -18,10 +18,13 @@ Python 3.10+; no Python dependencies. No images or large benchmarks are generate
 * Full-space integer LP export for the proposition `C <= U-1`. The exporter
   independently builds ordering, orientation and crossing constraints.
 * A CPU Slurm submission helper. Tests are lightweight checks of the checker.
+* [Structural lower-bound theorems](STRUCTURAL_THEOREM.md), exact cycle witnesses,
+  and a constructive graph class. `structural.py` can certify positive optima
+  without enumeration when a candidate attains its independently computed bound.
 
 ## What is not yet implemented
 
-Large-case **end-to-end certificate verification** is not complete. The SCIP
+Large-case **end-to-end MILP certificate verification** is not complete. The SCIP
 command file enables exact mode and proof logging, but this experiment does not
 yet parse a VIPR certificate, compare its original problem to our exported model,
 and verify that its conclusion proves infeasibility of this exact cutoff.
@@ -122,6 +125,16 @@ In that export directory, an exact-enabled SCIP can read `scip.commands` on stdi
 Preserve the LP, manifest, complete solver log, proof log, checker version and
 checker output. Model/certificate binding and exact conclusion checks are the
 next implementation milestone; no large-case certificate is certified by this release.
+
+For a solver-independent structural check on real data, use:
+
+```bash
+bash certification/submit_structural.sh check /absolute/fixture.json /absolute/layout.json
+```
+
+This prints the result directory. It certifies optimality only when the candidate
+attains the structural bound, and otherwise reports an unresolved gap. The statement
+about unfinished large-case certificates above refers to the MILP/VIPR route.
 
 ## Isolation and publication
 
