@@ -162,3 +162,51 @@ checkout, not yet a separate GitHub repository. GitHub repository creation/forki
 is unavailable through the connected tools. For complete repository isolation,
 create an empty `Hanliconius/SynTangle-proof` repository and push this branch there.
 Do not merge it into the working tool until independently reviewed and validated.
+
+### Full chromosome-order certificates (experimental)
+
+The saved real audit reproduced both crossing counts but the structural bounds
+were not attained: planarians U=7901, L=4972; Fig. 4f U=60294, L=19991.
+The five filtering schedules are repetitions of each same full-evidence problem,
+not ten independent biological cases. These outcomes do not independently certify
+the production solver's optimality claims.
+
+`bash certification/submit_order_audit.sh` now submits a checker setup job and two
+concurrent CPU tasks, one per dataset. It reuses the original fixture/layout
+snapshots in `independent_real_proof_CtcV4i`; an optional argument changes that
+source run. It never modifies or calls the production optimizer. Search is capped
+at 600 seconds after model construction and 101 tree nodes; Slurm caps the entire
+job at 20 minutes. The first run is a feasibility probe, not an expectation that
+these budgets suffice. A killed process provides no new verified result.
+
+The independently rebuilt full integer model includes every chromosome-pair order
+variable, every transitivity triangle, whole-chromosome orientations, explicit
+hard orientation equations, and all supplied crossing terms. Branches split an
+unfixed original binary decision into both 0 and 1. Parent assignments persist
+exactly; the verifier rejects omitted, duplicated, unreachable or cyclic branches.
+An unresolved leaf remains in the bound, rather than disappearing from the tree.
+Products are relaxed to [0,1]; they are forced to their exact values when the
+original binary variables are fixed. No floating infeasibility status prunes a
+branch. This route does not yet import or certify production reduction traces.
+
+SciPy/HiGHS proposes LP multipliers. A fresh standard-library-only process rebuilds
+the model and validates those rational multipliers. For canonical inequalities
+Ax <= b, nonnegative lambda and arbitrary equality multipliers mu, it evaluates
+
+    c0 - lambda*b - mu*d + min_(x in node box) (c + A^T lambda + E^T mu)*x.
+
+This is a lower bound by weak duality. The minimum over the box is computed exactly
+by summing each coefficient times its minimizing endpoint. Residual coefficients
+are retained, so rational rounding need not preserve stationarity. The integer
+objective permits rounding the bound upward. The checker takes the minimum of
+both child bounds and the maximum with the parent bound. It also independently
+recomputes and retains the earlier structural bound, taking the maximum of the
+two valid global bounds. The lower bound can therefore never regress below that
+structural bound. Only equality with the independently scored candidate permits
+`EXACT_ORDER_CERTIFICATE`; otherwise the output is `UNRESOLVED_ORDER_GAP`.
+
+The certificate includes every node's exact multipliers, branch partition and
+input/checker hashes. Replay verifies even an unresolved bound; successful replay
+alone is not an optimality claim. Neither LP solver status nor the production
+lower bound is trusted. Model/checker correctness remains part of the trust base,
+as with the other computational certificates; this is not formalized in Lean.
