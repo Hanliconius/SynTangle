@@ -148,7 +148,7 @@ def render(fixture, panels, output, provenance):
     if all('orientation_conflicts' in p for p in pair_audit):
         orientation_note = f"Source reciprocal orientation conflicts: {sum(len(p['orientation_conflicts']) for p in pair_audit)}."
     else:
-        orientation_note = 'Reciprocal orientation conflicts not audited; source orientations retained in provenance.'
+        orientation_note = provenance.get('orientation_note', 'Reciprocal orientation conflicts not audited; source orientations retained in provenance.')
     fig.legend(handles=[Patch(facecolor=colour, label=chrom) for chrom, colour in ref_colours.items()] +
                [Patch(facecolor='#9A9A9A', label='Unassigned')],
                title=f'Colour reference: {reference}', loc='upper center', bbox_to_anchor=(.56, .95),
@@ -164,10 +164,10 @@ def render(fixture, panels, output, provenance):
                     if independent_rows else 'Rows share a common length scale.')
     fig.text(.12, .025,
              f'All {expected} imported adjacent-pair links retained in every panel. {orientation_note}\n'
-             f'C counts block-midpoint crossings. {layout_note}\n'
+             f"C counts {provenance.get('crossing_unit', 'block')}-midpoint crossings. {layout_note}\n"
              f'Chromosome lengths: {extent_note}. {scaling_note}\n'
-             'GS uses block proxy anchors, including source nonadjacent blocks when available (ordering only). All panels share the adjacent-link objective.\n'
-             'This is NOT a gene-level GENESPACE rerun. ' + provenance.get('colour_note', 'Colours track reference-chromosome membership; other links are grey.'),
+             f"GS uses {provenance.get('anchor_description', 'block proxy anchors')}, including source nonadjacent blocks when available (ordering only). All panels share the adjacent-link objective.\n"
+             + provenance.get('workflow_note', 'This is NOT a gene-level GENESPACE rerun.') + ' ' + provenance.get('colour_note', 'Colours track reference-chromosome membership; other links are grey.'),
              fontsize=8, color='#465363')
     fig.subplots_adjust(left=.12, right=.98, top=.82, bottom=.14, hspace=.4, wspace=.25)
     temporary = output / 'comparison.partial.pdf'
@@ -188,7 +188,7 @@ def main():
     fixture = load_fixture(a.prepared / 'fixture.json')
     provenance = json.loads((a.prepared / 'provenance.json').read_text())
     initial = initial_layout_state(fixture)
-    panels = [(initial, 'Input: chromosome-name order', 'block projection')]
+    panels = [(initial, provenance.get('input_panel_title', 'Input: chromosome-name order'), provenance.get('anchor_description', 'block projection'))]
     # A usable vector figure exists even if a subsequent solver is interrupted.
     render(fixture, panels, a.output, provenance)
     export_native_input(fixture, a.output / 'native_input')
