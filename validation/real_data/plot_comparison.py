@@ -118,6 +118,7 @@ def render(fixture, panels, output, provenance):
     refs = sorted([r for r in fixture.chromosome_refs if r.species_id == reference],
                   key=lambda r: [int(t) if t.isdigit() else t for t in re.split(r'(\d+)', r.chromosome_id)])
     ref_colours = {r.chromosome_id: palette[i % len(palette)] for i, r in enumerate(refs)}
+    ref_colours.update(provenance.get('reference_palette', {}))
     homology_reference = dict(provenance.get('homology_colour_reference', {}))
     for chromosome in fixture.chromosomes:
         if chromosome.ref.species_id == reference:
@@ -166,7 +167,7 @@ def render(fixture, panels, output, provenance):
              f'All {expected} imported adjacent-pair links retained in every panel. {orientation_note}\n'
              f"C counts {provenance.get('crossing_unit', 'block')}-midpoint crossings. {layout_note}\n"
              f'Chromosome lengths: {extent_note}. {scaling_note}\n'
-             f"GS uses {provenance.get('anchor_description', 'block proxy anchors')}, including source nonadjacent blocks when available (ordering only). All panels share the adjacent-link objective.\n"
+             + provenance.get('gs_workflow_note', f"GS uses {provenance.get('anchor_description', 'block proxy anchors')}, including source nonadjacent blocks when available (ordering only). All panels share the adjacent-link objective.") + '\n'
              + provenance.get('workflow_note', 'This is NOT a gene-level GENESPACE rerun.') + ' ' + provenance.get('colour_note', 'Colours track reference-chromosome membership; other links are grey.'),
              fontsize=8, color='#465363')
     fig.subplots_adjust(left=.12, right=.98, top=.82, bottom=.14, hspace=.4, wspace=.25)
