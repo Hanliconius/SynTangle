@@ -92,6 +92,12 @@ def collect(a):
             if r.get('role')=='assembled-molecule' and r.get('assignedMoleculeLocationType')=='Chromosome' and r.get('chrName') not in ('MT','M'):
                 for k in ('genbankAccession','refseqAccession'):
                     if r.get(k):sequences[r[k]]={'chromosome':r['chrName'],'length':int(r['length'])}
+        if getattr(a,'chromosome_map',None):
+            mapping=json.loads(a.chromosome_map.read_text())
+            selected=mapping['assemblies'][name]
+            if selected['accession']!=LEPTIDEA[name]:raise ValueError('Chromosome mapping accession differs')
+            if selected['sequence_report_sha256']!=sha(a.run/'targets'/name/'sequence_report.jsonl'):raise ValueError('Chromosome report changed')
+            sequences={r['accession']:{'chromosome':r['sequence_name'],'length':r['length']} for r in selected['chromosomes']}
         if not sequences:raise ValueError('No nuclear chromosome report: '+name)
         groups=defaultdict(list);excluded=Counter()
         for g in genes(root/'lifted.gff'):
@@ -134,5 +140,6 @@ def collect(a):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--stage',choices=['prepare','lift','collect'],required=True)
     p.add_argument('--run',type=Path,required=True);p.add_argument('--assemblies',type=Path)
+    p.add_argument('--chromosome-map',type=Path)
     p.add_argument('--index',type=int,choices=range(4));p.add_argument('--threads',type=int,default=8)
     a=p.parse_args();globals()[a.stage](a)
