@@ -91,6 +91,7 @@ def collect(run):
     from plot_comparison import direct_reference_colours
     provenance=json.loads((out/'provenance.json').read_text())
     direct_reference_colours(fixture_from_dict(data),out,provenance)
+    provenance['respect_block_strand']=True
     provenance['colour_note']='Colours track dominant direct overlap with Spanish L. sinapis chromosomes; ambiguous links grey.'
     write_json(out/'provenance.json',provenance)
     print('PREPARED',CASE,sum(x['retained'] for x in pairs),'scored blocks',flush=True)

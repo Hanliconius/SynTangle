@@ -130,7 +130,8 @@ def render(fixture, panels, output, provenance):
         previous_colour = visual_summary.colour
         visual_summary.colour = reference_colour
         try:
-            riparian(ax, fixture, state, title, note, independent_rows=independent_rows)
+            riparian(ax, fixture, state, title, note, independent_rows=independent_rows,
+                         **({"respect_block_strand": True} if provenance.get("respect_block_strand", False) else {}))
         finally:
             visual_summary.colour = previous_colour
         geometry = visual_summary.chromosome_geometry(fixture, state, independent_rows=independent_rows)
