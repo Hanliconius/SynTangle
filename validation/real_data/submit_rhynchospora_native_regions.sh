@@ -15,7 +15,7 @@ export SCT_REPO SCT_SOURCE SCT_RUN SCT_MAMBA SCT_GS_ENV
 SCT_SETUP=$(sbatch --parsable --partition=cpu --cpus-per-task=1 --mem=8G --time=01:00:00 --job-name=st_rh_native_setup --output="$SCT_REPO/logs/st_rh_native_setup.%j.out" --error="$SCT_REPO/logs/st_rh_native_setup.%j.err" <<'SLURM'
 #!/usr/bin/env bash
 set -euo pipefail
-"$SCT_MAMBA" create -y -p "$SCT_RUN/tools" -c conda-forge -c bioconda python=3.11 orthofinder=2.5.5 diamond mcscanx gffread
+"$SCT_MAMBA" create -y -p "$SCT_RUN/tools" -c conda-forge -c bioconda python=3.11 numpy=1.26.4 scipy=1.13.1 orthofinder=2.5.5 diamond mcscanx gffread
 export PATH="$SCT_RUN/tools/bin:$PATH"
 test -x "$SCT_RUN/tools/bin/MCScanX_h"
 "$SCT_RUN/tools/bin/python" "$SCT_RUN/code/validation/real_data/rhynchospora_native_regions.py" prepare --run "$SCT_RUN" --source "$SCT_SOURCE"
