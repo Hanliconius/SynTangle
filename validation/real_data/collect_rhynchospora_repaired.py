@@ -2,8 +2,10 @@ import json,os,shutil
 from pathlib import Path
 from zipfile import ZipFile,ZIP_DEFLATED
 from pypdf import PdfWriter
+from preservation_audit import require_audit
 run=Path(os.environ['SCT_RUN']); repo=Path(os.environ['SCT_REPO'])
 out=run/'figures/rhynchospora_native_regions'
+require_audit(out)
 status=dict(native_complete=(run/'NATIVE_COMPLETE').exists(),comparison_complete=(out/'COMPLETE').exists(),orthofinder_complete=(run/'ORTHOFINDER_COMPLETE').exists(),scope='Three-genome protein-based GENESPACE reanalysis; transferred breviuscula annotation; not exact original twenty-genome discovery')
 (run/'status.json').write_text(json.dumps(status,indent=2)+'\n')
 with PdfWriter() as writer:

@@ -16,6 +16,7 @@ from syntangle.visualize import _unambiguous_links
 BENCHMARK = Path(__file__).resolve().parents[1] / 'benchmark'
 sys.path.insert(0, str(BENCHMARK))
 from compare_genespace import export_native_input, load_native_states, improve_flips, read_tsv, write_tsv
+from preservation_audit import evidence_signature,check_panel,require_audit,digest
 from visual_summary import riparian
 import visual_summary
 from matplotlib.patches import Patch
@@ -106,6 +107,7 @@ def direct_reference_colours(fixture, prepared, provenance):
 
 
 def render(fixture, panels, output, provenance):
+    original_evidence=evidence_signature(fixture);preservation_panels=[]
     independent_rows = provenance.get('independent_row_scaling', False)
     fig, axes = plt.subplots(2, 2, figsize=(19, max(11, 1.8 * len(fixture.species_ids))))
     expected = sum(len(_unambiguous_links(fixture, a, b))
@@ -131,10 +133,11 @@ def render(fixture, panels, output, provenance):
         visual_summary.colour = reference_colour
         try:
             riparian(ax, fixture, state, title, note, independent_rows=independent_rows,
-                         **({"respect_block_strand": True} if provenance.get("respect_block_strand", False) else {}))
+                         respect_block_strand=True)
         finally:
             visual_summary.colour = previous_colour
         geometry = visual_summary.chromosome_geometry(fixture, state, independent_rows=independent_rows)
+        preservation_panels.append(check_panel(fixture,state,ax,geometry))
         for y, species in enumerate(fixture.species_ids):
             for ref in state.chromosome_order[species]:
                 x, width, _ = geometry[ref]
@@ -172,10 +175,12 @@ def render(fixture, panels, output, provenance):
              + provenance.get('workflow_note', 'This is NOT a gene-level GENESPACE rerun.') + ' ' + provenance.get('colour_note', 'Colours track reference-chromosome membership; other links are grey.'),
              fontsize=8, color='#465363')
     fig.subplots_adjust(left=.12, right=.98, top=.82, bottom=.14, hspace=.4, wspace=.25)
+    if evidence_signature(fixture)!=original_evidence:raise ValueError('Evidence changed while rendering')
     temporary = output / 'comparison.partial.pdf'
     fig.savefig(temporary, format='pdf')
     temporary.replace(output / 'comparison.pdf')
     plt.close(fig)
+    atomic_json(output/'preservation_audit.json',dict(status='PASS',evidence_sha256=original_evidence,pdf_sha256=digest(output/'comparison.pdf'),panels=preservation_panels))
 
 
 def main():
@@ -234,6 +239,7 @@ def main():
         'native_anchor_audit': native_anchor_audit,
         'native_variant_audit': (a.output / 'native_variant_audit.tsv').read_text(),
         'scope': provenance.get('scope', 'Real block projection; not reproduction of the published drawing or native gene-level workflow')})
+    require_audit(a.output)
     (a.output / 'COMPLETE').write_text('PASS\n')
     print(f"{fixture.fixture_id}: input={score(initial)} GS={score(native[2])} GS+flips={score(flips[1])} ST={score(final)} L={result['lower_bound']} {result['optimality_status']}", flush=True)
     print(a.output / 'comparison.pdf', flush=True)

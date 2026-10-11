@@ -129,7 +129,6 @@ def compare(run, seconds):
     from syntangle.saved_layout import decode_saved_layout
     from plot_comparison import render,atomic_json,improve_flips
     import plot_comparison,visual_summary
-    plot_comparison.riparian=lambda *args,**kw: visual_summary.riparian(*args,**kw,respect_block_strand=True)
     with (run/'native_regions.tsv').open() as f:rows=list(csv.DictReader(f,delimiter='\t'))
     audit=json.loads((run/'input_audit.json').read_text())
     data,colours,refmap,membership=import_regions(rows,audit['chromosomes'])
@@ -163,6 +162,8 @@ def compare(run, seconds):
     panels.append((final,'SynTangle: same native regions',f"L={result['lower_bound']:,}; U={result['upper_bound']:,}; {result['optimality_status']}"))
     render(fixture,panels,out,provenance);atomic_json(out/'result.json',result)
     atomic_json(out/'comparison_audit.json',dict(provenance=provenance,panels=[dict(title=t,crossings=score(s),state=s.to_dict()) for s,t,n in panels]))
+    from preservation_audit import require_audit
+    require_audit(out)
     (out/'COMPLETE').write_text('PASS\n')
     print(f"NATIVE REGIONS={len(rows)} GS={score(native)} GS+flips={score(assisted)} ST={score(final)} L={result['lower_bound']}",flush=True)
 

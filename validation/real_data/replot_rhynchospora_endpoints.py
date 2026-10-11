@@ -24,7 +24,6 @@ def main():
     native,final=states[1],states[3]
     flips=[dict(species=r.species_id,chromosome=r.chromosome_id,before=native.chromosome_orientation[r],after=final.chromosome_orientation[r]) for r in fixture.chromosome_refs if native.chromosome_orientation[r]!=final.chromosome_orientation[r]]
     evidence=[dict(species=c.ref.species_id,chromosome=c.ref.chromosome_id,length=c.length,blocks=[dict(id=b.occurrence_id,homology=b.homology_id,start=b.start,end=b.end,strand=b.strand) for b in c.blocks]) for c in fixture.chromosomes]
-    plot_comparison.riparian=lambda *args,**kw:visual_summary.riparian(*args,**kw,respect_block_strand=True)
     render(fixture,panels,out,audit['provenance'])
     atomic_json(out/'endpoint_audit.json',dict(whole_chromosome_flips_native_to_final=flips,evidence=evidence,internal_moves=0,rule='All panels use one fixed fixture. Endpoints x transform as x -> L-x for negative chromosome orientation.',panel_scores=[x['crossings'] for x in audit['panels']]))
     shutil.copy2(source/'fixture.json',out/'fixture.json')

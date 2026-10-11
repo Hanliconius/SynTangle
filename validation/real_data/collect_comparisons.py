@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 from pypdf import PdfWriter
+from preservation_audit import require_audit
 
 
 def main():
@@ -23,6 +24,7 @@ def main():
                      'pdf_exists': pdf.exists(),
                      'note': 'Four-panel comparison' if complete else 'Incomplete: any PDF may contain input/baselines only'})
         if complete:
+            require_audit(directory)
             if not pdf.exists():
                 raise ValueError(f'Completed case has no PDF: {entry["id"]}')
             writer.append(str(pdf))
