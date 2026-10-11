@@ -210,3 +210,12 @@ input/checker hashes. Replay verifies even an unresolved bound; successful repla
 alone is not an optimality claim. Neither LP solver status nor the production
 lower bound is trusted. Model/checker correctness remains part of the trust base,
 as with the other computational certificates; this is not formalized in Lean.
+
+## Single-core proof-efficiency experiment
+
+The [four-cycle consistency experiment](FOUR_CYCLE_PROOF.md) tests stronger
+root bounds and weakest-bound-first search with inherited rational witnesses.
+`submit_node_benchmark.sh` reuses saved real fixtures and the existing proof
+environment, running all variants sequentially on one nano core. It reports
+bound strength, search-node count, LP calls, generation time and replay time.
+This experiment adds no production optimizer changes or new optimality claims.
