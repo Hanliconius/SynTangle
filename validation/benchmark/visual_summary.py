@@ -48,8 +48,8 @@ def riparian(ax,fixture,state,title,subtitle,*,independent_rows=False,respect_bl
     for a,b in zip(fixture.species_ids,fixture.species_ids[1:]):
         for h,(c1,b1),(c2,b2) in _unambiguous_links(fixture,a,b):
             l1,r1,y1=interval(c1,b1);l2,r2,y2=interval(c2,b2)
-            if respect_block_strand and b1.strand == "-":l1,r1=r1,l1
-            if respect_block_strand and b2.strand == "-":l2,r2=r2,l2
+            if respect_block_strand and ((b1.strand == "-") != (state.chromosome_orientation[c1.ref] < 0)):l1,r1=r1,l1
+            if respect_block_strand and ((b2.strand == "-") != (state.chromosome_orientation[c2.ref] < 0)):l2,r2=r2,l2
             mid=(y1+y2)/2
             vertices=[(l1,y1+.065),(l1,mid),(l2,mid),(l2,y2-.065),(r2,y2-.065),(r2,mid),(r1,mid),(r1,y1+.065),(l1,y1+.065)]
             codes=[MPath.MOVETO,MPath.CURVE4,MPath.CURVE4,MPath.CURVE4,MPath.LINETO,MPath.CURVE4,MPath.CURVE4,MPath.CURVE4,MPath.CLOSEPOLY]
