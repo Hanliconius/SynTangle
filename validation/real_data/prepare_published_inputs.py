@@ -36,7 +36,7 @@ def download(url, path):
         if shutil.which('curl'):
             subprocess.run([
                 'curl', '--fail', '--location', '--show-error',
-                '--retry', '3', '--retry-all-errors', '--retry-delay', '2',
+                '--retry', '3', '--retry-delay', '2',
                 '--connect-timeout', '60', '--max-time', '600',
                 '--output', str(tmp), url,
             ], check=True)
