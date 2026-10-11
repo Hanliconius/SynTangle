@@ -124,7 +124,7 @@ def pair(run, manifest, index):
         subprocess.run(['makeblastdb','-in',str(t/'proteins.faa'),'-dbtype','prot','-out',str(db)],check=True)
         raw = out/(query['id']+'.blast.tsv')
         subprocess.run(['blastp','-query',str(q/'proteins.faa'),'-db',str(db),'-outfmt','6',
-                        '-num_threads','8','-out',str(raw)],check=True)
+                        '-num_threads',str(manifest.get('threads',8)),'-out',str(raw)],check=True)
         hits = defaultdict(list)
         with raw.open() as f:
             for line in f:
