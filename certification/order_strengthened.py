@@ -60,7 +60,7 @@ def cycle_cuts(model, limit, max_examined=100000):
     return rows,examined
 
 
-def generate(model, upper, seconds, max_nodes):
+def generate(model, upper, seconds, max_nodes, root_multipliers=None):
     import numpy as np
     from scipy.optimize import linprog
     from scipy.sparse import coo_matrix
@@ -79,7 +79,7 @@ def generate(model, upper, seconds, max_nodes):
         index=len(nodes);lower=bound(model,rows,fixed,multipliers)
         nodes.append(dict(fixed=fixed,multipliers=list(multipliers),lower=lower))
         heapq.heappush(pending,(lower,index));return index
-    append({},['0']*len(rows))
+    append({},root_multipliers if root_multipliers is not None else ['0']*len(rows))
     while pending and time.monotonic()<deadline:
         _,index=heapq.heappop(pending);node=nodes[index]
         if node['lower']>=upper:inherited_prunes+=1;continue

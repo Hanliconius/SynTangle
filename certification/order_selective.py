@@ -8,7 +8,7 @@ from fractions import Fraction
 from pathlib import Path
 from proof import Evidence,IntegerModel,read_json,digest
 from order_certificate import canonical_rows,bound,replay
-from order_strengthened import cycle_cuts
+from order_strengthened import cycle_cuts,generate
 
 
 def solve(model,seconds):
@@ -38,7 +38,7 @@ def violations(pool,values,selected,batch):
     return [i for value,i in sorted(ranked,key=lambda x:(-x[0],x[1]))[:batch] if value>1e-7]
 
 
-def run(action,fixture,layout,certificate,seconds=60,batch=32,rounds=20,cycles=500):
+def run(action,fixture,layout,certificate,seconds=60,batch=32,rounds=20,cycles=500,max_nodes=1):
     evidence=Evidence(read_json(fixture));upper=evidence.score(read_json(layout));model=IntegerModel(evidence)
     hashes={str(n):digest(p) for n,p in [('fixture_sha256',fixture),('layout_sha256',layout),('selective_checker_sha256',Path(__file__)),
       ('model_checker_sha256',Path(__file__).with_name('proof.py')),('rational_checker_sha256',Path(__file__).with_name('order_certificate.py')),('cycle_checker_sha256',Path(__file__).with_name('order_strengthened.py'))]}
@@ -48,7 +48,7 @@ def run(action,fixture,layout,certificate,seconds=60,batch=32,rounds=20,cycles=5
         cycles=saved['cycle_limit']
     pool,examined=cycle_cuts(model,cycles)
     if action=='check':
-        deadline=time.monotonic()+seconds;selected=[];history=[];rows=canonical_rows(model);weights=['0']*len(rows);lower=bound(model,rows,{},weights)
+        started=time.monotonic();deadline=started+(seconds if max_nodes==1 else min(20,seconds*.25));selected=[];history=[];rows=canonical_rows(model);weights=['0']*len(rows);lower=bound(model,rows,{},weights)
         for step in range(rounds):
             if time.monotonic()>=deadline:break
             rows,proposed,values=solve(model,min(10,deadline-time.monotonic()))
@@ -62,19 +62,26 @@ def run(action,fixture,layout,certificate,seconds=60,batch=32,rounds=20,cycles=5
             weights.extend(['0']*len(added)) # previous exact witness survives every added row
         saved={**hashes,'selected':selected,'cycle_limit':cycles,'examined_cycles':examined,'pool_cuts':len(pool),'history':history,
           'nodes':[dict(fixed={},multipliers=weights,lower=lower)],'lp_calls':len(history),'cycle_cuts':len(selected),'rows':len(canonical_rows(model))}
+        saved['root_witness']=list(weights);saved['root_lower']=lower
+        if max_nodes>1:
+            frontier=generate(model,upper,max(0,started+seconds-time.monotonic()),max_nodes,weights)
+            frontier['lp_calls']+=saved['lp_calls'];saved.update(frontier)
     else:
         selected=saved['selected']
         if len(set(selected))!=len(selected) or any(type(i) is not int or not 0<=i<len(pool) for i in selected):raise ValueError('Invalid selected cut indices')
         if saved['pool_cuts']!=len(pool) or saved['examined_cycles']!=examined or saved['cycle_cuts']!=len(selected):raise ValueError('Cut pool mismatch')
         model.rows.extend(pool[i] for i in selected)
+    root_lower=bound(model,canonical_rows(model),{},saved['root_witness'])
+    if root_lower!=saved['root_lower']:raise ValueError('Root witness changed')
     summary=replay(model,upper,saved)
+    if summary['lower']<root_lower:raise ValueError('Root bound lost in frontier transition')
     if action=='check':saved['summary']=summary;certificate.write_text(json.dumps(saved,separators=(',',':'))+'\n')
     elif summary!=saved['summary']:raise ValueError('Conclusion differs')
-    print(('VERIFIED_' if action=='verify' else '')+summary['status'],f"U={upper} L={summary['lower']} gap={summary['gap']} nodes=1 cuts={len(selected)} LP={saved['lp_calls']}",flush=True)
+    print(('VERIFIED_' if action=='verify' else '')+summary['status'],f"U={upper} L={summary['lower']} gap={summary['gap']} nodes={summary['nodes']} cuts={len(selected)} LP={saved['lp_calls']}",flush=True)
     return summary
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['check','verify']);p.add_argument('fixture',type=Path);p.add_argument('layout',type=Path);p.add_argument('certificate',type=Path)
-    p.add_argument('--seconds',type=float,default=60);p.add_argument('--batch',type=int,default=32);p.add_argument('--rounds',type=int,default=20);p.add_argument('--cycles',type=int,default=500);a=p.parse_args()
-    if a.seconds<0 or min(a.batch,a.rounds)<1 or a.cycles<0:p.error('Invalid budget')
-    run(a.action,a.fixture,a.layout,a.certificate,a.seconds,a.batch,a.rounds,a.cycles)
+    p.add_argument('--max-nodes',type=int,default=1);p.add_argument('--seconds',type=float,default=60);p.add_argument('--batch',type=int,default=32);p.add_argument('--rounds',type=int,default=20);p.add_argument('--cycles',type=int,default=500);a=p.parse_args()
+    if a.seconds<0 or min(a.batch,a.rounds,a.max_nodes)<1 or a.cycles<0:p.error('Invalid budget')
+    run(a.action,a.fixture,a.layout,a.certificate,a.seconds,a.batch,a.rounds,a.cycles,a.max_nodes)
