@@ -18,6 +18,10 @@ cd "$SCT_RUN/code/real_data"
 "$SCT_LIFT/tools/bin/python" recover_leptidea_chromosomes.py --prior "$SCT_LIFT" --output "$SCT_RUN/leptidea"
 SLURM
 )
+if [[ "${1:-}" == --leptidea-only ]]; then
+    printf 'Leptidea recovery: %s\nResults: %s\n' "$SCT_JOB" "$SCT_RUN"
+    exit 0
+fi
 SCT_ZIP_JOB=$(sbatch --parsable --partition=cpu --cpus-per-task=1 --mem=4G --time=01:00:00 --job-name=st_repeat_inventory --output="$SCT_ROOT/logs/st_repeat_inventory.%j.out" --error="$SCT_ROOT/logs/st_repeat_inventory.%j.err" <<'SLURM'
 #!/usr/bin/env bash
 set -euo pipefail

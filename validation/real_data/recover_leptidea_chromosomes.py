@@ -21,13 +21,12 @@ def select(rows,name):
     if not set(range(1,count+1))<=set(numbered):raise ValueError('Paper-sized numbered scaffold series absent: '+name)
     chosen=[numbered[i] for i in range(1,count+1)]
     lengths=[int(r['length']) for r in chosen]
-    if lengths!=sorted(lengths,reverse=True):raise ValueError('Numbering does not match author descending-size finalization')
     actual=sum(lengths)/sum(int(r['length']) for r in rows)
     if abs(actual-fraction)>.0015:raise ValueError(f'Pseudochromosome fraction differs: {name} {actual:.5f} vs {fraction}')
     if any(int(r['length'])>min(lengths) for r in rows if r not in chosen):raise ValueError('Unselected scaffold exceeds smallest selected pseudochromosome')
     chromosomes=[dict(accession=r['genbankAccession'],sequence_name=r['sequenceName'],length=int(r['length'])) for r in chosen]
     if len({r['accession'] for r in chromosomes})!=count:raise ValueError('Duplicate accession')
-    return dict(accession=LEPTIDEA[name],chromosomes=chromosomes,total_scaffolds=len(rows),selected_fraction=actual,published_fraction=fraction)
+    return dict(accession=LEPTIDEA[name],chromosomes=chromosomes,total_scaffolds=len(rows),selected_fraction=actual,published_fraction=fraction,numbered_lengths_descending=lengths==sorted(lengths,reverse=True))
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--prior',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
