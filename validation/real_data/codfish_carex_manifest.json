@@ -13,7 +13,8 @@
           "gff": {
             "url": "https://zenodo.org/records/17475568/files/Gadus_morhua_neac.gff.gz?download=1",
             "md5": "dc71cd7386966fa74d8b1b1e52c5b723"
-          }
+          },
+          "numeric_chromosome_aliases": true
         },
         {
           "id": "Melanogrammus_aeglefinus",

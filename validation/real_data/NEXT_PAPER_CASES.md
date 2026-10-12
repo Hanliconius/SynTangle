@@ -63,3 +63,19 @@ under `local_results/codfish_carex_*`. Successful bundles are
 Neither selected study is assumed to be computationally simple. The conserved
 Carex scoparia/cristatella pair is a potential easier control, but the main
 four-species figure retains the other paper species.
+
+## Atlantic cod annotation alias repair
+
+Initial preparation 138436840_0 downloaded the correct files but retained no
+annotation rows: the deposited GFF uses 01-23, while the RefSeq FASTA uses
+NC_044048.1 and other accessions. For NEAC only, numeric zero padding is
+normalized to the versioned sequence report's chrName, then mapped to its
+FASTA accession. All coordinates, strand, phase and attributes are unchanged
+and checked with a feature-content hash. Ambiguous aliases and out-of-bounds
+features are rejected. The original annotation is retained unchanged.
+
+submit_codfish_annotation_retry.sh snapshots repaired code, retries only
+Atlantic cod in the existing run, and resets the pending codfish pair-array
+dependency to afterok on the retry. The existing comparison remains dependent
+on that pair array. It reuses all cached downloads and five completed species
+preparations; it does not alter running Carex jobs or their code snapshot.

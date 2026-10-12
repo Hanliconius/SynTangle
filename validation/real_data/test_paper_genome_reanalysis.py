@@ -23,4 +23,29 @@ class PaperInputsTests(unittest.TestCase):
             self.assertEqual(len(f.chromosomes),4)
             blocks=[b for c in f.chromosomes for b in c.blocks]
             self.assertEqual([(b.start,b.end,b.strand) for b in blocks],[(10,40,'+'),(50,80,'-')])
+
+class AnnotationMappingTests(unittest.TestCase):
+    def test_zero_padding_keeps_signed_coordinates_and_attributes(self):
+        from paper_genome_reanalysis import normalize_annotation
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);src=root/'gff';dst=root/'mapped'
+            line='01\tmaker\tCDS\t10\t20\t.\t-\t2\tID=c;Parent=t\n';src.write_text(line)
+            report=[dict(chrName='1',refseqAccession='NC_044048.1',genbankAccession='LR633943.1',sequenceName='Super_Scaffold_20')]
+            audit=normalize_annotation(src,dst,{'NC_044048.1':100},report,True)
+            self.assertEqual(dst.read_text(),'NC_044048.1'+line[2:]);self.assertTrue(audit['coordinates_strands_attributes_unchanged'])
+            self.assertEqual(audit['sequence_mapping'],{'01':'NC_044048.1'})
+    def test_ambiguous_numeric_report_is_rejected(self):
+        from paper_genome_reanalysis import normalize_annotation
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);src=root/'gff';src.write_text('01\tx\tCDS\t1\t2\t.\t+\t0\tParent=t\n')
+            report=[dict(chrName='1',refseqAccession='A'),dict(chrName='01',refseqAccession='B')]
+            with self.assertRaisesRegex(ValueError,'Ambiguous sequence alias'):
+                normalize_annotation(src,root/'mapped',{'A':100,'B':100},report,True)
+    def test_out_of_bounds_alias_is_rejected(self):
+        from paper_genome_reanalysis import normalize_annotation
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);src=root/'gff';src.write_text('01\tx\tCDS\t1\t101\t.\t+\t0\tParent=t\n')
+            with self.assertRaisesRegex(ValueError,'outside mapped'):
+                normalize_annotation(src,root/'mapped',{'A':100},[dict(chrName='1',refseqAccession='A')],True)
+
 if __name__=='__main__':unittest.main()

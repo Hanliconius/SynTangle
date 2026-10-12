@@ -82,6 +82,52 @@ def select_chromosomes(lengths,spec,report=None):
         raise ValueError(f'{spec["id"]}: selected {len(selected)} sequences; expected {expected}; inspect source, no longest-N fallback')
     return selected,rule
 
+def normalize_annotation(gff,destination,chromosomes,report,numeric_aliases=False):
+    """Change sequence identifiers only, using versioned report aliases.
+
+    Numeric zero padding is explicitly enabled only for the deposited NEAC GFF.
+    Coordinates, strand, phase, type and all attributes remain byte-equivalent.
+    """
+    aliases={k:k for k in chromosomes}
+    for row in report or []:
+        keys=[row.get(k) for k in ('refseqAccession','genbankAccession','sequenceName')]
+        targets={k for k in keys if k in chromosomes}
+        if not targets:continue
+        if len(targets)!=1:raise ValueError('Ambiguous annotation report target')
+        target=targets.pop();names=[k for k in keys if k]
+        if numeric_aliases and str(row.get('chrName','')).isdigit():
+            name=str(int(row['chrName']));names.extend([name,name.zfill(2)])
+        for name in names:
+            if name in aliases and aliases[name]!=target:raise ValueError('Ambiguous sequence alias '+name)
+            aliases[name]=target
+    used={};excluded=defaultdict(int);types=defaultdict(int);before=hashlib.sha256();after=hashlib.sha256()
+    with gff.open() as src,destination.open('w') as dst:
+        for line in src:
+            if line.startswith('##FASTA'):break
+            if line.startswith('##sequence-region '):
+                parts=line.split();target=aliases.get(parts[1])
+                if target:
+                    if not 1<=int(parts[2])<=int(parts[3])<=chromosomes[target]:raise ValueError('GFF sequence-region exceeds mapped chromosome')
+                    parts[1]=target;dst.write(' '.join(parts)+'\n')
+                continue
+            if line.startswith('#') or not line.strip():dst.write(line);continue
+            fields=line.rstrip('\n').split('\t')
+            if len(fields)!=9:raise ValueError('Malformed annotation row')
+            name=fields[0];target=aliases.get(name)
+            if target is None:
+                if numeric_aliases and name.isdigit():raise ValueError('Unmapped numbered GFF chromosome '+name)
+                excluded[name]+=1;continue
+            if not 1<=int(fields[3])<=int(fields[4])<=chromosomes[target]:raise ValueError('Annotation outside mapped chromosome '+name)
+            if target in used and used[target]!=name:raise ValueError('Two annotation names refer to one chromosome; inspect duplication')
+            used[target]=name;types[fields[2]]+=1
+            payload='\t'.join(fields[1:])+'\n';before.update(payload.encode())
+            fields[0]=target;after.update(('\t'.join(fields[1:])+'\n').encode())
+            dst.write('\t'.join(fields)+'\n')
+    if before.hexdigest()!=after.hexdigest():raise ValueError('Annotation contents changed beyond sequence names')
+    if not types['CDS']:raise ValueError('No retained CDS features; inspect sequence mapping or annotation schema')
+    return dict(sequence_mapping={name:target for target,name in sorted(used.items())},excluded_feature_sequences=dict(excluded),retained_feature_types=dict(types),fixed_feature_sha256=before.hexdigest(),coordinates_strands_attributes_unchanged=True,numeric_aliases=numeric_aliases)
+
+
 def prepare_species(run,case,index,gffread):
     spec=case['species'][index];out=run/'sources'/spec['id'];out.mkdir(parents=True,exist_ok=True)
     files={};report=None
@@ -105,7 +151,11 @@ def prepare_species(run,case,index,gffread):
             compressed=out/'gff.gz';files['gff']=verified_download(spec['gff'],compressed);expand(compressed,gff)
         files['versioned_accession']=accession
     lengths=fasta_lengths(genome);chosen,rule=select_chromosomes(lengths,spec,report)
-    records,transcripts,rows=annotations(gff,set(chosen))
+    normalized=out/'annotation_mapped.gff'
+    mapping=normalize_annotation(gff,normalized,chosen,report,spec.get('numeric_chromosome_aliases',False))
+    write_json(out/'sequence_mapping_audit.json',mapping)
+    print('ANNOTATION MAPPING',spec['id'],len(mapping['sequence_mapping']),'chromosomes',mapping['retained_feature_types'].get('CDS',0),'CDS; coordinates and strands unchanged',flush=True)
+    records,transcripts,rows=annotations(normalized,set(chosen))
     selected=out/'translation.gff';selected.write_text('##gff-version 3\n'+''.join(rows))
     pep=out/'translated.faa';subprocess.run([str(gffread),str(selected),'-g',str(genome),'-y',str(pep)],check=True)
     allowed={gid for gid,(r,attrs) in records.items() if r[2]=='gene'}
@@ -121,7 +171,7 @@ def prepare_species(run,case,index,gffread):
     unannotated=sorted(set(chosen)-{g['chromosome'] for g in genes.values()})
     if unannotated:raise ValueError('Selected chromosomes lack usable proteins: '+repr(unannotated))
     write_json(out/'genes.json',genes);write_json(out/'chromosomes.json',{k:dict(id=k,length=n) for k,n in chosen.items()})
-    write_json(out/'input_audit.json',dict(species=spec,files=files,chromosome_selection=rule,selected=chosen,excluded_sequences={k:n for k,n in lengths.items() if k not in chosen},gene_count=len(genes),rejected_translations=rejected,genome_sha256=digest(genome),gff_sha256=digest(gff)))
+    write_json(out/'input_audit.json',dict(species=spec,files=files,chromosome_selection=rule,selected=chosen,excluded_sequences={k:n for k,n in lengths.items() if k not in chosen},gene_count=len(genes),rejected_translations=rejected,genome_sha256=digest(genome),gff_sha256=digest(gff),sequence_mapping=mapping))
     (out/'COMPLETE').write_text('PASS versioned inputs, chromosome count and annotation coordinates\n')
     print('PREPARED',spec['id'],len(chosen),'chromosomes',len(genes),'proteins',flush=True)
 
