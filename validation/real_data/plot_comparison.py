@@ -194,7 +194,9 @@ def main():
     a.output.mkdir(parents=True, exist_ok=True)
     fixture = load_fixture(a.prepared / 'fixture.json')
     provenance = json.loads((a.prepared / 'provenance.json').read_text())
-    initial = initial_layout_state(fixture)
+    saved_input = a.prepared / 'input_layout.json'
+    initial = (decode_saved_layout(fixture, json.loads(saved_input.read_text()))
+               if saved_input.exists() else initial_layout_state(fixture))
     panels = [(initial, provenance.get('input_panel_title', 'Input: chromosome-name order'), provenance.get('anchor_description', 'block projection'))]
     # A usable vector figure exists even if a subsequent solver is interrupted.
     render(fixture, panels, a.output, provenance)

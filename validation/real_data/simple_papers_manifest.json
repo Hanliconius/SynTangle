@@ -1,0 +1,162 @@
+{
+  "cases": [
+    {
+      "id": "ficus",
+      "doi": "10.1038/s41597-025-05155-w",
+      "panel": "4",
+      "provisional_species_order": [
+        "Ficus_religiosa",
+        "Ficus_carica",
+        "Ficus_microcarpa",
+        "Ficus_benjamina",
+        "Ficus_hispida"
+      ],
+      "published_layout_verified": false,
+      "source_page": "https://www.nature.com/articles/s41597-025-05155-w",
+      "inventory_api": "https://api.figshare.com/v2/articles/27980945",
+      "assets": [
+        {
+          "name": "Fben.genome.fasta",
+          "url": "https://ndownloader.figshare.com/files/51029306",
+          "md5": "f3817606c3e86e92b7dc16d96bc43bba",
+          "bytes": 362730861
+        },
+        {
+          "name": "Fben.longest.gff3",
+          "url": "https://ndownloader.figshare.com/files/51029318",
+          "md5": "fa93e6413ab353a947562b5f3b2d81ad",
+          "bytes": 40497333
+        }
+      ],
+      "supplementary_urls": [],
+      "figure_urls": [],
+      "status": "SOURCE_AUDIT_REQUIRED"
+    },
+    {
+      "id": "faba",
+      "doi": "10.1186/s13059-025-03532-7",
+      "panel": "2b",
+      "provisional_species_order": [
+        "Pisum_sativum",
+        "Vicia_faba_VF8137",
+        "Vicia_faba_Tiffany",
+        "Vicia_faba_Hedin",
+        "Medicago_truncatula"
+      ],
+      "published_layout_verified": false,
+      "source_page": "https://link.springer.com/article/s13059-025-03532-7",
+      "inventory_api": "https://api.figshare.com/v2/articles/25632861/versions/1",
+      "assets": [
+        {
+          "name": "VF8137.annotation.gff3",
+          "url": "https://ndownloader.figshare.com/files/45721800",
+          "md5": "04c4d4fb5b7a262a0a8a35a2dbd8054e",
+          "bytes": 40744666
+        },
+        {
+          "name": "VF8137.annotation.pep",
+          "url": "https://ndownloader.figshare.com/files/45721797",
+          "md5": "64c46c49729ae6848cac3909b964c34e",
+          "bytes": 16541117
+        }
+      ],
+      "supplementary_urls": [
+        "https://media.springernature.com/original/springer-static/esm/art%3A10.1186%2Fs13059-025-03532-7/MediaObjects/13059_2025_3532_MOESM1_ESM.pdf",
+        "https://media.springernature.com/original/springer-static/esm/art%3A10.1186%2Fs13059-025-03532-7/MediaObjects/13059_2025_3532_MOESM2_ESM.xlsx"
+      ],
+      "figure_urls": [],
+      "status": "SOURCE_AUDIT_REQUIRED",
+      "code_inventory": "https://zenodo.org/api/records/8423762",
+      "scope_note": "Full five-row figure. Species order must be checked against image; no silent three-species subset."
+    },
+    {
+      "id": "rhodotorula",
+      "doi": "10.1038/s41598-025-31366-7",
+      "panel": "ribbon panel; exact scope pending",
+      "provisional_species_order": [],
+      "published_layout_verified": false,
+      "source_page": "https://www.nature.com/articles/s41598-025-31366-7",
+      "inventory_api": null,
+      "assets": [],
+      "supplementary_urls": [
+        "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41598-025-31366-7/MediaObjects/41598_2025_31366_MOESM1_ESM.docx",
+        "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41598-025-31366-7/MediaObjects/41598_2025_31366_MOESM2_ESM.xlsx"
+      ],
+      "figure_urls": [],
+      "status": "SOURCE_AUDIT_REQUIRED",
+      "assembly_candidates": [
+        "GCA_051805595.1",
+        "GCA_051805585.1",
+        "GCA_051805575.1",
+        "GCA_051805555.1",
+        "GCA_051805565.1",
+        "GCA_051805545.1",
+        "GCA_051805515.1",
+        "GCA_051805505.1",
+        "GCA_051805495.1",
+        "GCA_051805535.1",
+        "GCA_051805525.1"
+      ],
+      "scope_note": "Do not select strains until figure row scope is verified."
+    },
+    {
+      "id": "suzukii",
+      "doi": "10.1038/s41597-025-05890-0",
+      "panel": "4",
+      "provisional_species_order": [
+        "Drosophila_melanogaster",
+        "Drosophila_suzukii"
+      ],
+      "published_layout_verified": false,
+      "source_page": "https://www.nature.com/articles/s41597-025-05890-0",
+      "inventory_api": "https://api.figshare.com/v2/articles/28138766",
+      "assets": [
+        {
+          "name": "proteins.maker.fasta.gz",
+          "url": "https://ndownloader.figshare.com/files/51486899",
+          "md5": "99f66c986c2bdb48e5476380679ad481",
+          "bytes": 5473041
+        },
+        {
+          "name": "README.txt",
+          "url": "https://ndownloader.figshare.com/files/51486902",
+          "md5": "2b347c75bcfdde311984f14df43a2676",
+          "bytes": 512
+        },
+        {
+          "name": "genome.fa.masked.gz",
+          "url": "https://ndownloader.figshare.com/files/53357045",
+          "md5": "ec036e679aae0abfb741b3a953678100",
+          "bytes": 49657659
+        },
+        {
+          "name": "gene.maker.gff.gz",
+          "url": "https://ndownloader.figshare.com/files/53357048",
+          "md5": "e36da8c54fe9fb2ad49a57393aa93110",
+          "bytes": 3491903
+        }
+      ],
+      "supplementary_urls": [
+        "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41597-025-05890-0/MediaObjects/41597_2025_5890_MOESM1_ESM.pdf",
+        "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41597-025-05890-0/MediaObjects/41597_2025_5890_MOESM2_ESM.xlsx",
+        "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41597-025-05890-0/MediaObjects/41597_2025_5890_MOESM3_ESM.xlsx"
+      ],
+      "figure_urls": [],
+      "status": "SOURCE_AUDIT_REQUIRED"
+    }
+  ],
+  "budgets_seconds": [
+    30,
+    120,
+    600
+  ],
+  "allowed_moves": [
+    "whole_chromosome_permutation",
+    "whole_chromosome_flip"
+  ],
+  "forbidden": [
+    "internal_reordering",
+    "internal_flip",
+    "silent_link_removal"
+  ]
+}
