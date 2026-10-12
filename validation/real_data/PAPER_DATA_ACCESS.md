@@ -87,3 +87,14 @@ cat local_results/latest_published_inputs_run.txt
 
 No authors were contacted during this audit. No real-data solver or figure
 generation was run locally.
+
+## Active scope update, 2026-10-11
+
+The user removed the PNAS Melinaea/Mechanitis candidate from the active set and
+authorized download/reanalysis of codfish (Fig.2A) and Carex (Fig.3). See
+NEXT_PAPER_CASES.md and submit_codfish_carex.sh. This supersedes the older
+minimal-preparation restrictions above for these two selected cases. Carex's
+paper describes MUMmer/SyMAP genome comparisons and a GENESPACE riparian
+figure; do not call its new BLASTP/MCScanX reanalysis the original workflow.
+The earlier priority table is a historical access audit, not a list of completed
+replicas.
