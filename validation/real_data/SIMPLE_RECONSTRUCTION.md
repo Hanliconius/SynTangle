@@ -20,3 +20,7 @@ Alignment selection defines the newly reconstructed evidence, before optimizatio
 The collector reports prepared species, completed pairs, audited completed comparisons and source blocks. Its ZIP contains plots, fixtures, manifests and audits, excluding large genome FASTAs. Missing outputs are not counted as complete. Setup installs into a new run-specific environment and does not modify existing environments.
 
 Local validation: five tests cover source scope, refusal to substitute longest sequences, GFF parent identity and fixed coordinates, signed PAF endpoint handling, and sequence-report length rejection. Python compilation and shell syntax checks pass. Downloads, tool installation and full biological inference require the Pegasus run; they have not been executed locally.
+
+## Resume an existing run
+
+`bash validation/real_data/submit_simple_reconstruction.sh --resume RUN` reuses the installed environment, verified completed species and completed pair evidence. It refreshes only reconstruction workflow files after saving the previous code directory. All arrays remain concurrent. The directory cache is keyed by URL, generated provenance includes pair audits, and download receive/TLS failures get bounded retries using HTTP/1.1 for compatibility. Identical duplicate annotation rows can be retained once; distinct placements sharing an ID still fail for biological review. Never merge them into a spanning gene silently.

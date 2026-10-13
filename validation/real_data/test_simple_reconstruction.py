@@ -1,6 +1,7 @@
 import json,tempfile,unittest
 from pathlib import Path
-from simple_reconstruction import choose,gene_records,paf_rows,lengths
+from simple_reconstruction import choose,gene_records,paf_rows,lengths,asset
+from unittest.mock import patch
 
 class ReconstructionTests(unittest.TestCase):
     def test_no_longest_n_substitution(self):
@@ -19,6 +20,26 @@ class ReconstructionTests(unittest.TestCase):
     def test_bad_report_length(self):
         report=[dict(role='assembled-molecule',assignedMoleculeLocationType='Chromosome',chrName='1',genbankAccession='a',length=20)]
         with self.assertRaises(ValueError):choose({'a':10},dict(id='s',expected_chromosomes=1),report)
+    def test_directory_cache_is_separate_per_url(self):
+        with tempfile.TemporaryDirectory() as d:
+            pages=[]
+            def fake(url,path,md5=None):
+                if url.endswith('/'):
+                    pages.append(path)
+                    path.write_text('<a href="'+url+('genes.gff.gz' if 'annotation' in url else 'dna.fna.gz')+'">file</a>')
+                else:path.write_text('data')
+                return {'url':url}
+            with patch('simple_reconstruction.fetch',side_effect=fake):
+                asset(dict(directory='https://x/genome/',filename_suffix='.fna.gz'),Path(d),None)
+                p,_=asset(dict(directory='https://x/annotation/',filename_suffix='.gff.gz'),Path(d),None)
+            self.assertEqual(p.name,'genes.gff.gz');self.assertNotEqual(pages[0],pages[1])
+    def test_distinct_duplicate_is_not_silently_merged(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'a.gff';line='chr1\ts\tgene\t2\t20\t.\t+\t.\tID=g\n'
+            p.write_text(line+line)
+            records,_,_=gene_records(p,{'chr1':100});self.assertEqual(len(records),1)
+            p.write_text(line+line.replace('2\t20','30\t50'))
+            with self.assertRaisesRegex(ValueError,'Distinct placements'):gene_records(p,{'chr1':100})
     def test_scopes(self):
         m=json.loads(Path(__file__).with_name('simple_reconstruction_manifest.json').read_text());cs={c['id']:c for c in m['cases']}
         self.assertEqual(len(cs['faba']['species']),6);self.assertEqual(len(cs['rhodotorula']['species']),11)

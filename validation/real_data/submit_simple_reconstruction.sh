@@ -2,6 +2,20 @@
 set -euo pipefail
 SCT_RECON_REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 cd "$SCT_RECON_REPO"
+# Check login-node Python before submitting anything.
+SCT_RECON_PY=$(command -v python || command -v python3 || true)
+if [[ -z "$SCT_RECON_PY" ]]; then printf 'Activate syntangle_test before submission. No jobs submitted.\n' >&2;exit 1;fi
+if [[ "${1:-}" == --resume ]]; then
+  SCT_RECON_RUN=$(realpath "${2:?Provide existing reconstruction run}")
+  SCT_RECON_CACHE=$(realpath "${3:-$(cat local_results/latest_simple_papers_run.txt)}")
+  SCT_RECON_TOOLS="$SCT_RECON_RUN/tools"
+  [[ -x "$SCT_RECON_TOOLS/bin/python" ]] || { printf 'Existing tools missing; cannot resume.\n' >&2;exit 1; }
+  # Refresh only workflow code; source inputs, completed alignments and original snapshot remain.
+  cp -a "$SCT_RECON_RUN/code/validation/real_data" "$SCT_RECON_RUN/code/validation/real_data.before_resume.$(date +%s)"
+  cp validation/real_data/simple_reconstruction.py validation/real_data/simple_papers.py validation/real_data/simple_reconstruction_manifest.json "$SCT_RECON_RUN/code/validation/real_data/"
+  SCT_RECON_SETUP=REUSED
+  SCT_RECON_SETUP_ARGS=()
+else
 SCT_RECON_CACHE=$(realpath "${1:-$(cat local_results/latest_simple_papers_run.txt)}")
 SCT_RECON_RUN=$(mktemp -d "$SCT_RECON_REPO/local_results/simple_reconstructed_XXXXXX")
 mkdir -p "$SCT_RECON_RUN/code" logs
@@ -17,9 +31,12 @@ micromamba create -y -p "$SCT_RECON_TOOLS" -c conda-forge -c bioconda --strict-c
 printf 'PASS reconstruction tools ready\n'
 SLURM
 )
+  SCT_RECON_SETUP_ARGS=(--dependency="afterok:${SCT_RECON_SETUP%%;*}")
+fi
+export SCT_RECON_RUN SCT_RECON_CACHE SCT_RECON_TOOLS
 SCT_RECON_TERMINALS=()
 for SCT_RECON_CASE in 0 1 2 3; do
-  read -r SCT_RECON_ID SCT_RECON_NSP SCT_RECON_NPAIR < <(python - "$SCT_RECON_CASE" "$SCT_RECON_RUN" <<'PY'
+  read -r SCT_RECON_ID SCT_RECON_NSP SCT_RECON_NPAIR < <("$SCT_RECON_PY" - "$SCT_RECON_CASE" "$SCT_RECON_RUN" <<'PY'
 import json,sys
 from pathlib import Path
 c=json.loads((Path(sys.argv[2])/'code/validation/real_data/simple_reconstruction_manifest.json').read_text())['cases'][int(sys.argv[1])]
@@ -27,7 +44,7 @@ print(c['id'],len(c['species']),len(c['pairs']))
 PY
 )
   export SCT_RECON_CASE SCT_RECON_ID
-  SCT_RECON_PREP=$(sbatch --parsable --partition=cpu --cpus-per-task=1 --mem=16G --time=04:00:00 --array="0-$((SCT_RECON_NSP-1))" --dependency="afterok:${SCT_RECON_SETUP%%;*}" --job-name="st_${SCT_RECON_ID}_prep" --output="logs/st_simple_${SCT_RECON_ID}_prep.%A_%a.out" --error="logs/st_simple_${SCT_RECON_ID}_prep.%A_%a.err" <<'SLURM'
+  SCT_RECON_PREP=$(sbatch --parsable --partition=cpu --cpus-per-task=1 --mem=16G --time=04:00:00 --array="0-$((SCT_RECON_NSP-1))" "${SCT_RECON_SETUP_ARGS[@]}" --job-name="st_${SCT_RECON_ID}_prep" --output="logs/st_simple_${SCT_RECON_ID}_prep.%A_%a.out" --error="logs/st_simple_${SCT_RECON_ID}_prep.%A_%a.err" <<'SLURM'
 #!/bin/bash
 set -euo pipefail
 export PATH="$SCT_RECON_TOOLS/bin:$PATH" PYTHONPATH="$SCT_RECON_RUN/code/src:$SCT_RECON_RUN/code/validation/real_data" OPENBLAS_NUM_THREADS=1 PYTHONUNBUFFERED=1

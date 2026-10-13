@@ -34,7 +34,7 @@ def lengths(p):
 
 def asset(record,out,cache):
     if 'directory' in record:
-        page=out/'directory.html';fetch(record['directory'],page)
+        page=out/('directory_'+hashlib.sha256(record['directory'].encode()).hexdigest()[:16]+'.html');fetch(record['directory'],page)
         choices=sorted({urljoin(record['directory'],unquote(x)) for x in re.findall(r'href="([^"]+)"',page.read_text()) if x.endswith(record['filename_suffix'])})
         if len(choices)!=1:raise ValueError('Pinned directory lacks unique '+record['filename_suffix']+' '+repr(choices))
         record={**record,'url':choices[0]}
@@ -85,7 +85,9 @@ def gene_records(gff,selected):
             a={k:unquote(v) for k,v in (x.split('=',1) for x in fields[8].split(';') if '=' in x)}
             ident=a.get('ID')
             if ident:
-                if ident in records and fields[2]!='CDS':raise ValueError('Duplicate feature '+ident)
+                if ident in records and fields[2]!='CDS':
+                    if records[ident]==(fields,a):continue
+                    raise ValueError('Distinct placements share feature ID '+ident+'; manual biological review required: '+repr(records[ident][0][:8])+' versus '+repr(fields[:8]))
                 records[ident]=(fields,a)
                 if a.get('Parent'):parents[ident]=a['Parent'].split(',')
             for value in [a.get('protein_id'),a.get('transcript_id')]:
@@ -112,6 +114,11 @@ def gene_records(gff,selected):
 
 def prepare(run,case,index,cache):
     spec=case['species'][index];out=run/'sources'/spec['id'];out.mkdir(parents=True,exist_ok=True)
+    if (out/'COMPLETE').exists() and (out/'input_audit.json').exists():
+        prior=json.loads((out/'input_audit.json').read_text())
+        if (out/'COMPLETE').read_text().strip()==sha(out/'input_audit.json') and prior['source']==spec and (out/'chromosomes.fna').exists() and sha(out/'chromosomes.fna')==prior['chromosome_fasta_sha256']:
+            if case['method']=='minimap2' or all((out/n).exists() for n in ('genes.json','proteins.faa')):
+                print('REUSED INPUT',case['id'],spec['id'],flush=True);return
     (out/'COMPLETE').unlink(missing_ok=True)
     if spec.get('blocked'):
         dump(out/'status.json',dict(status='SOURCE_BLOCKED',reason=spec['blocked']));raise ValueError(spec['blocked'])
@@ -199,7 +206,12 @@ def paf_rows(path,a,b,ca,cb,index,minbp,mapq):
     return rows
 
 def pair(run,case,index):
-    a,b=case['pairs'][index];out=run/'pairs'/str(index);out.mkdir(parents=True,exist_ok=True);(out/'COMPLETE').unlink(missing_ok=True)
+    a,b=case['pairs'][index];out=run/'pairs'/str(index);out.mkdir(parents=True,exist_ok=True)
+    if (out/'COMPLETE').exists() and (out/'blocks.json').exists() and (out/'pair_audit.json').exists():
+        prior=json.loads((out/'pair_audit.json').read_text())
+        if prior.get('parameters')==case and (out/'COMPLETE').read_text().strip()==sha(out/'blocks.json'):
+            print('REUSED PAIR',a,b,flush=True);return
+    (out/'COMPLETE').unlink(missing_ok=True)
     for sp in (a,b):
         p=run/'sources'/sp
         if not (p/'COMPLETE').exists() or (p/'COMPLETE').read_text().strip()!=sha(p/'input_audit.json'):raise ValueError('Unvalidated input '+sp)
@@ -275,7 +287,7 @@ def fixture(run,case,pair_index=None,tag=""):
     converted=[{**r,**{f'startBp{i}':r[f'startBp{i}']-1 for i in (1,2)}} for r in rows]
     with (out/'published_block_coordinates.tsv').open('w') as f:
         w=csv.DictWriter(f,fieldnames=list(converted[0]),delimiter='\t');w.writeheader();w.writerows(converted)
-    provenance=dict(paper=case['paper'],figure=case['figure'],exact_published_display=False,source_kind='Reconstructed '+case['method']+' evidence',scope=case['reconstruction_note'],retained_links=len(rows),colour_reference=case['colour_reference'],input_panel_title='Reconstructed input',input_layout_note='Natural chromosome labels; published orientation not yet verified',chromosome_extent='Full fixed assembly chromosome lengths',row_order=ids)
+    provenance=dict(pair_audit=[dict(pair=case['pairs'][i],retained=len(json.loads((run/'pairs'/str(i)/'blocks.json').read_text()))) for i in indices],paper=case['paper'],figure=case['figure'],exact_published_display=False,source_kind='Reconstructed '+case['method']+' evidence',scope=case['reconstruction_note'],retained_links=len(rows),colour_reference=case['colour_reference'],input_panel_title='Reconstructed input',input_layout_note='Natural chromosome labels; published orientation not yet verified',chromosome_extent='Full fixed assembly chromosome lengths',row_order=ids)
     direct_reference_colours(obj,out,provenance);dump(out/'provenance.json',provenance)
     return out
 

@@ -1,5 +1,5 @@
 """Acquire exact paper deposits; gate comparison on reviewed fixed evidence and layout."""
-import argparse, hashlib, json, shutil, subprocess, urllib.request
+import argparse, hashlib, json, shutil, subprocess, urllib.request, time
 from pathlib import Path
 
 def sha(p):
@@ -21,7 +21,14 @@ def fetch(url,path,md5=None):
     if not good():
         temp=path.with_suffix(path.suffix+'.partial');temp.unlink(missing_ok=True)
         try:
-            subprocess.run(['curl','--user-agent','Mozilla/5.0','--fail','--location','--silent','--show-error','--retry','3','--connect-timeout','30','--max-time','1800','--output',str(temp),url],check=True)
+            command=['curl','--http1.1','--user-agent','Mozilla/5.0','--fail','--location','--silent','--show-error','--retry','3','--connect-timeout','30','--max-time','1800','--output',str(temp),url]
+            for attempt in range(3):
+                try:
+                    subprocess.run(command,check=True);break
+                except subprocess.CalledProcessError as exc:
+                    temp.unlink(missing_ok=True)
+                    if exc.returncode not in (18,28,35,52,56) or attempt==2:raise
+                    time.sleep(2*(attempt+1))
             if md5:
                 h=hashlib.md5()
                 with temp.open('rb') as f:
