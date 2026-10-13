@@ -72,7 +72,7 @@ def choose(lengths,spec,report=None):
     return selected,names
 
 def gene_records(gff,selected):
-    records={};parents={};aliases={};excluded=defaultdict(int);gene_instances=defaultdict(list)
+    records={};parents={};aliases={};excluded=defaultdict(int);gene_instances=defaultdict(list);noncontiguous=set()
     with textopen(gff) as f:
         for line in f:
             if line.startswith('##FASTA'):break
@@ -85,6 +85,8 @@ def gene_records(gff,selected):
             if not 1<=start<=end<=selected[fields[0]]:raise ValueError('GFF outside chromosome')
             a={k:unquote(v) for k,v in (x.split('=',1) for x in fields[8].split(';') if '=' in x)}
             ident=a.get('ID')
+            if fields[2]=='gene' and a.get('exception')=='trans-splicing':
+                noncontiguous.add(ident)
             if ident:
                 if ident in records and fields[2]!='CDS':
                     if records[ident]==(fields,a):continue
@@ -108,6 +110,8 @@ def gene_records(gff,selected):
         result=set()
         for p in parents.get(x,[]):
             candidates=gene_instances.get(p)
+            if p in noncontiguous:
+                return set()
             if candidates:
                 candidates=[g for g in candidates if records[g][0][0]==row[0] and records[g][0][6]==row[6] and int(records[g][0][3])<=int(row[3])<=int(row[4])<=int(records[g][0][4])]
                 if len(candidates)!=1:raise ValueError('Ambiguous gene placement for '+x)
@@ -121,6 +125,8 @@ def gene_records(gff,selected):
     for x,owners in aliases.items():
         gs=set().union(*(ancestor(p) for p in owners))
         if len(gs)==1:mapping[x]=next(iter(gs))
+    excluded['trans_spliced_gene_ids']=sorted(noncontiguous)
+    excluded['trans_splicing_policy']='Retain source features; exclude from single-contiguous-locus protein anchors, no invented span or placement'
     return records,mapping,dict(excluded)
 
 def prepare(run,case,index,cache):

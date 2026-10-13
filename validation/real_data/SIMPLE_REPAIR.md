@@ -9,3 +9,5 @@ Rhodotorula now reconstructs all directly observed pairwise alignments for nativ
 Caméor chromosome selection now accepts the deposited chrNLGN names. Tiffany and Hedin chromosome 1 remains split into L/S in the downloaded source. The targeted retry excludes faba until a documented fixed arm join or equivalent original whole-chromosome representation is available. Independent arm moves or guessed concatenation are forbidden.
 
 Ficus pumila remains source-blocked. Existing successful Ficus comparisons are not rerun by this repair.
+
+The NCBI Dmel source marks mod(mdg4)/CG32491 as trans-splicing with five distinct gene parts. It cannot be represented by one contiguous protein anchor. Its source features remain intact, and the exclusion is recorded explicitly in the input audit. Full-source parsing was checked against GCF_000001215.4, not only a synthetic fixture.

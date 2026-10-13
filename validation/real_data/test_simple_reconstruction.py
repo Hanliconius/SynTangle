@@ -56,6 +56,12 @@ class ReconstructionTests(unittest.TestCase):
             provenance=json.loads((prepared/'provenance.json').read_text())
             self.assertEqual(provenance['retained_links'],2)
             self.assertEqual(len((prepared/'published_block_coordinates.tsv').read_text().splitlines()),4)
+    def test_trans_spliced_gene_is_explicitly_audited(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'a.gff';p.write_text('chr1\ts\tgene\t2\t20\t.\t+\t.\tID=g;exception=trans-splicing\nchr1\ts\tmRNA\t2\t50\t.\t+\t.\tID=t;Parent=g\n')
+            records,mapping,audit=gene_records(p,{'chr1':100})
+            self.assertIn('t',records);self.assertNotIn('t',mapping)
+            self.assertEqual(audit['trans_spliced_gene_ids'],['g'])
     def test_scopes(self):
         m=json.loads(Path(__file__).with_name('simple_reconstruction_manifest.json').read_text());cs={c['id']:c for c in m['cases']}
         self.assertEqual(len(cs['faba']['species']),6);self.assertEqual(len(cs['rhodotorula']['species']),11)
