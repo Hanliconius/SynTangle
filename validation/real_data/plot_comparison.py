@@ -100,7 +100,7 @@ def direct_reference_colours(fixture, prepared, provenance):
         else:ambiguous.append(hid)
     provenance['homology_colour_reference']=assignments
     provenance['colour_reference']=reference
-    provenance['colour_note']='Colours project dominant direct Bombyx block overlap; tied/unassigned links grey. Colour only, not a shared orthology claim.'
+    provenance['colour_note']=f'Colours project dominant direct {reference} block overlap; tied/unassigned links grey. Colour only, not a shared orthology claim.'
     return dict(reference=reference,assigned_ids=assignments,ambiguous_ids=ambiguous,
                 rule='union overlap per reference chromosome, normalized by block span, summed across endpoints',
                 source_sha256=hashlib.sha256(source.read_bytes()).hexdigest())
@@ -141,7 +141,7 @@ def render(fixture, panels, output, provenance):
         for y, species in enumerate(fixture.species_ids):
             for ref in state.chromosome_order[species]:
                 x, width, _ = geometry[ref]
-                label = ref.chromosome_id + (' (-)' if state.chromosome_orientation[ref] < 0 else '')
+                label = provenance.get('chromosome_labels', {}).get(species, {}).get(ref.chromosome_id, ref.chromosome_id) + (' (-)' if state.chromosome_orientation[ref] < 0 else '')
                 ax.text(x + width / 2, y - .12, label, ha='center',
                         va='bottom', rotation=60, fontsize=5, zorder=6)
     if provenance.get('display_top_to_bottom') == list(reversed(fixture.species_ids)):

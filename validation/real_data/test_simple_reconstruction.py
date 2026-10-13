@@ -1,6 +1,6 @@
 import json,tempfile,unittest
 from pathlib import Path
-from simple_reconstruction import choose,gene_records,paf_rows,lengths,asset
+from simple_reconstruction import choose,gene_records,paf_rows,lengths,asset,fixture,sha,dump
 from unittest.mock import patch
 
 class ReconstructionTests(unittest.TestCase):
@@ -39,7 +39,23 @@ class ReconstructionTests(unittest.TestCase):
             p.write_text(line+line)
             records,_,_=gene_records(p,{'chr1':100});self.assertEqual(len(records),1)
             p.write_text(line+line.replace('2\t20','30\t50'))
-            with self.assertRaisesRegex(ValueError,'Distinct placements'):gene_records(p,{'chr1':100})
+            records,_,_=gene_records(p,{'chr1':100});self.assertEqual(len(records),2)
+    def test_repeated_gene_parent_resolved_by_placement(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'a.gff'
+            p.write_text('chr1\ts\tgene\t2\t20\t.\t+\t.\tID=g\nchr1\ts\tgene\t30\t50\t.\t-\t.\tID=g\nchr1\ts\tmRNA\t31\t49\t.\t-\t.\tID=t;Parent=g\nchr1\ts\tfive_prime_UTR\t31\t32\t.\t-\t.\tID=u;Parent=t\nchr1\ts\tfive_prime_UTR\t35\t36\t.\t-\t.\tID=u;Parent=t\n')
+            records,mapping,_=gene_records(p,{'chr1':100})
+            self.assertEqual(records[mapping['t']][0][3:5],['30','50'])
+    def test_nonadjacent_anchors_do_not_change_scored_links(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);case=dict(id='test',species=[dict(id=x) for x in 'abc'],pairs=[['a','b'],['b','c'],['a','c']],paper='p',figure='f',method='minimap2',reconstruction_note='test',colour_reference='a')
+            for sp in 'abc':dump(root/'sources'/sp/'chromosomes.json',{'chr1':dict(length=100,display_name='1')})
+            for i,(a,b) in enumerate(case['pairs']):
+                out=root/'pairs'/str(i);dump(out/'blocks.json',[dict(blkID=str(i),genome1=a,genome2=b,chr1='chr1',chr2='chr1',startBp1=11,endBp1=20,startBp2=21,endBp2=30,orient='+')]);(out/'COMPLETE').write_text(sha(out/'blocks.json'))
+            prepared=fixture(root,case)
+            provenance=json.loads((prepared/'provenance.json').read_text())
+            self.assertEqual(provenance['retained_links'],2)
+            self.assertEqual(len((prepared/'published_block_coordinates.tsv').read_text().splitlines()),4)
     def test_scopes(self):
         m=json.loads(Path(__file__).with_name('simple_reconstruction_manifest.json').read_text());cs={c['id']:c for c in m['cases']}
         self.assertEqual(len(cs['faba']['species']),6);self.assertEqual(len(cs['rhodotorula']['species']),11)

@@ -72,7 +72,7 @@ def choose(lengths,spec,report=None):
     return selected,names
 
 def gene_records(gff,selected):
-    records={};parents={};aliases={};excluded=defaultdict(int)
+    records={};parents={};aliases={};excluded=defaultdict(int);gene_instances=defaultdict(list)
     with textopen(gff) as f:
         for line in f:
             if line.startswith('##FASTA'):break
@@ -80,6 +80,7 @@ def gene_records(gff,selected):
             fields=line.rstrip().split('\t')
             if len(fields)!=9:raise ValueError('Malformed GFF')
             if fields[0] not in selected:excluded[fields[0]]+=1;continue
+            if fields[2] not in ('gene','mRNA','transcript','CDS'):continue
             start,end=int(fields[3]),int(fields[4])
             if not 1<=start<=end<=selected[fields[0]]:raise ValueError('GFF outside chromosome')
             a={k:unquote(v) for k,v in (x.split('=',1) for x in fields[8].split(';') if '=' in x)}
@@ -87,8 +88,12 @@ def gene_records(gff,selected):
             if ident:
                 if ident in records and fields[2]!='CDS':
                     if records[ident]==(fields,a):continue
-                    raise ValueError('Distinct placements share feature ID '+ident+'; manual biological review required: '+repr(records[ident][0][:8])+' versus '+repr(fields[:8]))
+                    if fields[2]=='gene':
+                        ident=ident+'@'+fields[0]+':'+fields[3]+'-'+fields[4]+':'+fields[6]
+                    else:
+                        raise ValueError('Distinct placements share feature ID '+ident+'; manual biological review required')
                 records[ident]=(fields,a)
+                if fields[2]=='gene':gene_instances[a['ID']].append(ident)
                 if a.get('Parent'):parents[ident]=a['Parent'].split(',')
             for value in [a.get('protein_id'),a.get('transcript_id')]:
                 if value:
@@ -101,7 +106,13 @@ def gene_records(gff,selected):
         row,_=records[x]
         if row[2]=='gene':return {x}
         result=set()
-        for p in parents.get(x,[]):result|=ancestor(p,seen|{x})
+        for p in parents.get(x,[]):
+            candidates=gene_instances.get(p)
+            if candidates:
+                candidates=[g for g in candidates if records[g][0][0]==row[0] and records[g][0][6]==row[6] and int(records[g][0][3])<=int(row[3])<=int(row[4])<=int(records[g][0][4])]
+                if len(candidates)!=1:raise ValueError('Ambiguous gene placement for '+x)
+                p=candidates[0]
+            result|=ancestor(p,seen|{x})
         return result
     mapping={}
     for x in records:
@@ -209,7 +220,7 @@ def pair(run,case,index):
     a,b=case['pairs'][index];out=run/'pairs'/str(index);out.mkdir(parents=True,exist_ok=True)
     if (out/'COMPLETE').exists() and (out/'blocks.json').exists() and (out/'pair_audit.json').exists():
         prior=json.loads((out/'pair_audit.json').read_text())
-        if prior.get('parameters')==case and (out/'COMPLETE').read_text().strip()==sha(out/'blocks.json'):
+        if {k:v for k,v in prior.get('parameters',{}).items() if k!='pairs'}=={k:v for k,v in case.items() if k!='pairs'} and prior.get('pair')==[a,b] and (out/'COMPLETE').read_text().strip()==sha(out/'blocks.json'):
             print('REUSED PAIR',a,b,flush=True);return
     (out/'COMPLETE').unlink(missing_ok=True)
     for sp in (a,b):
@@ -274,7 +285,10 @@ def fixture(run,case,pair_index=None,tag=""):
         p=run/'pairs'/str(i)
         if not (p/'COMPLETE').exists() or (p/'COMPLETE').read_text().strip()!=sha(p/'blocks.json'):raise ValueError('Missing/tampered pair '+str(i))
         rows+=json.loads((p/'blocks.json').read_text())
+    all_rows=rows
     ids=[s['id'] for s in case['species']] if pair_index is None else case['pairs'][pair_index]
+    adjacent={frozenset((a,b)) for a,b in zip(ids,ids[1:])}
+    rows=[r for r in rows if frozenset((r['genome1'],r['genome2'])) in adjacent]
     blocks={sp:defaultdict(list) for sp in ids}
     for r in rows:
         for i in (1,2):
@@ -284,10 +298,11 @@ def fixture(run,case,pair_index=None,tag=""):
         chroms=json.loads((run/'sources'/sp/'chromosomes.json').read_text());ordered=sorted(chroms,key=natural)
         data['species'].append(dict(id=sp,chromosomes=[dict(id=c,length=chroms[c]['length'],display_rank=i+1,blocks=blocks[sp][c]) for i,c in enumerate(ordered)]))
     obj=fixture_from_dict(data);out=run/'prepared'/(data['id']+'_'+tag);dump(out/'fixture.json',data)
-    converted=[{**r,**{f'startBp{i}':r[f'startBp{i}']-1 for i in (1,2)}} for r in rows]
+    converted=[{**r,**{f'startBp{i}':r[f'startBp{i}']-1 for i in (1,2)}} for r in all_rows]
     with (out/'published_block_coordinates.tsv').open('w') as f:
         w=csv.DictWriter(f,fieldnames=list(converted[0]),delimiter='\t');w.writeheader();w.writerows(converted)
     provenance=dict(pair_audit=[dict(pair=case['pairs'][i],retained=len(json.loads((run/'pairs'/str(i)/'blocks.json').read_text()))) for i in indices],paper=case['paper'],figure=case['figure'],exact_published_display=False,source_kind='Reconstructed '+case['method']+' evidence',scope=case['reconstruction_note'],retained_links=len(rows),colour_reference=case['colour_reference'],input_panel_title='Reconstructed input',input_layout_note='Natural chromosome labels; published orientation not yet verified',chromosome_extent='Full fixed assembly chromosome lengths',row_order=ids)
+    provenance['chromosome_labels']={sp:{k:v['display_name'] for k,v in json.loads((run/'sources'/sp/'chromosomes.json').read_text()).items()} for sp in ids}
     direct_reference_colours(obj,out,provenance);dump(out/'provenance.json',provenance)
     return out
 

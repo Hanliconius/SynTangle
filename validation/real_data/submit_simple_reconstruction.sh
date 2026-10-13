@@ -12,7 +12,7 @@ if [[ "${1:-}" == --resume ]]; then
   [[ -x "$SCT_RECON_TOOLS/bin/python" ]] || { printf 'Existing tools missing; cannot resume.\n' >&2;exit 1; }
   # Refresh only workflow code; source inputs, completed alignments and original snapshot remain.
   cp -a "$SCT_RECON_RUN/code/validation/real_data" "$SCT_RECON_RUN/code/validation/real_data.before_resume.$(date +%s)"
-  cp validation/real_data/simple_reconstruction.py validation/real_data/simple_papers.py validation/real_data/simple_reconstruction_manifest.json "$SCT_RECON_RUN/code/validation/real_data/"
+  cp validation/real_data/simple_reconstruction.py validation/real_data/simple_papers.py validation/real_data/simple_reconstruction_manifest.json validation/real_data/plot_comparison.py "$SCT_RECON_RUN/code/validation/real_data/"
   SCT_RECON_SETUP=REUSED
   SCT_RECON_SETUP_ARGS=()
 else
@@ -35,7 +35,7 @@ SLURM
 fi
 export SCT_RECON_RUN SCT_RECON_CACHE SCT_RECON_TOOLS
 SCT_RECON_TERMINALS=()
-for SCT_RECON_CASE in 0 1 2 3; do
+for SCT_RECON_CASE in ${SCT_SIMPLE_CASES:-0 1 2 3}; do
   read -r SCT_RECON_ID SCT_RECON_NSP SCT_RECON_NPAIR < <("$SCT_RECON_PY" - "$SCT_RECON_CASE" "$SCT_RECON_RUN" <<'PY'
 import json,sys
 from pathlib import Path
