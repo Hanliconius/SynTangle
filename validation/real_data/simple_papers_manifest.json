@@ -5,11 +5,11 @@
       "doi": "10.1038/s41597-025-05155-w",
       "panel": "4",
       "provisional_species_order": [
-        "Ficus_religiosa",
-        "Ficus_carica",
         "Ficus_microcarpa",
+        "Ficus_hispida",
         "Ficus_benjamina",
-        "Ficus_hispida"
+        "Ficus_hirta",
+        "Ficus_pumila"
       ],
       "published_layout_verified": false,
       "source_page": "https://www.nature.com/articles/s41597-025-05155-w",
@@ -30,21 +30,23 @@
       ],
       "supplementary_urls": [],
       "figure_urls": [],
-      "status": "SOURCE_AUDIT_REQUIRED"
+      "status": "SOURCE_AUDIT_REQUIRED",
+      "scope_note": "Fig4 is four independent reference comparisons, not an adjacent five-row chain."
     },
     {
       "id": "faba",
       "doi": "10.1186/s13059-025-03532-7",
       "panel": "2b",
       "provisional_species_order": [
-        "Pisum_sativum",
-        "Vicia_faba_VF8137",
-        "Vicia_faba_Tiffany",
-        "Vicia_faba_Hedin",
-        "Medicago_truncatula"
+        "Pisum_Cameor",
+        "Pisum_ZW6",
+        "Vicia_VF8137",
+        "Vicia_Tiffany",
+        "Vicia_Hedin",
+        "Medicago_Mt4"
       ],
       "published_layout_verified": false,
-      "source_page": "https://link.springer.com/article/s13059-025-03532-7",
+      "source_page": "https://link.springer.com/article/10.1186/s13059-025-03532-7",
       "inventory_api": "https://api.figshare.com/v2/articles/25632861/versions/1",
       "assets": [
         {
@@ -67,7 +69,7 @@
       "figure_urls": [],
       "status": "SOURCE_AUDIT_REQUIRED",
       "code_inventory": "https://zenodo.org/api/records/8423762",
-      "scope_note": "Full five-row figure. Species order must be checked against image; no silent three-species subset."
+      "scope_note": "Six rows verified visually in Fig2b, including both pea assemblies."
     },
     {
       "id": "rhodotorula",

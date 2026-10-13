@@ -21,7 +21,7 @@ def fetch(url,path,md5=None):
     if not good():
         temp=path.with_suffix(path.suffix+'.partial');temp.unlink(missing_ok=True)
         try:
-            subprocess.run(['curl','--fail','--location','--silent','--show-error','--retry','3','--connect-timeout','30','--max-time','1800','--output',str(temp),url],check=True)
+            subprocess.run(['curl','--user-agent','Mozilla/5.0','--fail','--location','--silent','--show-error','--retry','3','--connect-timeout','30','--max-time','1800','--output',str(temp),url],check=True)
             if md5:
                 h=hashlib.md5()
                 with temp.open('rb') as f:
