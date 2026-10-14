@@ -1,0 +1,1 @@
+Recovered cluster code, not a validated or canonical pipeline. Preserve source paths and checksums. Colias Alba code remains quarantined and scientifically invalidated. Validate each selected workflow before promotion.
