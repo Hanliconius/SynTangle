@@ -1,0 +1,6 @@
+# Python 3.12. Solver pins match the Pegasus audit.
+-r benchmark/global_methods_requirements.txt
+-r benchmark/hybrid_methods_requirements.txt
+# Required by fixture tests and visual_summary. Exact successful Pegasus
+# version is recorded in recheck_20261014_192703/installed_versions.txt.
+matplotlib
