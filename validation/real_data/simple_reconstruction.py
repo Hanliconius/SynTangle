@@ -139,11 +139,11 @@ def prepare(run,case,index,cache):
     (out/'COMPLETE').unlink(missing_ok=True)
     if spec.get('blocked'):
         dump(out/'status.json',dict(status='SOURCE_BLOCKED',reason=spec['blocked']));raise ValueError(spec['blocked'])
-    audits=[];report=None
+    audits=[];report=None;ncbi_pep=None
     if spec.get('accession'):
         acc=spec['accession'];u=f'https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/{acc}/download?include_annotation_type=GENOME_FASTA&include_annotation_type=SEQUENCE_REPORT'
-        if case['method']!='minimap2':u+='&include_annotation_type=GENOME_GFF'
-        package=out/(acc+'.zip');audits.append(fetch(u,package))
+        if case['method']!='minimap2':u+='&include_annotation_type=GENOME_GFF&include_annotation_type=PROT_FASTA'
+        package=out/(acc+('.zip' if case['method']=='minimap2' else '.annotation_proteins.zip'));audits.append(fetch(u,package))
         with ZipFile(package) as z:
             if z.testzip():raise ValueError('Corrupt NCBI ZIP')
             def extract(suffix,target):
@@ -154,7 +154,9 @@ def prepare(run,case,index,cache):
             rp=out/'sequence_report.jsonl';extract('sequence_report.jsonl',rp)
             report=[json.loads(l) for l in rp.read_text().splitlines() if l.strip()]
             if any(r.get('assemblyAccession')!=acc for r in report):raise ValueError('Wrong NCBI accession')
-            if case['method']!='minimap2':gff=out/'genomic.gff';extract('genomic.gff',gff)
+            if case['method']!='minimap2':
+                gff=out/'genomic.gff';extract('genomic.gff',gff)
+                ncbi_pep=out/'ncbi_protein.faa';extract('protein.faa',ncbi_pep)
     else:
         genome,audit=asset(spec['genome'],out,cache);audits.append(audit)
         if case['method']!='minimap2':gff,audit=asset(spec['gff'],out,cache);audits.append(audit)
@@ -182,7 +184,9 @@ def prepare(run,case,index,cache):
     temp.replace(canonical)
     if case['method']!='minimap2':
         records,mapping,excluded=gene_records(gff,selected)
-        if spec.get('protein'):pep,audit=asset(spec['protein'],out,cache);audits.append(audit)
+        if ncbi_pep is not None:
+            pep=ncbi_pep;audits.append(dict(protein_source='NCBI supplied protein.faa from matching assembly package',protein_sha256=sha(pep)))
+        elif spec.get('protein'):pep,audit=asset(spec['protein'],out,cache);audits.append(audit)
         else:
             # Translate supplied CDS, never transfer/re-predict annotations silently.
             expanded=out/'annotation.gff'

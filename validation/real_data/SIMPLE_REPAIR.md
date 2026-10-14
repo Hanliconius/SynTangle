@@ -11,3 +11,5 @@ Caméor chromosome selection now accepts the deposited chrNLGN names. Tiffany an
 Ficus pumila remains source-blocked. Existing successful Ficus comparisons are not rerun by this repair.
 
 The NCBI Dmel source marks mod(mdg4)/CG32491 as trans-splicing with five distinct gene parts. It cannot be represented by one contiguous protein anchor. Its source features remain intact, and the exclusion is recorded explicitly in the input audit. Full-source parsing was checked against GCF_000001215.4, not only a synthetic fixture.
+
+NCBI protein-based inputs now use the supplied protein.faa from the exact assembly's Datasets package rather than translating the whole GFF against chromosome-only FASTA. This avoids requiring excluded unplaced sequences during translation. A new package filename prevents reuse of the previous package lacking proteins. Validation on the actual GCF_000001215.4 protein/GFF package matched 13,985 gene identities from 30,802 supplied protein isoforms before chromosome selection. Existing longest-isoform selection and the explicit trans-splicing exclusion remain in force.
