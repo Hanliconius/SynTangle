@@ -7,9 +7,9 @@ python -m pip install -r validation/requirements-publication.txt
 bash validation/run_publication_checks.sh /absolute/path/to/check-results
 ```
 
-The runner records the exact commit and installed versions, runs both suites, and exits nonzero if either fails. It does not download scientific datasets or run the full analysis pipeline. The solver requirements are pinned; matplotlib is not yet pinned because the exact version in the successful cluster environment has not been collected. Preserve installed_versions.txt with each validation record.
+The runner records the exact commit and installed versions, runs both suites, and exits nonzero if either fails. It does not download scientific datasets or run the full analysis pipeline. The solver requirements and matplotlib==3.11.2 are pinned to the reported successful environment. This is a direct-dependency specification, not a complete transitive lockfile. Preserve installed_versions.txt with each validation record.
 
-On 14 October 2026 the Pegasus publication audit's validation checkout passed the unit suite after solver dependency installation, and passed all 43 real-data fixture tests after matplotlib installation (job 138484501). Those results apply to that checkout, not automatically to newer commits or the recovery files.
+On 14 October 2026 the Pegasus publication audit's validation checkout passed the unit suite after solver dependency installation, and passed all 43 real-data fixture tests after matplotlib installation (job 138484501). Follow-up job 138496210 confirmed that checkout as commit 7e5eb5e161df6d000769d563eb4b0e72c97fb73b and reported numpy 2.3.5, scipy 1.17.0, cvxpy 1.9.3, scs 3.3.1, highspy 1.15.1, and matplotlib 3.11.2. Those results apply to that checkout, not automatically to newer commits or the recovery files.
 
 ## Code recovery disposition
 
