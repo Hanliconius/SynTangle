@@ -129,6 +129,10 @@ def render(fixture, panels, output, provenance):
     def reference_colour(h):
         return ref_colours.get(homology_reference.get(h), '#9A9A9A')
     for ax, (state, title, note) in zip(axes.flat, panels):
+        if state is None:
+            ax.set_axis_off();ax.set_title(title)
+            ax.text(.5,.5,note,ha='center',va='center',wrap=True,transform=ax.transAxes)
+            continue
         previous_colour = visual_summary.colour
         visual_summary.colour = reference_colour
         try:
@@ -192,6 +196,9 @@ def main():
     if a.seconds <= 0:
         p.error('--seconds must be positive')
     a.output.mkdir(parents=True, exist_ok=True)
+    (a.output / 'COMPLETE').unlink(missing_ok=True)
+    (a.output / 'comparison_audit.json').unlink(missing_ok=True)
+    (a.output / 'native_variant_audit.tsv').unlink(missing_ok=True)
     fixture = load_fixture(a.prepared / 'fixture.json')
     provenance = json.loads((a.prepared / 'provenance.json').read_text())
     saved_input = a.prepared / 'input_layout.json'
@@ -202,21 +209,37 @@ def main():
     render(fixture, panels, a.output, provenance)
     export_native_input(fixture, a.output / 'native_input')
     native_anchor_audit = add_deposited_reference_anchors(fixture, a.prepared, a.output / 'native_input')
-    subprocess.run(['Rscript', str(BENCHMARK / 'genespace_native_order.R'),
-                    str(a.output / 'native_input'), str(a.output),
-                    '--skip-incomplete-variants'], check=True, timeout=180)
-    variants = list(load_native_states(fixture, a.output / 'native_orders.tsv'))
+    # Failed external baselines must not prevent optimization of complete evidence.
+    native_status = 'available'
+    native_failure = None
+    orders = a.output / 'native_orders.tsv'
+    orders.unlink(missing_ok=True)  # Never reuse a stale successful baseline.
+    try:
+        subprocess.run(['Rscript', str(BENCHMARK / 'genespace_native_order.R'),
+                        str(a.output / 'native_input'), str(a.output),
+                        '--skip-incomplete-variants'], check=True, timeout=180)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as exc:
+        native_status = 'unavailable'
+        native_failure = str(exc)
+    variants = list(load_native_states(fixture, orders)) if native_status == 'available' else []
     if not variants:
-        raise ValueError('No GENESPACE ordering variants')
+        native_status = 'unavailable'
+        native_failure = native_failure or 'No complete native ordering variant'
     score = lambda state: score_crossings(fixture, state).crossings
-    native = min(variants, key=lambda v: (score(v[2]), v[0]))
-    assisted = [(v, improve_flips(fixture, state, 1 + i)[0])
-                for i, (v, metadata, state) in enumerate(variants)]
-    flips = min(assisted, key=lambda v: (score(v[1]), v[0]))
-    panels += [(native[2], 'GENESPACE ordering function', 'best complete reference/weight; block proxy anchors'),
-               (flips[1], 'GENESPACE ordering + our flip assistance', 'fixed chromosome order; heuristic')]
+    native = flips = None
+    if variants:
+        native = min(variants, key=lambda v: (score(v[2]), v[0]))
+        assisted = [(v, improve_flips(fixture, state, 1 + i)[0])
+                    for i, (v, metadata, state) in enumerate(variants)]
+        flips = min(assisted, key=lambda v: (score(v[1]), v[0]))
+        panels += [(native[2], 'GENESPACE ordering function', 'best complete reference/weight; block proxy anchors'),
+                   (flips[1], 'GENESPACE ordering + our flip assistance', 'fixed chromosome order; heuristic')]
+    else:
+        panels += [(None, 'GENESPACE unavailable', 'No complete native baseline. No chromosomes or links dropped.'),
+                   (None, 'GENESPACE flip assistance unavailable', 'Requires a complete native layout. See native_failure.json.')]
+    atomic_json(a.output / 'native_failure.json', dict(status=native_status, error=native_failure))
     render(fixture, panels, a.output, provenance)
-    start = min([initial, native[2], flips[1]], key=score)
+    start = min([initial] + ([native[2], flips[1]] if variants else []), key=score)
     best = start
     def checkpoint(state):
         nonlocal best
@@ -236,14 +259,15 @@ def main():
     render(fixture, panels, a.output, provenance)
     atomic_json(a.output / 'comparison_audit.json', {
         'fixture_sha256': hashlib.sha256((a.prepared / 'fixture.json').read_bytes()).hexdigest(),
-        'panels': [{'title': title, 'crossings': score(state), 'state': state.to_dict()} for state, title, note in panels],
+        'native_status': native_status, 'native_failure': native_failure,
+        'panels': [{'title': title, 'crossings': score(state) if state is not None else None, 'state': state.to_dict() if state is not None else None} for state, title, note in panels],
         'provenance': provenance,
         'native_anchor_audit': native_anchor_audit,
-        'native_variant_audit': (a.output / 'native_variant_audit.tsv').read_text(),
+        'native_variant_audit': (a.output / 'native_variant_audit.tsv').read_text() if (a.output / 'native_variant_audit.tsv').exists() else '',
         'scope': provenance.get('scope', 'Real block projection; not reproduction of the published drawing or native gene-level workflow')})
     require_audit(a.output)
     (a.output / 'COMPLETE').write_text('PASS\n')
-    print(f"{fixture.fixture_id}: input={score(initial)} GS={score(native[2])} GS+flips={score(flips[1])} ST={score(final)} L={result['lower_bound']} {result['optimality_status']}", flush=True)
+    print(f"{fixture.fixture_id}: input={score(initial)} GS={score(native[2]) if native else 'NA'} GS+flips={score(flips[1]) if flips else 'NA'} ST={score(final)} L={result['lower_bound']} {result['optimality_status']}", flush=True)
     print(a.output / 'comparison.pdf', flush=True)
 
 

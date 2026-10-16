@@ -22,7 +22,7 @@ def main():
         pdf = directory / 'comparison.pdf'
         rows.append({'case': entry['id'], 'complete_comparison': complete,
                      'pdf_exists': pdf.exists(),
-                     'note': 'Four-panel comparison' if complete else 'Incomplete: any PDF may contain input/baselines only'})
+                     'note': ('Completed optimization; inspect comparison_audit.json for baseline availability') if complete else 'Incomplete: any PDF may contain input/baselines only'})
         if complete:
             require_audit(directory)
             if not pdf.exists():

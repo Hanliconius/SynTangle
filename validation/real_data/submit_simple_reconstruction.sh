@@ -12,7 +12,7 @@ if [[ "${1:-}" == --resume ]]; then
   [[ -x "$SCT_RECON_TOOLS/bin/python" ]] || { printf 'Existing tools missing; cannot resume.\n' >&2;exit 1; }
   # Refresh only workflow code; source inputs, completed alignments and original snapshot remain.
   cp -a "$SCT_RECON_RUN/code/validation/real_data" "$SCT_RECON_RUN/code/validation/real_data.before_resume.$(date +%s)"
-  cp validation/real_data/simple_reconstruction.py validation/real_data/simple_papers.py validation/real_data/simple_reconstruction_manifest.json validation/real_data/plot_comparison.py "$SCT_RECON_RUN/code/validation/real_data/"
+  cp validation/real_data/simple_reconstruction.py validation/real_data/simple_papers.py validation/real_data/simple_reconstruction_manifest.json validation/real_data/plot_comparison.py validation/real_data/preservation_audit.py "$SCT_RECON_RUN/code/validation/real_data/"
   SCT_RECON_SETUP=REUSED
   SCT_RECON_SETUP_ARGS=()
 else

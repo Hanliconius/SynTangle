@@ -34,7 +34,14 @@ def check_panel(fixture,state,axes,geometry):
     return dict(status='PASS',links=len(records),links_sha256=hashlib.sha256(json.dumps(records,sort_keys=True).encode()).hexdigest(),state=state.to_dict(),directed_links=records)
 
 def require_audit(output,min_panels=4):
-    output=Path(output);data=json.loads((output/'preservation_audit.json').read_text())
+    output=Path(output)
+    comparison=output/'comparison_audit.json'
+    if comparison.exists():
+        report=json.loads(comparison.read_text())
+        if report.get('native_status')=='unavailable':
+            if len(report.get('panels',[]))!=4 or sum(p.get('state') is not None for p in report['panels'])!=2:raise ValueError('Invalid unavailable-baseline report')
+            min_panels=2
+    data=json.loads((output/'preservation_audit.json').read_text())
     if data.get('status')!='PASS' or len(data['panels'])<min_panels or any(p['status']!='PASS' for p in data['panels']):raise ValueError('Missing or failed preservation audit')
     if data['pdf_sha256']!=digest(output/'comparison.pdf'):raise ValueError('PDF changed after preservation audit')
     return data

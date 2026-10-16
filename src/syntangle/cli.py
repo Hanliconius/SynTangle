@@ -50,11 +50,22 @@ def build_parser() -> argparse.ArgumentParser:
     optimize.add_argument("--audit-json")
     optimize.add_argument("--svg")
     optimize.add_argument("--pretty", action="store_true")
+    refine = subparsers.add_parser('refine-genespace', help='Refine a complete exported layout on fixed block evidence')
+    refine.add_argument('fixture')
+    refine.add_argument('--layout', required=True, help='TSV: species, chromosome, rank, orientation')
+    refine.add_argument('--output', required=True)
+    refine.add_argument('--mode', choices=('flips','full'), default='flips')
+    refine.add_argument('--seconds', type=float, default=60)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    if args.command == 'refine-genespace':
+        if args.seconds <= 0:raise ValueError('--seconds must be positive')
+        from .genespace import refine
+        return refine(args)
 
     if args.command == "analyze-fixture":
         fixture = load_fixture(args.fixture)
