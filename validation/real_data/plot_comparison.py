@@ -248,8 +248,9 @@ def main():
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as exc:
         native_status = 'unavailable'
         native_failure = str(exc)
-    if native_status == 'unavailable' and supplement_native_orders(fixture,a.output):
-        native_status='supplemented'
+    if not orders.exists() and (a.output/'native_partial_orders.tsv').exists():
+        if supplement_native_orders(fixture,a.output):native_status='supplemented'
+    if not orders.exists():native_status='unavailable'
     variants = list(load_native_states(fixture, orders)) if native_status in ('available','supplemented') else []
     if not variants:
         native_status = 'unavailable'

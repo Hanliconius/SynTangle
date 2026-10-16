@@ -17,6 +17,19 @@ class MissingNativeTests(unittest.TestCase):
             for refs in states[0][2].chromosome_order.values():self.assertEqual([r.chromosome_id for r in refs],['3','1','2'])
             audit=json.loads((out/'native_completion_audit.json').read_text())
             self.assertEqual(len(audit['variants'][0]['appended']),2)
+    def test_normal_partial_export_produces_four_panels(self):
+        fixture=fixture_from_dict(dict(fixture_version=1,id='test',title='t',purpose='t',species=[dict(id=sp,chromosomes=[dict(id='1',length=100,blocks=[dict(occurrence_id=sp,homology_id='h',start=10,end=20,strand='+')])]) for sp in ('a','b')]))
+        state=initial_layout_state(fixture)
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);(root/'fixture.json').write_text('{}');(root/'provenance.json').write_text(json.dumps(dict(retained_links=1,pair_audit=[])))
+            def native(*args,**kwargs):
+                p.write_tsv(root/'out/native_partial_orders.tsv',[dict(variant='v',reference='a',genome='a',chr='1',plotOrd=1)])
+            result=dict(optimized_state=state.to_dict(),upper_bound=0,lower_bound=0,optimality_status='test')
+            with patch.object(sys,'argv',['plot','--prepared',d,'--output',str(root/'out'),'--seconds','1']),patch.object(p,'load_fixture',return_value=fixture),patch.object(p,'export_native_input'),patch.object(p,'add_deposited_reference_anchors',return_value={}),patch.object(p.subprocess,'run',side_effect=native),patch.object(p,'run_hybrid',return_value=result):p.main()
+            audit=json.loads((root/'out/comparison_audit.json').read_text())
+            self.assertEqual(audit['native_status'],'supplemented')
+            self.assertIsNone(audit['native_failure'])
+            self.assertEqual(len(p.require_audit(root/'out')['panels']),4)
     def test_failed_native_still_runs_and_audits_optimizer(self):
         fixture=fixture_from_dict(dict(fixture_version=1,id='test',title='t',purpose='t',species=[dict(id=sp,chromosomes=[dict(id='1',length=100,blocks=[dict(occurrence_id=sp,homology_id='h',start=10,end=20,strand='+')])]) for sp in ('a','b')]))
         state=initial_layout_state(fixture)

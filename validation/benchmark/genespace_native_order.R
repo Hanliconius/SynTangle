@@ -79,8 +79,13 @@ for (reference in species) {
     )]
   }
 }
-if (length(rows) == 0L) stop("No complete GENESPACE ordering variant; inspect native_variant_audit.tsv")
-fwrite(rbindlist(rows), file.path(output, "native_orders.tsv"), sep = "\t")
+if (length(rows) == 0L) {
+  if (length(partialRows) == 0L) stop("No valid native or partial ordering; inspect native_variant_audit.tsv")
+  message("NATIVE_STATUS=PARTIAL: no complete variant; valid partial orders exported for explicitly labelled completion")
+} else {
+  fwrite(rbindlist(rows), file.path(output, "native_orders.tsv"), sep = "\t")
+  message("NATIVE_STATUS=COMPLETE")
+}
 writeLines(deparse(native_order), file.path(output, "installed_ordering_function.R"))
 writeLines(c(paste("GENESPACE", version), R.version.string,
              paste("data.table", packageVersion("data.table"))),
