@@ -47,3 +47,11 @@ and runs SynTangle from the input layout. The two GENESPACE panels explicitly sa
 unavailable and have null scores/states in `comparison_audit.json`. They are not
 counted as wins over GENESPACE. The two rendered evidence panels must pass directed
 endpoint-preservation checks. Stale native order files are removed before each run.
+
+When every native variant is incomplete but a valid partial ordering is available,
+the real-data comparison now completes each partial layout by appending omitted
+chromosomes in original input order, separately within each row. Returned native
+relative order is preserved. These baselines are labelled supplemented, not native;
+`native_completion_audit.json` records every appended chromosome. Flip assistance
+then operates on that complete fixed order. Native exceptions, extra chromosomes
+or duplicate chromosome identities are never repaired by this policy.

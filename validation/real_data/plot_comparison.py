@@ -60,6 +60,32 @@ def add_deposited_reference_anchors(fixture, prepared, native_input):
     return result
 
 
+def supplement_native_orders(fixture, output):
+    """Preserve native relative order; append missing chromosomes in input order."""
+    partial=output/'native_partial_orders.tsv'
+    if not partial.exists():return False
+    from collections import defaultdict
+    groups=defaultdict(list)
+    for row in read_tsv(partial):groups[row['variant']].append(row)
+    initial=initial_layout_state(fixture);completed=[];audit=[]
+    for variant,rows in groups.items():
+        added=[];result=[]
+        for sp in fixture.species_ids:
+            expected=[r.chromosome_id for r in initial.chromosome_order[sp]]
+            native=sorted([r for r in rows if r['genome']==sp],key=lambda r:float(r['plotOrd']))
+            ids=[r['chr'] for r in native]
+            if len(set(ids))!=len(ids) or not set(ids)<=set(expected):raise ValueError('Invalid partial native chromosome identity')
+            missing=[ch for ch in expected if ch not in ids]
+            for rank,ch in enumerate(ids+missing,1):
+                result.append({**rows[0],'genome':sp,'chr':ch,'plotOrd':rank})
+            added.extend(dict(species=sp,chromosome=ch) for ch in missing)
+        completed.extend(result);audit.append(dict(variant=variant,appended=added))
+    if not completed:return False
+    write_tsv(output/'native_orders.tsv',completed)
+    atomic_json(output/'native_completion_audit.json',dict(policy='Preserve native relative order; append omitted chromosomes in original input order; no optimization during completion',variants=audit))
+    return True
+
+
 def direct_reference_colours(fixture, prepared, provenance):
     """Colour-only projection through direct reference block overlap; no inferred links."""
     from collections import defaultdict
@@ -199,6 +225,7 @@ def main():
     (a.output / 'COMPLETE').unlink(missing_ok=True)
     (a.output / 'comparison_audit.json').unlink(missing_ok=True)
     (a.output / 'native_variant_audit.tsv').unlink(missing_ok=True)
+    (a.output / 'native_partial_orders.tsv').unlink(missing_ok=True)
     fixture = load_fixture(a.prepared / 'fixture.json')
     provenance = json.loads((a.prepared / 'provenance.json').read_text())
     saved_input = a.prepared / 'input_layout.json'
@@ -221,7 +248,9 @@ def main():
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as exc:
         native_status = 'unavailable'
         native_failure = str(exc)
-    variants = list(load_native_states(fixture, orders)) if native_status == 'available' else []
+    if native_status == 'unavailable' and supplement_native_orders(fixture,a.output):
+        native_status='supplemented'
+    variants = list(load_native_states(fixture, orders)) if native_status in ('available','supplemented') else []
     if not variants:
         native_status = 'unavailable'
         native_failure = native_failure or 'No complete native ordering variant'
@@ -232,8 +261,10 @@ def main():
         assisted = [(v, improve_flips(fixture, state, 1 + i)[0])
                     for i, (v, metadata, state) in enumerate(variants)]
         flips = min(assisted, key=lambda v: (score(v[1]), v[0]))
-        panels += [(native[2], 'GENESPACE ordering function', 'best complete reference/weight; block proxy anchors'),
-                   (flips[1], 'GENESPACE ordering + our flip assistance', 'fixed chromosome order; heuristic')]
+        native_title='GENESPACE + omitted chromosomes appended' if native_status=='supplemented' else 'GENESPACE ordering function'
+        flip_title='Supplemented GENESPACE + flip assistance' if native_status=='supplemented' else 'GENESPACE ordering + our flip assistance'
+        panels += [(native[2], native_title, 'best complete reference/weight; block proxy anchors'),
+                   (flips[1], flip_title, 'fixed chromosome order; heuristic')]
     else:
         panels += [(None, 'GENESPACE unavailable', 'No complete native baseline. No chromosomes or links dropped.'),
                    (None, 'GENESPACE flip assistance unavailable', 'Requires a complete native layout. See native_failure.json.')]

@@ -31,6 +31,7 @@ if (!all(required %in% names(bed))) stop("Invalid public-evidence bed")
 if (anyDuplicated(bed[, .(genome, og)])) stop("Pilot requires unique homology per species")
 
 rows <- list()
+partialRows <- list()
 variantAudit <- list()
 for (reference in species) {
   for (weight in c(1, 0.5)) {
@@ -56,6 +57,14 @@ for (reference in species) {
       extra = paste(extra, collapse = ";"),
       error = if (failed) order$message else "", ordering_seconds = seconds)
     fwrite(rbindlist(variantAudit), file.path(output, "native_variant_audit.tsv"), sep = "\t")
+    if (!complete && !failed && !anyDuplicated(returned) && length(extra) == 0L) {
+      partial <- copy(order)
+      partial[, `:=`(variant = id, reference = reference, synteny_weight = weight,
+                     ordering_seconds = seconds)]
+      partialRows[[length(partialRows) + 1L]] <- partial[, .(
+        variant, reference, synteny_weight, genome, chr, plotOrd, ordering_seconds)]
+      fwrite(rbindlist(partialRows), file.path(output, "native_partial_orders.tsv"), sep = "\t")
+    }
     if (!complete) {
       if (!skipIncomplete) stop("GENESPACE omitted chromosomes; evidence will not be silently dropped")
       message("SKIP ", id, ": incomplete native result; missing=", length(missing),

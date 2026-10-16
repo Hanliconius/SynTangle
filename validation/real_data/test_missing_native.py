@@ -6,6 +6,17 @@ from syntangle.layout import initial_layout_state
 import plot_comparison as p
 
 class MissingNativeTests(unittest.TestCase):
+    def test_supplement_retains_native_order_and_appends_only_missing(self):
+        fixture=fixture_from_dict(dict(fixture_version=1,id='test',title='t',purpose='t',species=[dict(id=sp,chromosomes=[dict(id=str(i),length=100,blocks=[]) for i in (1,2,3)]) for sp in ('a','b')]))
+        with tempfile.TemporaryDirectory() as d:
+            out=Path(d)
+            rows=[dict(variant='v',reference='a',genome=sp,chr=ch,plotOrd=rank) for sp in ('a','b') for rank,ch in enumerate(['3','1'],1)]
+            p.write_tsv(out/'native_partial_orders.tsv',rows)
+            self.assertTrue(p.supplement_native_orders(fixture,out))
+            states=list(p.load_native_states(fixture,out/'native_orders.tsv'))
+            for refs in states[0][2].chromosome_order.values():self.assertEqual([r.chromosome_id for r in refs],['3','1','2'])
+            audit=json.loads((out/'native_completion_audit.json').read_text())
+            self.assertEqual(len(audit['variants'][0]['appended']),2)
     def test_failed_native_still_runs_and_audits_optimizer(self):
         fixture=fixture_from_dict(dict(fixture_version=1,id='test',title='t',purpose='t',species=[dict(id=sp,chromosomes=[dict(id='1',length=100,blocks=[dict(occurrence_id=sp,homology_id='h',start=10,end=20,strand='+')])]) for sp in ('a','b')]))
         state=initial_layout_state(fixture)
