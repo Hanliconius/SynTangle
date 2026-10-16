@@ -32,6 +32,7 @@ if (anyDuplicated(bed[, .(genome, og)])) stop("Pilot requires unique homology pe
 
 rows <- list()
 partialRows <- list()
+missingDiagnostics <- list()
 variantAudit <- list()
 for (reference in species) {
   for (weight in c(1, 0.5)) {
@@ -48,6 +49,19 @@ for (reference in species) {
     returned <- if (failed) character() else paste(order$genome, order$chr, sep = "::")
     missing <- setdiff(expected, returned)
     extra <- setdiff(returned, expected)
+    refOG <- bed[genome == reference & !noAnchor & isArrayRep, unique(og)]
+    matching <- bed[og %in% refOG & !noAnchor & isArrayRep,
+                    .(reference_anchor_count = .N), by = .(genome, chr)]
+    diag <- merge(copy(clens)[, .(genome, chr)], matching,
+                  by = c("genome", "chr"), all.x = TRUE)
+    diag[is.na(reference_anchor_count), reference_anchor_count := 0L]
+    diag[, `:=`(variant = id, reference = reference,
+                omitted = paste(genome, chr, sep = "::") %in% missing)]
+    diag[, reason := ifelse(omitted & reference_anchor_count == 0L,
+                           "no_qualifying_reference_anchor",
+                           ifelse(omitted, "unexpected_omission_requires_review", "returned"))]
+    missingDiagnostics[[length(missingDiagnostics) + 1L]] <- diag
+    fwrite(rbindlist(missingDiagnostics), file.path(output, "native_chromosome_coverage.tsv"), sep = "\t")
     complete <- !failed && length(returned) == length(expected) &&
       !anyDuplicated(returned) && length(missing) == 0L && length(extra) == 0L
     variantAudit[[length(variantAudit) + 1L]] <- data.table(
