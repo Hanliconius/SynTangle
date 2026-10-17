@@ -1,5 +1,7 @@
 # GENESPACE integration from R
 
+The flip helper improves orientations within your existing GENESPACE chromosome order. Full SynTangle instead searches a new chromosome order and orientations from the same evidence. Read the [user guide](walkthrough.md) for the distinction and statistical interpretation.
+
 Install Python SynTangle and the bundled `SynTangleR` package as shown in the main README. Both R functions call the same Python implementation used by the CLI. No homology discovery is repeated and no GENESPACE functions are patched.
 
 ## Input

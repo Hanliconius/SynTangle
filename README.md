@@ -2,11 +2,13 @@
 
 **Improve chromosome synteny layouts while preserving the underlying evidence.**
 
-SynTangle reduces crossings by changing chromosome order and whole-chromosome orientation. Every supplied link and its within-chromosome coordinates remain fixed. It works with existing GENESPACE riparian results or explicit synteny tables.
+**GENESPACE flip assistance** is an add-on for an existing GENESPACE layout: it keeps chromosome order fixed and improves whole-chromosome orientations. **Full SynTangle** is a separate layout optimizer that searches chromosome order as well as orientation, using GENESPACE products or explicit synteny tables. Neither workflow repeats homology discovery. Every supplied link and its within-chromosome coordinates remain fixed.
+
+Start with the **[user guide](docs/user-guide/walkthrough.md)** for what changes physically, how the search works, why midpoint crossings and ribbon twists differ, and how to interpret the output statistics.
 
 | Workflow | R function | Command line | Allowed changes |
 |---|---|---|---|
-| Standard flip assistance | `syntangle_flip_assist()` | `syntangle flip-assist` | Whole-chromosome flips; fixed order |
+| GENESPACE flip helper | `syntangle_flip_assist()` | `syntangle flip-assist` | Whole-chromosome flips; fixed order |
 | Full SynTangle | `syntangle_run()` | `syntangle run` | Chromosome permutations and whole-chromosome flips |
 
 Both workflows report before/after crossing counts, per-species-pair counts, the resulting layout, and retained link counts. Full SynTangle also reports a crossing lower bound and remaining optimality gap. Optional ribbon refinement accounts for twisted ribbons as well as midpoint crossings.
@@ -98,6 +100,8 @@ The equivalent CLI options are `--ribbon-objective crossing-cap --twist-metric w
 GENESPACE is optional: the two-table input works with any source of explicit directed synteny intervals. Experimental importers also accept **JCVI six-column `.simple` blocks plus BED** and **minimap2 PAF**. These importers have synthetic tests but are **not yet validated on real datasets**. See [formats, conversion commands and limitations](docs/user-guide/importers.md).
 
 ## Documentation
+
+- **[Start here: user guide and worked statistical interpretation](docs/user-guide/walkthrough.md)**
 
 - [GENESPACE and R workflows](docs/user-guide/genespace.md)
 - [Experimental JCVI and PAF importers](docs/user-guide/importers.md)

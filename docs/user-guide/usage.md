@@ -1,5 +1,7 @@
 # Running SynTangle and reading results
 
+For an explanation of the workflows, allowed moves, search and statistics, begin with the [user guide](walkthrough.md). This page is the command and output reference.
+
 `syntangle flip-assist` and `syntangle run` accept either `--chromosomes chromosomes.tsv --links links.tsv` or `--fixture fixture.json`. Both require `--output DIRECTORY`. Use `--figure` for a vector PDF. Run `syntangle --version` or each command's `--help` for the installed interface.
 
 Flip assistance uses strictly improving whole-chromosome flips and preserves chromosome order. Full optimization uses the adaptive hybrid search. `--seconds` is the search budget (60 seconds by default for flips, 600 for full optimization); parsing, model construction and output can add overhead. `--seed` defaults to 1. Equal budgets are not a guarantee of identical results across machines or solver versions.
