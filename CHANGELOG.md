@@ -9,3 +9,4 @@
 - Expose optional crossing-cap and combined ribbon objectives.
 - Add runnable examples, input specifications, installation checks and user guides.
 - Distinguish numerical solver bound closure from independent mathematical certification.
+- Add experimental JCVI `.simple`/BED and minimap2 PAF converters with explicit filtering audits.

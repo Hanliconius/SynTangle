@@ -5,7 +5,7 @@ import json
 import math
 import time
 from collections import Counter
-from importlib.metadata import version
+from importlib.metadata import version, PackageNotFoundError
 from pathlib import Path
 from .fixtures import fixture_from_dict
 from .genespace import flip_assist, import_layout
@@ -100,7 +100,9 @@ def run(args):
     after = metrics(fixture,final)
     assert before['link_count'] == after['link_count']
     status = 'heuristic_no_certificate' if lower is None else ('solver_bound_closed' if lower==after['crossings'] else 'bounded_best_known')
-    stats = dict(schema_version=1,software_version=version('syntangle'),mode=args.command,
+    try: software_version = version('syntangle')
+    except PackageNotFoundError: software_version = 'source-checkout'
+    stats = dict(schema_version=1,software_version=software_version,mode=args.command,
         crossing_objective='Strict inversions of link midpoints between adjacent species; ties excluded',
         ribbon_objective=getattr(args,'ribbon_objective','none'),input=before,output=after,
         crossing_lower_bound=lower,crossing_gap=None if lower is None else after['crossings']-lower,

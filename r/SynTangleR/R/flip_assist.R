@@ -72,7 +72,20 @@ syntangle_export_genespace <- function(riparian, output, useOrder,
     if (length(executable)!=1L || !nzchar(executable)) stop('Provide the syntangle executable path')
     if (!nzchar(Sys.which(executable)) && !file.exists(executable))
         stop('Cannot find syntangle. Install the Python package or supply executable="/path/to/venv/bin/syntangle"')
-    tables <- syntangle_export_genespace(riparian,output,useOrder,invertTheseChrs)
+    if (inherits(riparian,'syntangle_tables')) {
+        if (!is.null(useOrder) || !is.null(invertTheseChrs))
+            stop('Table inputs already encode coordinates and starting orientations; omit useOrder and invertTheseChrs')
+        if (dir.exists(output) && length(list.files(output,all.files=TRUE,no..=TRUE)))
+            stop('Output must be new or empty')
+        dir.create(output,recursive=TRUE,showWarnings=FALSE)
+        for (name in c('chromosomes.tsv','links.tsv','import_audit.json','excluded.tsv')) {
+            src <- file.path(riparian$directory,name)
+            if (file.exists(src) && !file.copy(src,file.path(output,name))) stop('Could not copy input ',name)
+        }
+        tables <- list(chromosomes=read.delim(file.path(output,'chromosomes.tsv'),colClasses='character'))
+    } else {
+        tables <- syntangle_export_genespace(riparian,output,useOrder,invertTheseChrs)
+    }
     resultDir <- file.path(output,'result')
     args <- c(mode,'--chromosomes',shQuote(file.path(output,'chromosomes.tsv')),
         '--links',shQuote(file.path(output,'links.tsv')),'--output',shQuote(resultDir),
@@ -94,12 +107,12 @@ syntangle_export_genespace <- function(riparian, output, useOrder,
     result
 }
 
-syntangle_flip_assist <- function(riparian, useOrder, output, invertTheseChrs=NULL,
+syntangle_flip_assist <- function(riparian, useOrder=NULL, output, invertTheseChrs=NULL,
                                  seconds=60, executable='syntangle', figure=TRUE) {
     .syntangle_run_engine(riparian,useOrder,invertTheseChrs,seconds,output,executable,figure,'flip-assist')
 }
 
-syntangle_run <- function(riparian, useOrder, output, invertTheseChrs=NULL,
+syntangle_run <- function(riparian, useOrder=NULL, output, invertTheseChrs=NULL,
                          seconds=600, executable='syntangle', figure=TRUE,
                          ribbonObjective=c('none','crossing-cap','combined'),
                          twistMetric=c('width','count'), weight=1, ribbonSeconds=600, seed=1L) {
@@ -117,4 +130,11 @@ print.syntangle_result <- function(x,...) {
     cat(nrow(x$changedChromosomes),'whole-chromosome flips;',x$stats$links,'links retained\n')
     cat('Status:',x$stats$status,'; independent certificate: no\n')
     invisible(x)
+}
+
+# Read the canonical tables, including outputs from experimental format importers.
+syntangle_read_tables <- function(directory) {
+    if (!all(file.exists(file.path(directory,c('chromosomes.tsv','links.tsv')))))
+        stop('Directory must contain chromosomes.tsv and links.tsv')
+    structure(list(directory=normalizePath(directory)),class='syntangle_tables')
 }

@@ -13,11 +13,28 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python -m pip install build
       - run: python -m build
-      - run: python -m pip install dist/*.whl
+      - name: Install wheel with optional engines
+        run: |
+          wheel=$(find dist -name '*.whl' -print -quit)
+          python -m pip install "${wheel}[optimization,plotting]"
       - name: Exercise installed CLI outside checkout
         run: |
           cd "$RUNNER_TEMP"
-          syntangle --help
-          syntangle refine-genespace --help
-          syntangle analyze-fixture "$GITHUB_WORKSPACE/examples/fixtures/layout_noise_only.json"
-      - run: python -m unittest discover -s tests -p 'test_genespace_refinement.py'
+          syntangle --version
+          syntangle flip-assist --chromosomes "$GITHUB_WORKSPACE/examples/quickstart/chromosomes.tsv" --links "$GITHUB_WORKSPACE/examples/quickstart/links.tsv" --output flips --figure
+          syntangle run --chromosomes "$GITHUB_WORKSPACE/examples/quickstart/chromosomes.tsv" --links "$GITHUB_WORKSPACE/examples/quickstart/links.tsv" --output full --seconds 10 --ribbon-objective crossing-cap --ribbon-seconds 5 --figure
+          python - <<'PY'
+          import json
+          for name, score in [('flips', 8), ('full', 0)]:
+              s = json.load(open(name + '/stats.json'))
+              assert s['input']['crossings'] == 10
+              assert s['output']['crossings'] == score
+              assert s['input']['link_count'] == s['output']['link_count'] == 8
+              assert s['independent_certificate'] is False
+          PY
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+      - run: R CMD INSTALL r/SynTangleR
+      - name: R package hand-off to installed Python
+        run: SYNTANGLE_TEST_R_INSTALLED=1 SYNTANGLE_TEST_EXECUTABLE="$(command -v syntangle)" Rscript integrations/genespace/test_adapter.R

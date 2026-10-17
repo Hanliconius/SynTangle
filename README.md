@@ -18,7 +18,7 @@ Both workflows report before/after crossing counts, per-species-pair counts, the
 Python 3.11 or newer is required. R users also need R 4.1 or newer and their existing GENESPACE installation.
 
 ```bash
-git clone --depth 1 --branch pegasus-genespace-pilot https://github.com/Hanliconius/SynTangle.git
+git clone --depth 1 --branch release-candidate-0.1 https://github.com/Hanliconius/SynTangle.git
 cd SynTangle
 python3 -m venv .venv
 source .venv/bin/activate
@@ -77,6 +77,8 @@ syntangle run \
 
 Each output directory contains a layout, statistics, original evidence, a flip list, and a vector comparison PDF when `--figure` is requested. Output directories must be new or empty, preventing accidental replacement of prior results.
 
+![Three-species example before and after optimization](docs/images/quickstart.svg)
+
 ## Ribbon refinement
 
 Crossing counts use link midpoints. A wide ribbon can twist internally without changing that count. To improve ribbon appearance after the crossing search while keeping its crossing count from increasing:
@@ -91,9 +93,14 @@ full <- syntangle_run(
 
 The equivalent CLI options are `--ribbon-objective crossing-cap --twist-metric width --ribbon-seconds 300`. The optional `combined` objective permits a documented trade-off between crossings and twists. It is not the standard flip-assist objective.
 
+## Other inputs
+
+GENESPACE is optional: the two-table input works with any source of explicit directed synteny intervals. Experimental importers also accept **JCVI six-column `.simple` blocks plus BED** and **minimap2 PAF**. These importers have synthetic tests but are **not yet validated on real datasets**. See [formats, conversion commands and limitations](docs/user-guide/importers.md).
+
 ## Documentation
 
 - [GENESPACE and R workflows](docs/user-guide/genespace.md)
+- [Experimental JCVI and PAF importers](docs/user-guide/importers.md)
 - [Input tables and coordinate conventions](docs/user-guide/inputs.md)
 - [Commands, outputs and statistics](docs/user-guide/usage.md)
 - [Methods and optimality claims](docs/user-guide/methods.md)

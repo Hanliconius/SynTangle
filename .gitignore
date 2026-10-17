@@ -11,3 +11,4 @@ logs/
 .Rhistory
 .RData
 *.Rcheck/
+SynTangleR_*.tar.gz

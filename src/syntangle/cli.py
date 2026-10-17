@@ -20,8 +20,10 @@ from .visualize import write_layout_comparison_svg
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="syntangle")
-    from importlib.metadata import version
-    parser.add_argument('--version', action='version', version=version('syntangle'))
+    from importlib.metadata import version, PackageNotFoundError
+    try: package_version = version('syntangle')
+    except PackageNotFoundError: package_version = 'source-checkout'
+    parser.add_argument('--version', action='version', version=package_version)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     analyze = subparsers.add_parser(
@@ -81,11 +83,27 @@ def build_parser() -> argparse.ArgumentParser:
             public.add_argument('--twist-metric',choices=('width','count'),default='width')
             public.add_argument('--weight',type=float,default=1)
             public.add_argument('--ribbon-seconds',type=float,default=600)
+    for command in ('import-paf','import-jcvi'):
+        importer = subparsers.add_parser(command, help='Experimental external-format conversion; not validated on real datasets')
+        for name in ('query-species','target-species','query-sizes','target-sizes','output'):
+            importer.add_argument('--'+name,required=True)
+        if command=='import-paf':
+            importer.add_argument('--paf',required=True)
+            importer.add_argument('--min-mapq',type=int,default=0)
+            importer.add_argument('--min-alignment-length',type=int,default=0)
+        else:
+            importer.add_argument('--simple',required=True,help='JCVI six-column .simple blocks')
+            importer.add_argument('--query-bed',required=True)
+            importer.add_argument('--target-bed',required=True)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    if args.command in ('import-paf','import-jcvi'):
+        from .importers import run_import
+        return run_import(args)
 
     if args.command in ('flip-assist','run'):
         from .workflow import run
