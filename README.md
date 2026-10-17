@@ -23,6 +23,8 @@ The flip helper is a SynTangle add-on for GENESPACE. Full SynTangle can use GENE
 
 The left panel is the initial sequence-order display from our three-genome reanalysis; the right is the optimized layout. The initial order is not asserted to match the published figure exactly. The improvement and bound apply to **midpoint crossings**. [Data, provenance and reproduction commands](examples/rhynchospora/README.md).
 
+**Source paper:** Zhang et al. (2026), *Sex without crossovers mimics clonal reproduction in Rhynchospora tenuis*, Nature. [doi:10.1038/s41586-026-11057-7](https://doi.org/10.1038/s41586-026-11057-7). This example reanalyses the three species shown in Fig. 1a.
+
 ## Install
 
 Requirements: **Python 3.11+** and Git. For the R interface, also install **R 4.1+**. GENESPACE is needed only when using GENESPACE products. Python remains required when calling SynTangle from R.
