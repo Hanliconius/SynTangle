@@ -1,0 +1,23 @@
+{
+  "date_local": "2026-10-06",
+  "timezone": "America/New_York",
+  "code_commit": "4d634e44fd7ffd250ab194a69ff469a984429236",
+  "slurm_job_ids": null,
+  "recorded_tasks": 252,
+  "complete_tasks": 252,
+  "reported_matching_bounds": 179,
+  "strict_audit_verified": 6,
+  "strict_audit_unresolved": 3,
+  "cpus_per_task": 1,
+  "memory_requested": "16G",
+  "summary_sha256": "5fb940af6255cfa4e8fe7dde30649f9bd5a1be651cf6940d49bc9f3349e16eee",
+  "evidence_level": "user-supplied collector stdout; raw component records, layouts and input fingerprints remain on Pegasus",
+  "limitations": [
+    "Six small/medium presentations dominate pooled 150-second medians.",
+    "Two repeats at 150 seconds; one per case/variant/start at 600 seconds.",
+    "Three biological fixtures with three presentations each, not nine biological replicates.",
+    "Stage times are inclusive and overlap.",
+    "Independent strict-improvement audits for largest cases unresolved at 120 seconds/component.",
+    "Both direct and SciPy variants use the new scheduling/front end; this does not isolate every historical pipeline change."
+  ]
+}

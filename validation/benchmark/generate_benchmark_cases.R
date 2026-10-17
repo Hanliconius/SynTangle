@@ -1,6 +1,7 @@
 args <- commandArgs(trailingOnly = TRUE)
 valid_profiles <- c(
-  "smoke", "full", "paired-smoke", "paired", "scale", "stress", "factorial"
+  "smoke", "full", "paired-smoke", "paired", "scale", "stress", "factorial",
+  "genespace-pilot"
 )
 if (length(args) < 1L || length(args) > 2L) {
   stop(
@@ -339,7 +340,40 @@ paired_specs <- function(
   specs
 }
 
-if (profile == "smoke") {
+if (profile == "genespace-pilot") {
+  # Small independent-descendant pilot. No hidden state is used by either
+  # layout method. Event burden and seeds are explicit in the manifest.
+  specs <- list()
+  k <- 1L
+  for (seed_index in 1:2) {
+    for (events in 0:2) {
+      specs[[k]] <- spec(
+        sprintf("gs_3sp_6chr_%dev_seed%d", events, seed_index),
+        3L, 6L, 12L, "random", paste0("nested", events),
+        11000L + seed_index,
+        lineage_model = "independent",
+        benchmark_axis = "genespace_pilot",
+        benchmark_level = as.character(events)
+      )
+      k <- k + 1L
+    }
+  }
+  for (events in 0:2) {
+    specs[[k]] <- spec(
+      sprintf("gs_4sp_16chr_%dev", events),
+      4L, 16L, 12L, "random", paste0("nested", events), 12001L,
+      lineage_model = "independent",
+      benchmark_axis = "genespace_pilot",
+      benchmark_level = as.character(events)
+    )
+    k <- k + 1L
+  }
+  specs[[k]] <- spec(
+    "gs_8sp_31chr_0ev", 8L, 31L, 12L, "random", "nested0", 13001L,
+    lineage_model = "independent",
+    benchmark_axis = "genespace_pilot", benchmark_level = "0"
+  )
+} else if (profile == "smoke") {
   specs <- list(
     spec(
       "smoke_3sp_4chr_mild",

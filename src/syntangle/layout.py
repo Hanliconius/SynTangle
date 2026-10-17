@@ -114,14 +114,8 @@ def initial_layout_state(fixture: Fixture) -> LayoutState:
 
 
 def _component_map(fixture: Fixture) -> tuple[tuple[frozenset[str], ...], dict[ChromosomeRef, int]]:
-    graph = build_incidence_graph(fixture)
-    components = graph.connected_components()
-    mapping: dict[ChromosomeRef, int] = {}
-    for component_id, nodes in enumerate(components):
-        for ref in fixture.chromosome_refs:
-            if chromosome_node_id(ref) in nodes:
-                mapping[ref] = component_id
-    return components, mapping
+    from .component_space import optimization_component_map
+    return optimization_component_map(fixture)
 
 
 def canonicalize_component_order(fixture: Fixture, state: LayoutState) -> LayoutState:
@@ -359,9 +353,7 @@ def exact_optimize_small(
     initial_score = score_crossings(fixture, initial)
     normalized_score = score_crossings(fixture, normalized)
 
-    graph = build_incidence_graph(fixture)
-    components = graph.connected_components()
-    _, component_of = _component_map(fixture)
+    components, component_of = _component_map(fixture)
 
     chosen_orders: dict[int, dict[str, tuple[ChromosomeRef, ...]]] = {}
     chosen_orientation: dict[int, dict[ChromosomeRef, int]] = {}

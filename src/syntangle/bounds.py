@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import combinations, product
 
 from .incidence import chromosome_node_id
@@ -40,53 +40,78 @@ class RelaxedCrossingBound:
     constant_interleaving_lower_bound: int
     group_index_by_ref: dict[ChromosomeRef, int]
 
+    cluster_size: int = 0
+    cell_tables: tuple = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self):
+        # Each cell depends on at most two GF(2) groups. Retain shared-group
+        # correlation and use the original float/reflection scorer verbatim.
+        tables = []
+        for cell in self.cells:
+            indices = tuple(sorted({self.group_index_by_ref[cell.left_ref],
+                                    self.group_index_by_ref[cell.right_ref]}))
+            complete = {}
+            for values in product((0, 1), repeat=len(indices)):
+                assignment = dict(zip(indices, values))
+                signs = [self.basis.base_assignment[ref] *
+                         (-1 if assignment[self.group_index_by_ref[ref]] else 1)
+                         for ref in (cell.left_ref, cell.right_ref)]
+                complete[values] = _cell_internal_crossings(cell.anchors, *signs)
+            partial = {bits: min(value for values, value in complete.items()
+                                if all(bit is None or bit == v
+                                       for bit, v in zip(bits, values)))
+                       for bits in product((None, 0, 1), repeat=len(indices))}
+            tables.append((indices, partial))
+        if self.cluster_size:
+            if not 1 <= self.cluster_size <= 8:
+                raise ValueError('Orientation bound cluster size must be 0..8')
+            # Partition groups deterministically. Factors contained in a cluster
+            # share one assignment; cross-cluster factors remain relaxed.
+            remaining = set(self.group_index_by_ref.values())
+            clusters = []
+            while remaining:
+                cluster = {min(remaining)}
+                while len(cluster) < self.cluster_size and remaining - cluster:
+                    candidates = remaining - cluster
+                    def affinity(g):
+                        return sum(1 for scope, _ in tables
+                                   if g in scope and any(x in cluster for x in scope))
+                    chosen = max(candidates, key=lambda g: (affinity(g), -g))
+                    if not affinity(chosen):
+                        break
+                    cluster.add(chosen)
+                remaining -= cluster
+                clusters.append(tuple(sorted(cluster)))
+            combined = []
+            for indices in clusters:
+                inside = [(scope, table) for scope, table in tables
+                          if set(scope) <= set(indices)]
+                tables = [(scope, table) for scope, table in tables
+                          if not set(scope) <= set(indices)]
+                if not inside:
+                    continue
+                positions = {g: i for i, g in enumerate(indices)}
+                values = {bits: sum(table[tuple(bits[positions[g]] for g in scope)]
+                                    for scope, table in inside)
+                          for bits in product((0, 1), repeat=len(indices))}
+                def minimum(bits):
+                    if bits not in values:
+                        i = bits.index(None)
+                        values[bits] = min(minimum(bits[:i] + (v,) + bits[i+1:])
+                                           for v in (0, 1))
+                    return values[bits]
+                for bits in product((None, 0, 1), repeat=len(indices)):
+                    minimum(bits)
+                combined.append((indices, values))
+            tables += combined
+        object.__setattr__(self, 'cell_tables', tuple(tables))
+
     def lower_bound(self, bits: tuple[int | None, ...]) -> int:
         if len(bits) != len(self.basis.free_flip_groups):
             raise ValueError("Orientation bit vector does not match orientation basis")
-
-        total = self.constant_interleaving_lower_bound
-
-        for cell in self.cells:
-            group_indices = tuple(
-                sorted(
-                    {
-                        self.group_index_by_ref[cell.left_ref],
-                        self.group_index_by_ref[cell.right_ref],
-                    }
-                )
-            )
-            unresolved = tuple(
-                index for index in group_indices if bits[index] is None
-            )
-
-            best: int | None = None
-            for values in product((0, 1), repeat=len(unresolved)):
-                assignment = dict(zip(unresolved, values))
-                left_orientation = _orientation_for_ref(
-                    self.basis,
-                    self.group_index_by_ref,
-                    cell.left_ref,
-                    bits,
-                    assignment,
-                )
-                right_orientation = _orientation_for_ref(
-                    self.basis,
-                    self.group_index_by_ref,
-                    cell.right_ref,
-                    bits,
-                    assignment,
-                )
-                value = _cell_internal_crossings(
-                    cell.anchors,
-                    left_orientation,
-                    right_orientation,
-                )
-                if best is None or value < best:
-                    best = value
-
-            total += 0 if best is None else best
-
-        return total
+        return self.constant_interleaving_lower_bound + sum(
+            table[tuple(bits[index] for index in indices)]
+            for indices, table in self.cell_tables)
 
 
 def _orientation_for_ref(
@@ -154,6 +179,7 @@ def build_relaxed_crossing_bound(
     fixture: Fixture,
     component_nodes: frozenset[str],
     basis: OrientationBasis,
+    *, cluster_size: int = 0,
 ) -> RelaxedCrossingBound:
     chromosome_lookup = {
         chromosome.ref: chromosome for chromosome in fixture.chromosomes
@@ -280,6 +306,7 @@ def build_relaxed_crossing_bound(
 
     return RelaxedCrossingBound(
         basis=basis,
+        cluster_size=cluster_size,
         cells=cells,
         constant_interleaving_lower_bound=constant_interleaving,
         group_index_by_ref=group_index_by_ref,

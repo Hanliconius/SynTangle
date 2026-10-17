@@ -1,0 +1,20 @@
+{
+  "source_file": "Pasted text(20261007-201346).txt",
+  "source_sha256": "1342768a0f7d84ee51b6439ef08ba2c7fd056c3fa572acdfc351ad7a35bbdd2f",
+  "uploaded_date": "2026-10-07",
+  "expected_tasks": 210,
+  "found_tasks": 210,
+  "reported_proven_tasks": 168,
+  "audit_case_records": 9,
+  "tested_commit": null,
+  "job_ids": null,
+  "result_directory": null,
+  "provenance_note": "Collector glob can combine runs; supplied stdout contains one 210-task report. Exact run identity and source commit were not printed. Do not assign the concurrently submitted jobs 138406327\u2013138406330 to these records.",
+  "limitations": [
+    "Parsed collector stdout only; raw layouts, task metadata, input hashes and component solver records remain on Pegasus.",
+    "Audits use a separate unanchored strict-improvement model with the same numerical backend, not an independent rational certificate checker.",
+    "Nine presentations represent three paired biology rungs, not nine independent biological datasets.",
+    "Per-task wall times are absent from the detailed table; stage times can overlap and must not be summed as measured wall times.",
+    "600-second runs have two repeats per case/start/variant; 150-second runs have one."
+  ]
+}

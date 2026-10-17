@@ -1,17 +1,28 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "syntangle"
-version = "0.0.1"
+version = "0.1.0rc1"
 description = "Constrained untangling of multispecies chromosome synteny layouts"
-requires-python = ">=3.10"
-license = {text = "MIT"}
-authors = [{name = "SynTangle contributors"}]
+requires-python = ">=3.11"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Joseph Hanly"}]
+
+[project.optional-dependencies]
+plotting = ["matplotlib>=3.8,<4"]
+optimization = ["numpy==2.3.5", "scipy==1.17.0", "highspy==1.15.1"]
+test = ["numpy==2.3.5", "scipy==1.17.0", "highspy==1.15.1", "cvxpy", "matplotlib", "pypdf"]
+
+[project.urls]
+Repository = "https://github.com/Hanliconius/SynTangle"
+Issues = "https://github.com/Hanliconius/SynTangle/issues"
 
 [project.scripts]
-syntangle = "syntangle.cli:main"
+syntangle = "syntangle.cli:entrypoint"
 
 [tool.setuptools.packages.find]
 where = ["src"]

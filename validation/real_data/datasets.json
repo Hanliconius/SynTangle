@@ -1,0 +1,79 @@
+{
+  "repository": "jtlovell/GENESPACE_data",
+  "commit": "77612f8c59fbfd43ef3f4c1719933bf0cbca3261",
+  "paper": "https://doi.org/10.7554/eLife.78526",
+  "datasets": [
+    {
+      "id": "cotton_split",
+      "path": "cotton_split/syntenicBlocks.txt.gz",
+      "compressed_bytes": 110224,
+      "git_blob_sha": "02cac165ca30f27c65e095ceda75da46a9cc596f",
+      "species": [
+        "GbarbadenseA",
+        "GdarwiniiA",
+        "GtomentosumA"
+      ],
+      "status": "schema inspected; preparation and solver results pending"
+    },
+    {
+      "id": "cotton_tetraploid",
+      "path": "cotton_tetraploid/syntenicBlocks.txt.gz",
+      "compressed_bytes": 170658,
+      "git_blob_sha": "96fa8f588cb6979c347ee2bf1a6a3531e0f6493e",
+      "species": [
+        "Gbarbadense",
+        "Gdarwinii",
+        "Gtomentosum"
+      ],
+      "status": "schema inspected; preparation and solver results pending"
+    },
+    {
+      "id": "maize",
+      "path": "maize/syntenicBlocks.txt.gz",
+      "compressed_bytes": 524026,
+      "git_blob_sha": "99c83d56d92efe2f20cb5f7366247a30f369e84e",
+      "species": [
+        "B73",
+        "Ki11",
+        "Mo18W"
+      ],
+      "status": "schema inspected; preparation and solver results pending"
+    },
+    {
+      "id": "grasses",
+      "path": "grasses/syntenicBlocks.txt.gz",
+      "compressed_bytes": 1306839,
+      "git_blob_sha": "ebf19f5cafe48569b5eab150cec39e8ae477a7e7",
+      "species": [
+        "rice",
+        "Sorghum",
+        "maize"
+      ],
+      "status": "schema inspected; preparation and solver results pending"
+    },
+    {
+      "id": "rho",
+      "path": "rho/syntenicBlocks.txt.gz",
+      "compressed_bytes": 2498610,
+      "git_blob_sha": "c853b05084adab0c7ad9ac0694e1f29242d3b61d",
+      "species": [
+        "rice",
+        "Sorghum",
+        "maize"
+      ],
+      "status": "schema inspected; preparation and solver results pending"
+    },
+    {
+      "id": "vertebrates",
+      "path": "vertebrates/syntenicBlocks.txt.gz",
+      "compressed_bytes": 6528023,
+      "git_blob_sha": "7d1cce3c8d118bf17a841918f7f4054ece2178c7",
+      "species": [
+        "human",
+        "mouse",
+        "chicken"
+      ],
+      "status": "schema inspected; preparation and solver results pending"
+    }
+  ]
+}

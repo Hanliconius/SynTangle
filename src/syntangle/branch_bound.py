@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
+from contextvars import ContextVar
+from functools import wraps
 import heapq
 import multiprocessing as mp
 from itertools import permutations
 from math import factorial
 
+from .search_control import expired, emit, _cluster_size, _coupled_size
 from .bounds import RelaxedCrossingBound, build_relaxed_crossing_bound
 from .heuristic import optimize_local_search
 from .incidence import build_incidence_graph, chromosome_node_id
@@ -20,7 +23,27 @@ from .layout import (
 from .model import ChromosomeRef, Fixture
 from .order_dp import build_pairwise_order_costs, solve_order_subset_dp
 from .orientation_space import OrientationBasis, orientation_basis
-from .pair_cost import pair_component_crossings
+from .pair_cost import pair_component_crossings, PreparedPairCrossings
+
+
+_active_coupled_bound = ContextVar('syntangle_active_coupled_bound', default=None)
+_prepared_edge = ContextVar('syntangle_prepared_edge', default=None)
+
+
+def _with_prepared_edges(solve):
+    @wraps(solve)
+    def wrapped(fixture, normalized, incumbent_state, component_id,
+                component_nodes, *args, **kwargs):
+        scorer = PreparedPairCrossings(fixture, component_nodes)
+        bound_token = _active_coupled_bound.set(None)
+        token = _prepared_edge.set((fixture, component_nodes, scorer))
+        try:
+            return solve(fixture, normalized, incumbent_state, component_id,
+                         component_nodes, *args, **kwargs)
+        finally:
+            _prepared_edge.reset(token)
+            _active_coupled_bound.reset(bound_token)
+    return wrapped
 
 
 @dataclass(frozen=True)
@@ -42,6 +65,8 @@ class ComponentBranchAndBound:
     orientation_groups_forced: int = 0
     order_nodes_evaluated: int = 0
     memo_hits: int = 0
+    root_independent_lower_bound: int = 0
+    coupled_bound_size: int = 0
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -64,6 +89,8 @@ class ComponentBranchAndBound:
             "orientation_groups_forced": self.orientation_groups_forced,
             "order_nodes_evaluated": self.order_nodes_evaluated,
             "memo_hits": self.memo_hits,
+            "root_independent_lower_bound": self.root_independent_lower_bound,
+            "coupled_bound_size": self.coupled_bound_size,
         }
 
 
@@ -95,14 +122,14 @@ class _Budget:
     used: int = 0
 
     def consume(self) -> bool:
-        if self.used >= self.cap:
+        if self.exhausted:
             return False
         self.used += 1
         return True
 
     @property
     def exhausted(self) -> bool:
-        return self.used >= self.cap
+        return self.used >= self.cap or expired()
 
 
 @dataclass(frozen=True)
@@ -126,14 +153,8 @@ class _ReducedOrientation:
 def _component_map(
     fixture: Fixture,
 ) -> tuple[tuple[frozenset[str], ...], dict[ChromosomeRef, int]]:
-    graph = build_incidence_graph(fixture)
-    components = graph.connected_components()
-    component_of: dict[ChromosomeRef, int] = {}
-    for component_id, nodes in enumerate(components):
-        for ref in fixture.chromosome_refs:
-            if chromosome_node_id(ref) in nodes:
-                component_of[ref] = component_id
-    return components, component_of
+    from .component_space import optimization_component_map
+    return optimization_component_map(fixture)
 
 
 def _component_refs_by_species(
@@ -202,6 +223,10 @@ def _edge_cost(
     state: LayoutState,
     component_nodes: frozenset[str],
 ) -> int:
+    prepared = _prepared_edge.get()
+    if prepared is not None and prepared[0] is fixture and prepared[1] == component_nodes:
+        return prepared[2].score(species_left, species_right, order_left,
+                                 order_right, state.chromosome_orientation)
     return pair_component_crossings(
         fixture,
         species_left,
@@ -221,7 +246,9 @@ def _conditional_edge_minimum(
     component_nodes: frozenset[str],
     *,
     cache: dict,
+    order_dp_max_chromosomes: int = 12,
 ) -> tuple[int, tuple[ChromosomeRef, ...], bool]:
+    """Admissible conditional edge bound, exact for small order domains."""
     target = fixture.species_ids[target_index]
     neighbor = fixture.species_ids[neighbor_index]
     neighbor_order = tuple(
@@ -239,6 +266,7 @@ def _conditional_edge_minimum(
         target_index,
         neighbor_index,
         tuple(ref.label for ref in neighbor_order),
+        order_dp_max_chromosomes,
     )
 
     cached = cache.get(key)
@@ -252,6 +280,28 @@ def _conditional_edge_minimum(
         component_nodes,
         neighbors=(neighbor,),
     )
+    if len(costs.refs) > order_dp_max_chromosomes:
+        # Relax transitivity: minimize each pair independently. The invariant
+        # same-target-chromosome contribution is recovered from direct scoring.
+        current_order = tuple(ref for ref in state.chromosome_order[target]
+                              if ref in costs.refs)
+        if target_index < neighbor_index:
+            actual = _edge_cost(fixture, target, neighbor, current_order,
+                                neighbor_order, state, component_nodes)
+        else:
+            actual = _edge_cost(fixture, neighbor, target, neighbor_order,
+                                current_order, state, component_nodes)
+        variable_cost = sum(costs.cost(a, b) for i, a in enumerate(current_order)
+                            for b in current_order[i+1:])
+        constant = actual - variable_cost
+        if constant < 0:
+            raise AssertionError("Pairwise order costs exceed direct edge cost")
+        minimum = constant + sum(min(costs.cost(a, b), costs.cost(b, a))
+            for i, a in enumerate(costs.refs) for b in costs.refs[i+1:])
+        preferred = tuple(sorted(costs.refs, key=lambda a: (
+            sum(costs.cost(a, b) - costs.cost(b, a) for b in costs.refs if b != a), a.label)))
+        cache[key] = (minimum, preferred)
+        return minimum, preferred, False
     result = solve_order_subset_dp(target, costs)
 
     orders = dict(state.chromosome_order)
@@ -341,6 +391,9 @@ def _frontier_lower_bound(
         bound += minimum
         memo_hits += int(hit)
 
+    coupled = _active_coupled_bound.get()
+    if coupled is not None:
+        bound = max(bound, coupled.for_orders(orientation, local_orders))
     return max(bound, relaxed_lower_bound), memo_hits
 
 
@@ -419,6 +472,9 @@ def _reduce_orientation(
 
         changed = False
         for index, value in enumerate(working):
+            if expired():
+                return (_ReducedOrientation(tuple(working), lower(tuple(working)),
+                                            forced, False), memo_hits)
             if value is not None:
                 continue
 
@@ -576,6 +632,10 @@ def _search_orders_for_orientation(
     for pivot_order in _ordered_candidate_permutations(
         pivot_refs, preferred_pivot
     ):
+        if expired():
+            exhausted = False
+            open_lower = min(open_lower, relaxed_lower_bound)
+            break
         local_orders = {pivot: pivot_order}
         root_bound, hits = _frontier_lower_bound(
             fixture,
@@ -633,6 +693,7 @@ def _search_orders_for_orientation(
                 if exact_cost < best_upper:
                     best_upper = exact_cost
                     best_state = candidate
+                    emit(candidate)
                 elif exact_cost == best_upper:
                     candidate_key = tuple(
                         ref.label
@@ -696,6 +757,11 @@ def _search_orders_for_orientation(
             for target_order in _ordered_candidate_permutations(
                 target_refs, preferred
             ):
+                if expired():
+                    exhausted = False
+                    open_lower = min(open_lower, node_bound)
+                    stop_all = True
+                    return
                 next_orders = dict(orders)
                 next_orders[target] = target_order
                 next_state = _state_with_component_orders(
@@ -804,6 +870,7 @@ class _ComponentSolveResult:
     diagnostic: ComponentBranchAndBound
 
 
+@_with_prepared_edges
 def _solve_branch_component(
     fixture: Fixture,
     normalized: LayoutState,
@@ -812,6 +879,7 @@ def _solve_branch_component(
     component_nodes: frozenset[str],
     component_of: dict[ChromosomeRef, int],
     node_cap_per_component: int,
+    prepared_basis=None,
 ) -> _ComponentSolveResult:
     """Solve one exact incidence component.
 
@@ -830,10 +898,16 @@ def _solve_branch_component(
         )
     )
 
-    basis = orientation_basis(fixture, refs)
+    basis = prepared_basis or orientation_basis(fixture, refs)
     relaxed_bound = build_relaxed_crossing_bound(
-        fixture, component_nodes, basis
+        fixture, component_nodes, basis, cluster_size=_cluster_size.get()
     )
+    independent_bound = relaxed_bound
+    if _coupled_size.get():
+        from .coupled_bound import CoupledCrossingBound
+        relaxed_bound = CoupledCrossingBound(fixture, component_nodes,
+                                             relaxed_bound, _coupled_size.get())
+        _active_coupled_bound.set(relaxed_bound)
     root_bits: tuple[int | None, ...] = tuple(
         None for _ in basis.free_flip_groups
     )
@@ -1085,6 +1159,8 @@ def _solve_branch_component(
         free_orientation_groups=len(basis.free_flip_groups),
         implicit_orientation_states=basis.assignment_count,
         root_lower_bound=root_lower_bound,
+        root_independent_lower_bound=independent_bound.lower_bound(root_bits),
+        coupled_bound_size=_coupled_size.get(),
         root_unresolved_orientation_groups=root_unresolved_groups,
         orientation_nodes_evaluated=orientation_nodes,
         orientation_branches_pruned=orientation_pruned,
@@ -1108,6 +1184,8 @@ def optimize_branch_and_bound(
     node_cap_per_component: int = 250_000,
     orientation_cap_per_component: int = 4096,
     local_restarts: int = 6,
+    local_max_improving_steps: int = 10000,
+    progress_callback=None,
     seed: int = 1,
     component_workers: int = 1,
 ) -> BranchAndBoundResult:
@@ -1139,6 +1217,8 @@ def optimize_branch_and_bound(
     heuristic = optimize_local_search(
         fixture,
         restarts=local_restarts,
+        max_improving_steps=local_max_improving_steps,
+        progress_callback=progress_callback,
         seed=seed,
     )
     incumbent_state = heuristic.layout.optimized_state

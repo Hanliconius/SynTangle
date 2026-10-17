@@ -1,0 +1,677 @@
+{
+  "cases": [
+    {
+      "id": "faba",
+      "species": [
+        {
+          "id": "Pisum_Cameor",
+          "expected_chromosomes": 7,
+          "chromosome_regex": "pissa\\.Cameor\\.gnm1\\.chr[1-7]LG[1-7]",
+          "genome": {
+            "directory": "https://data.legumeinfo.org/Pisum/sativum/genomes/Cameor.gnm1.P4FG/",
+            "filename_suffix": ".genome_main.fna.gz"
+          },
+          "gff": {
+            "directory": "https://data.legumeinfo.org/Pisum/sativum/annotations/Cameor.gnm1.ann1.7SZR/",
+            "filename_suffix": ".gene_models_main.gff3.gz"
+          },
+          "protein": {
+            "directory": "https://data.legumeinfo.org/Pisum/sativum/annotations/Cameor.gnm1.ann1.7SZR/",
+            "filename_suffix": ".protein_primary.faa.gz"
+          },
+          "version": "Cameor.gnm1.P4FG/Cameor.gnm1.ann1.7SZR"
+        },
+        {
+          "id": "Pisum_ZW6",
+          "expected_chromosomes": 7,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "directory": "https://data.legumeinfo.org/Pisum/sativum/genomes/ZW6.gnm1.D8R1/",
+            "filename_suffix": ".genome_main.fna.gz"
+          },
+          "gff": {
+            "directory": "https://data.legumeinfo.org/Pisum/sativum/annotations/ZW6.gnm1.ann1.TKZX/",
+            "filename_suffix": ".gene_models_main.gff3.gz"
+          },
+          "protein": {
+            "directory": "https://data.legumeinfo.org/Pisum/sativum/annotations/ZW6.gnm1.ann1.TKZX/",
+            "filename_suffix": ".protein_primary.faa.gz"
+          },
+          "version": "ZW6.gnm1.D8R1/ZW6.gnm1.ann1.TKZX"
+        },
+        {
+          "id": "Vicia_VF8137",
+          "expected_chromosomes": 6,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "url": "https://ndownloader.figshare.com/files/45721815",
+            "md5": "acde0e478b2e548d6a410d797cb08f66",
+            "cache_name": "VF8137.genome.fasta.gz"
+          },
+          "gff": {
+            "url": "https://ndownloader.figshare.com/files/45721800",
+            "md5": "04c4d4fb5b7a262a0a8a35a2dbd8054e",
+            "cache_name": "VF8137.annotation.gff3"
+          },
+          "protein": {
+            "url": "https://ndownloader.figshare.com/files/45721797",
+            "md5": "64c46c49729ae6848cac3909b964c34e",
+            "cache_name": "VF8137.annotation.pep"
+          },
+          "version": "VF8137 Figshare25632861.v1"
+        },
+        {
+          "id": "Vicia_Tiffany",
+          "expected_chromosomes": 6,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "directory": "https://data.legumeinfo.org/Vicia/faba/genomes/Tiffany.gnm1.M2F3/",
+            "filename_suffix": ".genome_main.fna.gz"
+          },
+          "gff": {
+            "directory": "https://data.legumeinfo.org/Vicia/faba/annotations/Tiffany.gnm1.ann1.Y54X/",
+            "filename_suffix": ".gene_models_main.gff3.gz"
+          },
+          "protein": {
+            "directory": "https://data.legumeinfo.org/Vicia/faba/annotations/Tiffany.gnm1.ann1.Y54X/",
+            "filename_suffix": ".protein_primary.faa.gz"
+          },
+          "version": "Tiffany.gnm1.M2F3/Tiffany.gnm1.ann1.Y54X"
+        },
+        {
+          "id": "Vicia_Hedin",
+          "expected_chromosomes": 6,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "directory": "https://data.legumeinfo.org/Vicia/faba/genomes/Hedin2.gnm1.06GS/",
+            "filename_suffix": ".genome_main.fna.gz"
+          },
+          "gff": {
+            "directory": "https://data.legumeinfo.org/Vicia/faba/annotations/Hedin2.gnm1.ann1.PTNK/",
+            "filename_suffix": ".gene_models_main.gff3.gz"
+          },
+          "protein": {
+            "directory": "https://data.legumeinfo.org/Vicia/faba/annotations/Hedin2.gnm1.ann1.PTNK/",
+            "filename_suffix": ".protein_primary.faa.gz"
+          },
+          "version": "Hedin2.gnm1.06GS/Hedin2.gnm1.ann1.PTNK"
+        },
+        {
+          "id": "Medicago_Mt4",
+          "expected_chromosomes": 8,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "directory": "https://data.legumeinfo.org/Medicago/truncatula/genomes/A17_HM341.gnm4.2GZ9/",
+            "filename_suffix": ".genome_main.fna.gz"
+          },
+          "gff": {
+            "directory": "https://data.legumeinfo.org/Medicago/truncatula/annotations/A17_HM341.gnm4.ann2.G3ZY/",
+            "filename_suffix": ".gene_models_main.gff3.gz"
+          },
+          "protein": {
+            "directory": "https://data.legumeinfo.org/Medicago/truncatula/annotations/A17_HM341.gnm4.ann2.G3ZY/",
+            "filename_suffix": ".protein_primary.faa.gz"
+          },
+          "version": "A17_HM341.gnm4.2GZ9/A17_HM341.gnm4.ann2.G3ZY"
+        }
+      ],
+      "method": "mcscanx",
+      "threads": 4,
+      "min_alignment_bp": 10000,
+      "min_mapq": 20,
+      "mcscanx_min_anchors": 5,
+      "blast_best_subjects": 1,
+      "colour_reference": "Pisum_Cameor",
+      "paper": "10.1186/s13059-025-03532-7",
+      "figure": "2b",
+      "pairs": [
+        [
+          "Pisum_Cameor",
+          "Pisum_ZW6"
+        ],
+        [
+          "Pisum_ZW6",
+          "Vicia_VF8137"
+        ],
+        [
+          "Vicia_VF8137",
+          "Vicia_Tiffany"
+        ],
+        [
+          "Vicia_Tiffany",
+          "Vicia_Hedin"
+        ],
+        [
+          "Vicia_Hedin",
+          "Medicago_Mt4"
+        ],
+        [
+          "Pisum_Cameor",
+          "Vicia_VF8137"
+        ],
+        [
+          "Pisum_Cameor",
+          "Vicia_Tiffany"
+        ],
+        [
+          "Pisum_Cameor",
+          "Vicia_Hedin"
+        ],
+        [
+          "Pisum_Cameor",
+          "Medicago_Mt4"
+        ],
+        [
+          "Pisum_ZW6",
+          "Vicia_Tiffany"
+        ],
+        [
+          "Pisum_ZW6",
+          "Vicia_Hedin"
+        ],
+        [
+          "Pisum_ZW6",
+          "Medicago_Mt4"
+        ],
+        [
+          "Vicia_VF8137",
+          "Vicia_Hedin"
+        ],
+        [
+          "Vicia_VF8137",
+          "Medicago_Mt4"
+        ],
+        [
+          "Vicia_Tiffany",
+          "Medicago_Mt4"
+        ]
+      ],
+      "paper_method": "BLASTP/MCScanX",
+      "reconstruction_note": "New fixed evidence; not original author link set. Ficus and yeast nucleotide-alignment reconstruction differs from published discovery; suzukii BLASTP replaces MMseqs2. No exact paper evidence claim.",
+      "published_display_verified": false
+    },
+    {
+      "id": "suzukii",
+      "species": [
+        {
+          "id": "Drosophila_melanogaster",
+          "expected_chromosomes": 7,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCF_000001215.4",
+          "chromosome_names": [
+            "2L",
+            "2R",
+            "3L",
+            "3R",
+            "4",
+            "X",
+            "Y"
+          ]
+        },
+        {
+          "id": "Drosophila_suzukii",
+          "expected_chromosomes": 6,
+          "chromosome_regex": "(?i)Dsuz_Chr(?:2L|2R|3L|3R|4|X)",
+          "genome": {
+            "url": "https://ndownloader.figshare.com/files/53357045",
+            "md5": "ec036e679aae0abfb741b3a953678100",
+            "cache_name": "genome.fa.masked.gz"
+          },
+          "gff": {
+            "url": "https://ndownloader.figshare.com/files/53357048",
+            "md5": "e36da8c54fe9fb2ad49a57393aa93110",
+            "cache_name": "gene.maker.gff.gz"
+          },
+          "protein": {
+            "url": "https://ndownloader.figshare.com/files/51486899",
+            "md5": "99f66c986c2bdb48e5476380679ad481",
+            "cache_name": "proteins.maker.fasta.gz"
+          },
+          "version": "Figshare28138766"
+        }
+      ],
+      "method": "mcscanx",
+      "threads": 4,
+      "min_alignment_bp": 10000,
+      "min_mapq": 20,
+      "mcscanx_min_anchors": 5,
+      "blast_best_subjects": 5,
+      "colour_reference": "Drosophila_melanogaster",
+      "paper": "10.1038/s41597-025-05890-0",
+      "figure": "4",
+      "pairs": [
+        [
+          "Drosophila_melanogaster",
+          "Drosophila_suzukii"
+        ]
+      ],
+      "paper_method": "MMseqs2/MCScanX",
+      "reconstruction_note": "New fixed evidence; not original author link set. Ficus and yeast nucleotide-alignment reconstruction differs from published discovery; suzukii BLASTP replaces MMseqs2. No exact paper evidence claim.",
+      "published_display_verified": false
+    },
+    {
+      "id": "rhodotorula",
+      "species": [
+        {
+          "id": "JCM10020",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805595.1",
+          "dna_only": true
+        },
+        {
+          "id": "NBRC10512",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805535.1",
+          "dna_only": true
+        },
+        {
+          "id": "JCM10049",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805575.1",
+          "dna_only": true
+        },
+        {
+          "id": "JCM10021",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805585.1",
+          "dna_only": true
+        },
+        {
+          "id": "NBRC10513",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805525.1",
+          "dna_only": true
+        },
+        {
+          "id": "JCM10296",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805545.1",
+          "dna_only": true
+        },
+        {
+          "id": "JCM10295",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805565.1",
+          "dna_only": true
+        },
+        {
+          "id": "JCM8202",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805495.1",
+          "dna_only": true
+        },
+        {
+          "id": "JCM10449",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805515.1",
+          "dna_only": true
+        },
+        {
+          "id": "JCM10450",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805505.1",
+          "dna_only": true
+        },
+        {
+          "id": "JCM10213",
+          "expected_chromosomes": 17,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "accession": "GCA_051805555.1",
+          "dna_only": true
+        }
+      ],
+      "method": "minimap2",
+      "threads": 4,
+      "min_alignment_bp": 10000,
+      "min_mapq": 20,
+      "mcscanx_min_anchors": 5,
+      "blast_best_subjects": 5,
+      "colour_reference": "JCM10020",
+      "paper": "10.1038/s41598-025-31366-7",
+      "figure": "ribbon panel; exact scope pending",
+      "pairs": [
+        [
+          "JCM10020",
+          "NBRC10512"
+        ],
+        [
+          "NBRC10512",
+          "JCM10049"
+        ],
+        [
+          "JCM10049",
+          "JCM10021"
+        ],
+        [
+          "JCM10021",
+          "NBRC10513"
+        ],
+        [
+          "NBRC10513",
+          "JCM10296"
+        ],
+        [
+          "JCM10296",
+          "JCM10295"
+        ],
+        [
+          "JCM10295",
+          "JCM8202"
+        ],
+        [
+          "JCM8202",
+          "JCM10449"
+        ],
+        [
+          "JCM10449",
+          "JCM10450"
+        ],
+        [
+          "JCM10450",
+          "JCM10213"
+        ],
+        [
+          "JCM10020",
+          "JCM10049"
+        ],
+        [
+          "JCM10020",
+          "JCM10021"
+        ],
+        [
+          "JCM10020",
+          "NBRC10513"
+        ],
+        [
+          "JCM10020",
+          "JCM10296"
+        ],
+        [
+          "JCM10020",
+          "JCM10295"
+        ],
+        [
+          "JCM10020",
+          "JCM8202"
+        ],
+        [
+          "JCM10020",
+          "JCM10449"
+        ],
+        [
+          "JCM10020",
+          "JCM10450"
+        ],
+        [
+          "JCM10020",
+          "JCM10213"
+        ],
+        [
+          "NBRC10512",
+          "JCM10021"
+        ],
+        [
+          "NBRC10512",
+          "NBRC10513"
+        ],
+        [
+          "NBRC10512",
+          "JCM10296"
+        ],
+        [
+          "NBRC10512",
+          "JCM10295"
+        ],
+        [
+          "NBRC10512",
+          "JCM8202"
+        ],
+        [
+          "NBRC10512",
+          "JCM10449"
+        ],
+        [
+          "NBRC10512",
+          "JCM10450"
+        ],
+        [
+          "NBRC10512",
+          "JCM10213"
+        ],
+        [
+          "JCM10049",
+          "NBRC10513"
+        ],
+        [
+          "JCM10049",
+          "JCM10296"
+        ],
+        [
+          "JCM10049",
+          "JCM10295"
+        ],
+        [
+          "JCM10049",
+          "JCM8202"
+        ],
+        [
+          "JCM10049",
+          "JCM10449"
+        ],
+        [
+          "JCM10049",
+          "JCM10450"
+        ],
+        [
+          "JCM10049",
+          "JCM10213"
+        ],
+        [
+          "JCM10021",
+          "JCM10296"
+        ],
+        [
+          "JCM10021",
+          "JCM10295"
+        ],
+        [
+          "JCM10021",
+          "JCM8202"
+        ],
+        [
+          "JCM10021",
+          "JCM10449"
+        ],
+        [
+          "JCM10021",
+          "JCM10450"
+        ],
+        [
+          "JCM10021",
+          "JCM10213"
+        ],
+        [
+          "NBRC10513",
+          "JCM10295"
+        ],
+        [
+          "NBRC10513",
+          "JCM8202"
+        ],
+        [
+          "NBRC10513",
+          "JCM10449"
+        ],
+        [
+          "NBRC10513",
+          "JCM10450"
+        ],
+        [
+          "NBRC10513",
+          "JCM10213"
+        ],
+        [
+          "JCM10296",
+          "JCM8202"
+        ],
+        [
+          "JCM10296",
+          "JCM10449"
+        ],
+        [
+          "JCM10296",
+          "JCM10450"
+        ],
+        [
+          "JCM10296",
+          "JCM10213"
+        ],
+        [
+          "JCM10295",
+          "JCM10449"
+        ],
+        [
+          "JCM10295",
+          "JCM10450"
+        ],
+        [
+          "JCM10295",
+          "JCM10213"
+        ],
+        [
+          "JCM8202",
+          "JCM10450"
+        ],
+        [
+          "JCM8202",
+          "JCM10213"
+        ],
+        [
+          "JCM10449",
+          "JCM10213"
+        ]
+      ],
+      "paper_method": "Syntplot/BLAST nucleotide macrosynteny",
+      "reconstruction_note": "New fixed evidence; not original author link set. Ficus and yeast nucleotide-alignment reconstruction differs from published discovery; suzukii BLASTP replaces MMseqs2. No exact paper evidence claim.",
+      "published_display_verified": false
+    },
+    {
+      "id": "ficus",
+      "species": [
+        {
+          "id": "Ficus_benjamina",
+          "expected_chromosomes": 13,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "url": "https://ndownloader.figshare.com/files/51029306",
+            "md5": "f3817606c3e86e92b7dc16d96bc43bba",
+            "cache_name": "Fben.genome.fasta"
+          },
+          "gff": {
+            "url": "https://ndownloader.figshare.com/files/51029318",
+            "md5": "fa93e6413ab353a947562b5f3b2d81ad",
+            "cache_name": "Fben.longest.gff3"
+          },
+          "version": "Figshare27980945"
+        },
+        {
+          "id": "Ficus_microcarpa",
+          "expected_chromosomes": 13,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "url": "https://download.cncb.ac.cn/gwh/Plants/Ficus_microcarpa_Fmicrocarpa-2020_GWHABKV00000000/GWHABKV00000000.genome.fasta.gz"
+          },
+          "gff": {
+            "url": "https://download.cncb.ac.cn/gwh/Plants/Ficus_microcarpa_Fmicrocarpa-2020_GWHABKV00000000/GWHABKV00000000.gff.gz"
+          },
+          "protein": {
+            "url": "https://download.cncb.ac.cn/gwh/Plants/Ficus_microcarpa_Fmicrocarpa-2020_GWHABKV00000000/GWHABKV00000000.Protein.faa.gz"
+          },
+          "version": "GWHABKV00000000",
+          "gwh_header_metadata": true
+        },
+        {
+          "id": "Ficus_hispida",
+          "expected_chromosomes": 14,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "url": "https://download.cncb.ac.cn/gwh/Plants/Ficus_hispida_20230530_GWHALOG00000000.1/GWHALOG00000000.1.genome.fasta.gz"
+          },
+          "version": "GWHALOG00000000.1",
+          "dna_only": true,
+          "gwh_header_metadata": true
+        },
+        {
+          "id": "Ficus_hirta",
+          "expected_chromosomes": 13,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "genome": {
+            "url": "https://ndownloader.figshare.com/files/48684511",
+            "md5": "1282398108b7b30ecdccbe49ef7edf54"
+          },
+          "gff": {
+            "url": "https://ndownloader.figshare.com/files/45539532",
+            "md5": "9bc4dbf51bc1bac4c7a7bb0d38c61e12"
+          },
+          "protein": {
+            "url": "https://ndownloader.figshare.com/files/50775126",
+            "md5": "22e8dbfa05c9360e0d9e6837808b73de"
+          },
+          "version": "Figshare25246813"
+        },
+        {
+          "id": "Ficus_pumila",
+          "expected_chromosomes": 13,
+          "chromosome_regex": "(?i)(?:.*[._-])?(?:chr|chromosome)[_-]?0*[1-9][0-9]*(?:[._-].*)?",
+          "blocked": "CNA0019284 confirmed; public metadata lacks downloadable assembly/annotation URLs. Do not substitute another species or assembly.",
+          "version": "CNA0019284"
+        }
+      ],
+      "method": "minimap2",
+      "threads": 4,
+      "min_alignment_bp": 10000,
+      "min_mapq": 20,
+      "mcscanx_min_anchors": 5,
+      "blast_best_subjects": 5,
+      "colour_reference": "Ficus_benjamina",
+      "paper": "10.1038/s41597-025-05155-w",
+      "figure": "4",
+      "pairs": [
+        [
+          "Ficus_benjamina",
+          "Ficus_microcarpa"
+        ],
+        [
+          "Ficus_benjamina",
+          "Ficus_hispida"
+        ],
+        [
+          "Ficus_benjamina",
+          "Ficus_hirta"
+        ],
+        [
+          "Ficus_benjamina",
+          "Ficus_pumila"
+        ]
+      ],
+      "paper_method": "JCVI1.2.7 protein collinearity",
+      "reconstruction_note": "New fixed evidence; not original author link set. Ficus and yeast nucleotide-alignment reconstruction differs from published discovery; suzukii BLASTP replaces MMseqs2. No exact paper evidence claim.",
+      "published_display_verified": false
+    }
+  ],
+  "budgets": [
+    30,
+    120,
+    600
+  ]
+}

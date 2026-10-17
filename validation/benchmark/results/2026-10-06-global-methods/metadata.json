@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-06",
+  "code_commit": "5618814a911b1b9860781f35c046b3d541562c6e",
+  "branch": "pegasus-genespace-pilot",
+  "slurm": {
+    "setup": 138387347,
+    "array": 138387348,
+    "collector": 138387349
+  },
+  "expected_tasks": 108,
+  "recorded_tasks": 108,
+  "complete_tasks": 106,
+  "wall_cutoffs": 2,
+  "cpus_per_task": 1,
+  "memory_per_task": "16G",
+  "budgets_seconds": [
+    30,
+    150,
+    600
+  ],
+  "methods": [
+    "pipeline",
+    "milp",
+    "lns",
+    "sdp"
+  ],
+  "input_profile": "Existing genespace_stress fixtures; no regeneration",
+  "evidence_level": "user-supplied collector stdout; solver layouts, raw certificates, and input fingerprints not uploaded",
+  "summary_sha256": "29534b689b85116727154007dcef4d07a6d96869b6227888f0199bf1dcb9dbdb",
+  "proof_audit_status": "Scheduled in hybrid setup at a8c0bde; results pending",
+  "limitations": [
+    "MILP equal-share component policy can leave substantial time unused.",
+    "SDP numerical estimates are not certified lower bounds.",
+    "Neighborhood bounds are conditional, not global.",
+    "Biological seeds are three coupled stress rungs, not nine independent biological replicates."
+  ]
+}

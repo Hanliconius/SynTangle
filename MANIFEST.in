@@ -1,0 +1,10 @@
+include LICENSE README.md CHANGELOG.md CITATION.cff CONTRIBUTING.md
+recursive-include examples/quickstart *.tsv *.md
+recursive-include examples/rhynchospora *.tsv *.md *.json *.py
+recursive-include docs/user-guide *.md
+include docs/data_model.md
+recursive-include r/SynTangleR *
+recursive-include integrations/genespace *.R *.md
+prune validation
+prune docs/development
+recursive-include docs/images *.svg *.png *.pdf

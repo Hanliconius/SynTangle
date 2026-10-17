@@ -1,0 +1,225 @@
+{
+  "provenance": {
+    "pair_audit": [
+      {
+        "pair": [
+          "R_tenuis",
+          "R_austrobrasiliensis"
+        ],
+        "retained": 16
+      },
+      {
+        "pair": [
+          "R_austrobrasiliensis",
+          "R_breviuscula"
+        ],
+        "retained": 21
+      }
+    ],
+    "orientation_note": "Native ribbon endpoint directions retained; whole-chromosome flips only.",
+    "source_kind": "Native GENESPACE useRegions=TRUE plotted ribbons; three-genome reanalysis",
+    "colour_reference": "R_breviuscula",
+    "reference_palette": {
+      "Chr2_h1": "#F9AC60",
+      "Chr5_h1": "#307BB5",
+      "Chr1_h1": "#D61F27",
+      "Chr4_h1": "#ADD8E7",
+      "Chr3_h1": "#FCF7BF"
+    },
+    "homology_colour_reference": {
+      "native_region_0000000": "Chr1_h1",
+      "native_region_0000001": "Chr1_h1",
+      "native_region_0000002": "Chr1_h1",
+      "native_region_0000003": "Chr1_h1",
+      "native_region_0000004": "Chr1_h1",
+      "native_region_0000005": "Chr1_h1",
+      "native_region_0000006": "Chr1_h1",
+      "native_region_0000007": "Chr1_h1",
+      "native_region_0000008": "Chr1_h1",
+      "native_region_0000009": "Chr2_h1",
+      "native_region_0000010": "Chr2_h1",
+      "native_region_0000011": "Chr2_h1",
+      "native_region_0000012": "Chr2_h1",
+      "native_region_0000013": "Chr2_h1",
+      "native_region_0000014": "Chr2_h1",
+      "native_region_0000015": "Chr2_h1",
+      "native_region_0000016": "Chr2_h1",
+      "native_region_0000017": "Chr3_h1",
+      "native_region_0000018": "Chr3_h1",
+      "native_region_0000019": "Chr3_h1",
+      "native_region_0000020": "Chr3_h1",
+      "native_region_0000021": "Chr3_h1",
+      "native_region_0000022": "Chr3_h1",
+      "native_region_0000023": "Chr3_h1",
+      "native_region_0000024": "Chr3_h1",
+      "native_region_0000025": "Chr4_h1",
+      "native_region_0000026": "Chr4_h1",
+      "native_region_0000027": "Chr5_h1",
+      "native_region_0000028": "Chr5_h1",
+      "native_region_0000029": "Chr5_h1",
+      "native_region_0000030": "Chr5_h1",
+      "native_region_0000031": "Chr5_h1",
+      "native_region_0000032": "Chr5_h1",
+      "native_region_0000033": "Chr5_h1",
+      "native_region_0000034": "Chr5_h1",
+      "native_region_0000035": "Chr5_h1",
+      "native_region_0000036": "Chr5_h1"
+    },
+    "retained_links": 37,
+    "scope": "Same fixed native region evidence in every panel; full selected FASTA lengths; whole-chromosome moves only",
+    "objective": "Unweighted native region-midpoint crossings; not gene-level or polygon-overlap optimality",
+    "input_panel_title": "Selected chromosome-name order",
+    "chromosome_extent": "Full selected FASTA lengths",
+    "crossing_unit": "native region",
+    "input_layout_note": "Selected sequence order; exact Fig.1a order unverified.",
+    "anchor_description": "sequence-inferred orthology and native regions",
+    "gs_workflow_note": "GS baseline comes from the full native discovery and region plotting workflow, with the author reference order and inversion.",
+    "workflow_note": "Deposited T/A annotations; transferred B annotation; three-genome discovery rather than the original twenty genomes."
+  },
+  "panels": [
+    {
+      "title": "Native regions: initial display",
+      "crossings": 55,
+      "state": {
+        "chromosome_order": {
+          "R_tenuis": [
+            "Chr1_h2",
+            "Chr2_h1"
+          ],
+          "R_austrobrasiliensis": [
+            "scaffold_13_a1",
+            "scaffold_7_a1",
+            "scaffold_1_a1"
+          ],
+          "R_breviuscula": [
+            "Chr1_h1",
+            "Chr2_h1",
+            "Chr3_h1",
+            "Chr4_h1",
+            "Chr5_h1"
+          ]
+        },
+        "chromosome_orientation": {
+          "R_austrobrasiliensis:scaffold_13_a1": 1,
+          "R_austrobrasiliensis:scaffold_1_a1": 1,
+          "R_austrobrasiliensis:scaffold_7_a1": 1,
+          "R_breviuscula:Chr1_h1": 1,
+          "R_breviuscula:Chr2_h1": 1,
+          "R_breviuscula:Chr3_h1": 1,
+          "R_breviuscula:Chr4_h1": 1,
+          "R_breviuscula:Chr5_h1": 1,
+          "R_tenuis:Chr1_h2": 1,
+          "R_tenuis:Chr2_h1": 1
+        }
+      }
+    },
+    {
+      "title": "Native GENESPACE region display",
+      "crossings": 13,
+      "state": {
+        "chromosome_order": {
+          "R_tenuis": [
+            "Chr1_h2",
+            "Chr2_h1"
+          ],
+          "R_austrobrasiliensis": [
+            "scaffold_7_a1",
+            "scaffold_13_a1",
+            "scaffold_1_a1"
+          ],
+          "R_breviuscula": [
+            "Chr2_h1",
+            "Chr5_h1",
+            "Chr1_h1",
+            "Chr4_h1",
+            "Chr3_h1"
+          ]
+        },
+        "chromosome_orientation": {
+          "R_austrobrasiliensis:scaffold_13_a1": 1,
+          "R_austrobrasiliensis:scaffold_1_a1": 1,
+          "R_austrobrasiliensis:scaffold_7_a1": 1,
+          "R_breviuscula:Chr1_h1": 1,
+          "R_breviuscula:Chr2_h1": 1,
+          "R_breviuscula:Chr3_h1": -1,
+          "R_breviuscula:Chr4_h1": 1,
+          "R_breviuscula:Chr5_h1": 1,
+          "R_tenuis:Chr1_h2": 1,
+          "R_tenuis:Chr2_h1": 1
+        }
+      }
+    },
+    {
+      "title": "Native GENESPACE + our flips",
+      "crossings": 9,
+      "state": {
+        "chromosome_order": {
+          "R_tenuis": [
+            "Chr1_h2",
+            "Chr2_h1"
+          ],
+          "R_austrobrasiliensis": [
+            "scaffold_7_a1",
+            "scaffold_13_a1",
+            "scaffold_1_a1"
+          ],
+          "R_breviuscula": [
+            "Chr2_h1",
+            "Chr5_h1",
+            "Chr1_h1",
+            "Chr4_h1",
+            "Chr3_h1"
+          ]
+        },
+        "chromosome_orientation": {
+          "R_austrobrasiliensis:scaffold_13_a1": 1,
+          "R_austrobrasiliensis:scaffold_1_a1": 1,
+          "R_austrobrasiliensis:scaffold_7_a1": 1,
+          "R_breviuscula:Chr1_h1": 1,
+          "R_breviuscula:Chr2_h1": -1,
+          "R_breviuscula:Chr3_h1": -1,
+          "R_breviuscula:Chr4_h1": 1,
+          "R_breviuscula:Chr5_h1": 1,
+          "R_tenuis:Chr1_h2": 1,
+          "R_tenuis:Chr2_h1": 1
+        }
+      }
+    },
+    {
+      "title": "SynTangle: same native regions",
+      "crossings": 9,
+      "state": {
+        "chromosome_order": {
+          "R_tenuis": [
+            "Chr1_h2",
+            "Chr2_h1"
+          ],
+          "R_austrobrasiliensis": [
+            "scaffold_7_a1",
+            "scaffold_13_a1",
+            "scaffold_1_a1"
+          ],
+          "R_breviuscula": [
+            "Chr2_h1",
+            "Chr5_h1",
+            "Chr1_h1",
+            "Chr4_h1",
+            "Chr3_h1"
+          ]
+        },
+        "chromosome_orientation": {
+          "R_austrobrasiliensis:scaffold_13_a1": 1,
+          "R_austrobrasiliensis:scaffold_1_a1": 1,
+          "R_austrobrasiliensis:scaffold_7_a1": 1,
+          "R_breviuscula:Chr1_h1": 1,
+          "R_breviuscula:Chr2_h1": -1,
+          "R_breviuscula:Chr3_h1": -1,
+          "R_breviuscula:Chr4_h1": 1,
+          "R_breviuscula:Chr5_h1": 1,
+          "R_tenuis:Chr1_h2": 1,
+          "R_tenuis:Chr2_h1": 1
+        }
+      }
+    }
+  ]
+}

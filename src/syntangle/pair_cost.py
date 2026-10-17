@@ -65,3 +65,42 @@ def pair_component_crossings(
         )
 
     return _strict_inversion_count(links)
+
+
+class PreparedPairCrossings:
+    """Worker-local immutable anchor data; no search states or exclusions stored."""
+
+    def __init__(self, fixture, component_nodes):
+        index = _occurrences_by_species_homology(fixture)
+        self.links = {}
+        for species1, species2 in zip(fixture.species_ids, fixture.species_ids[1:]):
+            links = []
+            for homology in sorted(set(index.get(species1, {})) &
+                                   set(index.get(species2, {}))):
+                left, right = index[species1][homology], index[species2][homology]
+                if len(left) != 1 or len(right) != 1:
+                    raise AmbiguousHomologyError(f"Homology {homology!r} is not one-to-one")
+                chrom1, block1 = left[0]
+                chrom2, block2 = right[0]
+                if any(chromosome_node_id(chrom.ref) not in component_nodes
+                       for chrom in (chrom1, chrom2)):
+                    continue
+                # Precompute both orientations independently, including strict
+                # floating-point ties; do not infer reverse crossings by subtraction.
+                endpoints = tuple((chrom.ref, {
+                    sign: _anchor_key(chrom, block, 0, sign)[1]
+                    for sign in (1, -1)})
+                    for chrom, block in ((chrom1, block1), (chrom2, block2)))
+                links.append(endpoints)
+            self.links[species1, species2] = tuple(links)
+
+    def score(self, species1, species2, order1, order2, orientation):
+        if not order1 or not order2:
+            return 0
+        rank1 = {ref: rank for rank, ref in enumerate(order1)}
+        rank2 = {ref: rank for rank, ref in enumerate(order2)}
+        return _strict_inversion_count([
+            ((rank1[left], positions1[orientation[left]]),
+             (rank2[right], positions2[orientation[right]]))
+            for (left, positions1), (right, positions2)
+            in self.links[species1, species2]])

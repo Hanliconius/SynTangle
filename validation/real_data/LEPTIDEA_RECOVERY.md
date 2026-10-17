@@ -1,0 +1,11 @@
+# Original four Leptidea assemblies: recovery of chromosome scaffolds
+
+Only LsinapisSpaM, LsinapisSweM, LjuvernicaM and LrealiM are included. The previously generated substitute-species comparison is outside this replication task.
+
+The completed Liftoff transfers are reused from `local_results/leptidea_liftoff_0aWZxo`; no repeat mapping or download is performed for Leptidea. NCBI labels all scaffolds unplaced, so the old collector stopped. Table 1 of DOI 10.1007/s10577-023-09713-z gives male pseudochromosome counts 52/29/42/26 and scaffold totals 16290/16022/16073/15448, with pseudochromosome sequence fractions 90.4/90.2/90.7/88.4 percent respectively.
+
+The recovery job checks the exact assembly accessions, numbered `HiC_scaffold_1..N` series, total scaffold counts, and agreement of summed sequence fractions with Table 1 (0.15 percentage-point tolerance for rounded published totals). It also rejects an omitted scaffold longer than the smallest selected scaffold. This is a consistency-based recovery of the pseudochromosome set, not independent cytogenetic confirmation. The author finalization script uses `--sort-output`, but the deposited scaffold numbering does not strictly descend by length. Length order is recorded as audit metadata and is not a acceptance requirement. Original HiC scaffold names, order and full lengths are retained. Selection still requires the published counts and sequence fraction, and all unselected scaffolds must be no longer than the smallest selected pseudochromosome.
+
+If all checks pass, the collector writes unique high-quality transferred candidate gene anchors and audits exclusions. Shared donor IDs are transfer-derived candidate homology, not independent orthology. No paper figure order or original ribbon evidence is claimed. This stage does not yet generate a PDF. The subsequent block construction and comparison must use this recovered set; paper order and colour mapping still require the author plot metadata.
+
+`bash validation/real_data/submit_leptidea_recovery_and_repeat_inspection.sh` submits an independent small Leptidea recovery job and a repeat-archive inventory job. The latter verifies size, MD5 and ZIP CRC, inventories members and previews textual headers, without making a TE filtering claim. It is separate from Leptidea recovery and never resubmits the running Rhynchospora discovery.

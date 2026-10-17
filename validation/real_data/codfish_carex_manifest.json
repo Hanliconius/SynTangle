@@ -1,0 +1,146 @@
+{
+  "cases": [
+    {
+      "id": "codfish_fig2a_reanalysis",
+      "paper": "https://doi.org/10.1186/s13059-026-03975-6",
+      "figure": "2A",
+      "species": [
+        {
+          "id": "Gadus_morhua_NEAC",
+          "min_chromosome_length": 10000000,
+          "expected_chromosomes": 23,
+          "accession": "GCF_902167405.1",
+          "gff": {
+            "url": "https://zenodo.org/records/17475568/files/Gadus_morhua_neac.gff.gz?download=1",
+            "md5": "dc71cd7386966fa74d8b1b1e52c5b723"
+          },
+          "numeric_chromosome_aliases": true
+        },
+        {
+          "id": "Melanogrammus_aeglefinus",
+          "min_chromosome_length": 10000000,
+          "expected_chromosomes": null,
+          "genome": {
+            "url": "https://zenodo.org/records/17475568/files/Melanogrammus_aeglefinus.fa.gz?download=1",
+            "md5": "d51a7fa89e4f1f61b5fbba1c8fce2515"
+          },
+          "gff": {
+            "url": "https://zenodo.org/records/17475568/files/Melanogrammus_aeglefinus.gff.gz?download=1",
+            "md5": "42a5bf763727caeb04bce98179f65dfe"
+          }
+        },
+        {
+          "id": "Boreogadus_saida",
+          "min_chromosome_length": 10000000,
+          "expected_chromosomes": 18,
+          "genome": {
+            "url": "https://zenodo.org/records/17475568/files/Boreogadus_saida.fa.gz?download=1",
+            "md5": "6d68d96b034ccf07fbf04bd35d510077"
+          },
+          "gff": {
+            "url": "https://zenodo.org/records/17475568/files/Boreogadus_saida.gff.gz?download=1",
+            "md5": "6f8a32359df0cefb71ec5ee69b47e299"
+          }
+        },
+        {
+          "id": "Arctogadus_glacialis",
+          "min_chromosome_length": 10000000,
+          "expected_chromosomes": 15,
+          "genome": {
+            "url": "https://zenodo.org/records/17475568/files/Arctogadus_glacialis.fa.gz?download=1",
+            "md5": "9c17faa7002a4651773790664a15583c"
+          },
+          "gff": {
+            "url": "https://zenodo.org/records/17475568/files/Arctogadus_glacialis.gff.gz?download=1",
+            "md5": "7ac72a5c786d904252b798fdc76e98f9"
+          }
+        },
+        {
+          "id": "Lota_lota",
+          "min_chromosome_length": 10000000,
+          "expected_chromosomes": 23,
+          "genome": {
+            "url": "https://zenodo.org/records/17475568/files/Lota_lota.fa.gz?download=1",
+            "md5": "ed007aed53544c684a1c4a7a481c8a92"
+          },
+          "gff": {
+            "url": "https://zenodo.org/records/17475568/files/Lota_lota.gff.gz?download=1",
+            "md5": "64751a70f2dfe11442a1875cb1487d44"
+          }
+        },
+        {
+          "id": "Merluccius_merluccius",
+          "min_chromosome_length": 10000000,
+          "expected_chromosomes": null,
+          "genome": {
+            "url": "https://zenodo.org/records/17475568/files/Merluccius_merluccius.fa.gz?download=1",
+            "md5": "ef260fbdd67c34f36d496477985c6ad2"
+          },
+          "gff": {
+            "url": "https://zenodo.org/records/17475568/files/Merluccius_merluccius.gff.gz?download=1",
+            "md5": "8ce05d31ca9dcc5fe8cb50275e46679c"
+          }
+        }
+      ],
+      "threads": 4,
+      "colour_reference": "Gadus_morhua_NEAC",
+      "size_order": true,
+      "input_layout_note": "Six paper species in Fig.2A row order; size order outside Atlantic cod; original Atlantic cod permutation and displayed flips not independently recovered."
+    },
+    {
+      "id": "carex_fig3_reanalysis",
+      "paper": "https://doi.org/10.1111/mec.17086",
+      "figure": "3",
+      "species": [
+        {
+          "id": "Rhynchospora_breviuscula",
+          "accession": "GCA_027562975.1",
+          "expected_chromosomes": 5
+        },
+        {
+          "id": "Carex_littledalei",
+          "resolve_from_nucleotide": "CM022079",
+          "expected_chromosomes": 29
+        },
+        {
+          "id": "Carex_cristatella",
+          "genome": {
+            "url": "https://zenodo.org/records/6990077/files/Ccristatella_v1.0.DNA.fasta.gz?download=1",
+            "md5": "e0accaf202b0e7aceb9fbd7f19c5da36"
+          },
+          "gff": {
+            "url": "https://zenodo.org/records/6990077/files/Ccristatella_v2.0.annotations.gff.gz?download=1",
+            "md5": "3089f663c5b450606d055ec5b3840767"
+          },
+          "min_chromosome_length": 1000000,
+          "expected_chromosomes": 35
+        },
+        {
+          "id": "Carex_scoparia",
+          "genome": {
+            "url": "https://zenodo.org/records/6990077/files/Cscoparia_v1.0.DNA.fasta.gz?download=1",
+            "md5": "52223224cef91737e463631fd4c5eca4"
+          },
+          "gff": {
+            "url": "https://zenodo.org/records/6990077/files/Cscoparia_v2.0.annotations.gff.gz?download=1",
+            "md5": "dbe750bcd517ed78098f95d60dc51246"
+          },
+          "min_chromosome_length": 1000000,
+          "expected_chromosomes": 33
+        }
+      ],
+      "threads": 4,
+      "colour_reference": "Carex_scoparia",
+      "size_order": false,
+      "input_layout_note": "Four paper species; chromosome-name order and positive display orientations. Published chromosome permutations and flips not yet recovered."
+    }
+  ],
+  "removed_candidate": "10.1073/pnas.2410939122",
+  "carex_author_records": [
+    8138413,
+    8138415,
+    8138417
+  ],
+  "carex_annotation_record": 6990077,
+  "littledalei_annotation_record": 12197544
+}

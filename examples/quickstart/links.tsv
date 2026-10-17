@@ -1,0 +1,9 @@
+link_id	species1	chromosome1	start1	end1	species2	chromosome2	start2	end2
+ab1	A	1	10	20	B	1	10	20
+ab2	A	1	60	70	B	1	60	70
+ab3	A	2	10	20	B	2	70	60
+ab4	A	2	50	60	B	2	30	20
+bc1	B	1	10	20	C	1	10	20
+bc2	B	1	60	70	C	1	60	70
+bc3	B	2	70	60	C	2	10	20
+bc4	B	2	30	20	C	2	50	60
