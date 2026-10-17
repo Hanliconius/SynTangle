@@ -1,4 +1,4 @@
-"""Render the archived, independently rescored four layouts; no optimization."""
+"""Render the archived, independently rescored two comparison layouts; no optimization."""
 import json
 from pathlib import Path
 import matplotlib
@@ -25,9 +25,10 @@ width=max(sum(c.length+gap for c in fixture.chromosomes if c.ref.species_id==sp)
 links=[(i,link) for i,(a,b) in enumerate(zip(fixture.species_ids,fixture.species_ids[1:])) for link in _unambiguous_links(fixture,a,b)]
 assert len(links)==37
 plt.rcParams['svg.fonttype']='none'
-fig,axes=plt.subplots(2,2,figsize=(14,8))
-titles=['A  Initial sequence order','B  GENESPACE layout','C  GENESPACE + flip helper','D  Full SynTangle (same score)']
-for ax,panel,title in zip(axes.flat,audit['panels'],titles):
+fig,axes=plt.subplots(1,2,figsize=(14,4.8))
+titles=['GENESPACE baseline (reanalysis)','SynTangle optimized']
+panels=[audit['panels'][1],audit['panels'][3]]
+for ax,panel,title in zip(axes.flat,panels,titles):
  state=decode_saved_layout(fixture,panel['state']);validate_saved_layout(fixture,state,basis)
  score=metrics(fixture,state);assert score['crossings']==panel['crossings']
  offsets={}
@@ -51,10 +52,10 @@ for ax,panel,title in zip(axes.flat,audit['panels'],titles):
  ax.set_yticks([0,-1,-2],['R. tenuis','R. austrobrasiliensis','R. breviuscula'],fontsize=9,fontstyle='italic')
  ax.set_xticks([]);ax.tick_params(length=0)
  for spine in ax.spines.values():spine.set_visible(False)
-fig.suptitle('Rhynchospora: the same 37 regions in every panel',fontsize=16)
-fig.text(.5,.015,'Three-genome reanalysis · full selected chromosome lengths · whole-chromosome moves only\nColors follow the five R. breviuscula chromosomes; directed ribbon endpoints are preserved.',ha='center',fontsize=9)
-fig.tight_layout(rect=(0,.065,1,.96))
+fig.suptitle('Rhynchospora: fewer crossings, identical evidence',fontsize=16)
+fig.text(.5,.025,'13 → 9 crossings (30.8% reduction) · numerical lower bound 9 · crossing gap 0\n37/37 links and 10/10 chromosomes retained · whole-chromosome moves only\nTwisted ribbons: 11 → 12; crossing optimality does not imply minimum ribbon twisting.',ha='center',fontsize=9)
+fig.tight_layout(rect=(0,.17,1,.93))
 out=base.parents[1]/'docs/images';out.mkdir(parents=True,exist_ok=True)
 for ext in ['svg','pdf']:fig.savefig(out/f'rhynchospora-example.{ext}')
 plt.close(fig)
-print('Verified and rendered all four archived layouts: 55, 13, 9, 9 crossings')
+print('Verified and rendered archived baseline and optimized layouts: 13, 9 crossings')
