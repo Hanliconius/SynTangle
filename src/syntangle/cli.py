@@ -56,11 +56,23 @@ def build_parser() -> argparse.ArgumentParser:
     refine.add_argument('--output', required=True)
     refine.add_argument('--mode', choices=('flips','full'), default='flips')
     refine.add_argument('--seconds', type=float, default=60)
+    ribbon = subparsers.add_parser('refine-ribbons', help='Refine whole-chromosome layout with explicit ribbon-twist objective')
+    ribbon.add_argument('fixture')
+    ribbon.add_argument('--layout', required=True, help='Complete TSV: species, chromosome, rank, orientation')
+    ribbon.add_argument('--output', required=True)
+    ribbon.add_argument('--objective', choices=('crossing-cap', 'combined'), default='crossing-cap')
+    ribbon.add_argument('--twist-metric', choices=('count', 'width'), default='width')
+    ribbon.add_argument('--weight', type=float, default=1.0)
+    ribbon.add_argument('--seconds', type=float, default=600)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    if args.command == 'refine-ribbons':
+        from .ribbon_objective import refine_ribbons
+        return refine_ribbons(args)
 
     if args.command == 'refine-genespace':
         if args.seconds <= 0:raise ValueError('--seconds must be positive')

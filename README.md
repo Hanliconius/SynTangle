@@ -95,3 +95,7 @@ wins. Experimental independent certification remains on the separate
 SynTangle code is distributed under the [MIT license](LICENSE). Third-party
 software and source datasets retain their own terms. A versioned archival
 DOI/citation is a release prerequisite; no DOI is claimed here.
+
+### Ribbon-aware refinement
+
+Use `syntangle refine-ribbons` to reduce ribbon self-twists while retaining all fixed evidence. The default preserves the starting crossing count; `--objective combined` allows an explicit crossing/twist trade-off. See [Ribbon refinement](docs/RIBBON_REFINEMENT.md) for commands, metric definitions and solver-status limits.

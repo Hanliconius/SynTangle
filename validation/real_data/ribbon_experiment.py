@@ -18,6 +18,7 @@ def main():
     for f in d.iterdir():
      if f.is_file():z.write(f,str(f.relative_to(a.run)))
    z.write(a.run/'summary.json','summary.json')
+   for f in a.run.glob('Rhodotorula_*.pdf'):z.write(f,f.name)
   print(json.dumps(results,indent=2));print('ARCHIVE',a.run/'SynTangle_ribbon_objectives.zip');return
  from plot_comparison import render
  from preservation_audit import require_audit
@@ -37,6 +38,7 @@ def main():
  m=result['final_metrics'];panels.append((final,name,f"C={m['crossings']}; twists={m['twists']}; width-twists={m['width_weighted_twists']:.2f}"))
  provenance['workflow_note']='Opt-in ribbon objective experiment; numerical solver status is not an independent optimality certificate.'
  render(fixture,panels,out,provenance);require_audit(out)
+ shutil.copy2(out/'comparison.pdf',a.run/f'Rhodotorula_{name}.pdf')
  shutil.copy2(prepared/'fixture.json',out/'fixture.json')
  print(name,json.dumps(result['starting_metrics']),'->',json.dumps(m),flush=True);print('PDF',out/'comparison.pdf')
 if __name__=='__main__':main()

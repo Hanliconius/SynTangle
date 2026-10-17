@@ -1,4 +1,4 @@
-"""Opt-in ribbon-twist experiments. Does not alter the midpoint objective."""
+"""Ribbon-aware whole-chromosome refinement. Legacy midpoint objective is unchanged."""
 import math,time
 import numpy as np
 from itertools import combinations
@@ -37,7 +37,7 @@ def ribbon_metrics(fixture,state):
 
 
 def optimize_ribbons(fixture,start,mode='lex',weight=1.,width_weighted=False,seconds=600):
-    if mode not in ('lex','weighted') or not math.isfinite(weight) or weight<0 or not math.isfinite(seconds) or seconds<=0:raise ValueError('Invalid ribbon experiment options')
+    if mode not in ('lex','weighted') or not math.isfinite(weight) or weight<0 or not math.isfinite(seconds) or seconds<=0:raise ValueError('Invalid ribbon refinement options')
     from .global_experiment import JointModel
     from .heuristic import _component_map
     from scipy.optimize import milp,Bounds,LinearConstraint
@@ -71,4 +71,38 @@ def optimize_ribbons(fixture,start,mode='lex',weight=1.,width_weighted=False,sec
     before=ribbon_metrics(fixture,start);after=ribbon_metrics(fixture,final)
     if mode=='lex' and after['crossings']>cap:raise AssertionError('Crossing cap violated')
     validate_saved_layout(fixture,final,orientation_basis(fixture,fixture.chromosome_refs))
-    return dict(mode=mode,weight=weight,width_weighted=width_weighted,starting_metrics=before,final_metrics=after,optimized_state=final.to_dict(),crossing_cap=cap if mode=='lex' else None,solver_status=int(result.status),solver_message=result.message,objective_constant=objective_constant,objective_dual_bound=float(result.mip_dual_bound+objective_constant) if getattr(result,'mip_dual_bound',None) is not None else None,optimality_status='experimental numerical solver result; no independent certificate',seconds=time.monotonic()-begin)
+    return dict(mode=mode,weight=weight,width_weighted=width_weighted,starting_metrics=before,final_metrics=after,optimized_state=final.to_dict(),crossing_cap=cap if mode=='lex' else None,solver_status=int(result.status),solver_message=result.message,objective_constant=objective_constant,objective_dual_bound=float(result.mip_dual_bound+objective_constant) if getattr(result,'mip_dual_bound',None) is not None else None,optimality_status='numerical solver result; no independent certificate',seconds=time.monotonic()-begin)
+
+
+def refine_ribbons(args):
+    """Public file interface; records both objectives and immutable input hashes."""
+    import csv
+    import hashlib
+    import json
+    from pathlib import Path
+    from .fixtures import load_fixture
+    from .genespace import import_layout
+    from .saved_layout import decode_saved_layout
+
+    fixture = load_fixture(args.fixture)
+    start = import_layout(fixture, args.layout)
+    result = optimize_ribbons(
+        fixture, start, mode='lex' if args.objective == 'crossing-cap' else 'weighted',
+        weight=args.weight, width_weighted=args.twist_metric == 'width', seconds=args.seconds)
+    final = decode_saved_layout(fixture, result['optimized_state'])
+    result.update(objective=args.objective, twist_metric=args.twist_metric,
+                  fixture_sha256=hashlib.sha256(Path(args.fixture).read_bytes()).hexdigest(),
+                  layout_input_sha256=hashlib.sha256(Path(args.layout).read_bytes()).hexdigest(),
+                  allowed_moves='whole-chromosome permutations and flips; fixed internal coordinates and links')
+    out = Path(args.output)
+    out.mkdir(parents=True, exist_ok=True)
+    with (out / 'layout.tsv').open('w') as handle:
+        writer = csv.writer(handle, delimiter='\t')
+        writer.writerow(['species', 'chromosome', 'rank', 'orientation'])
+        for species, order in final.chromosome_order.items():
+            for rank, ref in enumerate(order, 1):
+                writer.writerow([species, ref.chromosome_id, rank, final.chromosome_orientation[ref]])
+    (out / 'audit.json').write_text(json.dumps(result, indent=2) + '\n')
+    print(json.dumps(dict(before=result['starting_metrics'], after=result['final_metrics'],
+                          objective=args.objective, output=str(out))))
+    return 0
