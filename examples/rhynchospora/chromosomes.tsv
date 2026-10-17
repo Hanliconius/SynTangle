@@ -1,0 +1,11 @@
+species	chromosome	length	rank	orientation
+R_tenuis	Chr1_h2	212800643.0	1	1
+R_tenuis	Chr2_h1	135357977.0	2	1
+R_austrobrasiliensis	scaffold_7_a1	136628092.0	1	1
+R_austrobrasiliensis	scaffold_13_a1	89698722.0	2	1
+R_austrobrasiliensis	scaffold_1_a1	135756921.0	3	1
+R_breviuscula	Chr2_h1	70953004.0	1	1
+R_breviuscula	Chr5_h1	69555326.0	2	1
+R_breviuscula	Chr1_h1	91632052.0	3	1
+R_breviuscula	Chr4_h1	66447897.0	4	1
+R_breviuscula	Chr3_h1	69585868.0	5	-1

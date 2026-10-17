@@ -1,0 +1,100 @@
+{
+  "flips": {
+    "software_version": "0.1.0rc1",
+    "dependency_versions": {
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "highspy": "1.15.1",
+      "matplotlib": "3.10.8"
+    },
+    "input": {
+      "crossings": 13,
+      "pair_crossings": [
+        {
+          "species1": "R_tenuis",
+          "species2": "R_austrobrasiliensis",
+          "crossings": 1
+        },
+        {
+          "species1": "R_austrobrasiliensis",
+          "species2": "R_breviuscula",
+          "crossings": 12
+        }
+      ],
+      "link_count": 37,
+      "twists": 11,
+      "width_weighted_twists": 4.257376275314834
+    },
+    "output": {
+      "crossings": 9,
+      "pair_crossings": [
+        {
+          "species1": "R_tenuis",
+          "species2": "R_austrobrasiliensis",
+          "crossings": 1
+        },
+        {
+          "species1": "R_austrobrasiliensis",
+          "species2": "R_breviuscula",
+          "crossings": 8
+        }
+      ],
+      "link_count": 37,
+      "twists": 12,
+      "width_weighted_twists": 6.684485653419921
+    },
+    "crossing_lower_bound": null,
+    "crossing_gap": null,
+    "crossing_status": "heuristic_no_certificate",
+    "independent_certificate": false
+  },
+  "full": {
+    "software_version": "0.1.0rc1",
+    "dependency_versions": {
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "highspy": "1.15.1",
+      "matplotlib": "3.10.8"
+    },
+    "input": {
+      "crossings": 13,
+      "pair_crossings": [
+        {
+          "species1": "R_tenuis",
+          "species2": "R_austrobrasiliensis",
+          "crossings": 1
+        },
+        {
+          "species1": "R_austrobrasiliensis",
+          "species2": "R_breviuscula",
+          "crossings": 12
+        }
+      ],
+      "link_count": 37,
+      "twists": 11,
+      "width_weighted_twists": 4.257376275314834
+    },
+    "output": {
+      "crossings": 9,
+      "pair_crossings": [
+        {
+          "species1": "R_tenuis",
+          "species2": "R_austrobrasiliensis",
+          "crossings": 1
+        },
+        {
+          "species1": "R_austrobrasiliensis",
+          "species2": "R_breviuscula",
+          "crossings": 8
+        }
+      ],
+      "link_count": 37,
+      "twists": 12,
+      "width_weighted_twists": 6.684485653419921
+    },
+    "crossing_lower_bound": 9,
+    "crossing_gap": 0,
+    "crossing_status": "solver_bound_closed",
+    "independent_certificate": false
+  }
+}

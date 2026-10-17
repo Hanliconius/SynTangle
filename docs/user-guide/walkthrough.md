@@ -106,4 +106,10 @@ For a paper, report the source dataset and preprocessing, coordinate mode, fixed
 
 Layout optimization requires chromosome extents and directed synteny intervals, not the original FASTA assemblies. A compact example can therefore distribute the complete derived tables while linking to the original genome repository. Record the paper, exact assemblies, upstream pipeline, data license and table checksums alongside it.
 
-If a subset is needed, document the deterministic selection rule and retain a manifest of included links. Call it a subset demonstration: its score and bound apply only to that subset. Do not remove links from a run during optimization or represent a subset as a complete reproduction of the paper figure. The current bundled [quickstart](../../examples/quickstart/README.md) is a synthetic installation example, not a published dataset.
+If a subset is needed, document the deterministic selection rule and retain a manifest of included links. Call it a subset demonstration: its score and bound apply only to that subset. Do not remove links from a run during optimization or represent a subset as a complete reproduction of the paper figure. The bundled [Rhynchospora example](../../examples/rhynchospora/README.md) contains the full 37-region, three-genome reanalysis without downsampling. A separate [synthetic quickstart](../../examples/quickstart/README.md) remains available for installation checks.
+
+## Worked real-data example
+
+![Rhynchospora comparison](../images/rhynchospora-example.svg)
+
+The same 37 regions and 10 chromosomes appear in every panel. The sequence-order baseline scores 55, the GENESPACE layout 13, and both the flip-assisted and full SynTangle layouts 9. Here the helper already reaches the crossing optimum reported by the numerical full model; full optimization does not always improve on it. Twists increase from 11 to 12 despite the crossing reduction, illustrating why the optional ribbon objective exists. [Run this example and inspect its provenance](../../examples/rhynchospora/README.md).

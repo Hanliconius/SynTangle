@@ -17,7 +17,9 @@ The flip helper is a SynTangle add-on for GENESPACE. Full SynTangle can use GENE
 
 **[Full user guide →](docs/user-guide/walkthrough.md)** — how the method works, allowed moves, ribbon refinement, and interpreting results.
 
-![Three-species synthetic example before and after optimization](docs/images/quickstart.svg)
+![Rhynchospora reanalysis: identical regions across four layouts](docs/images/rhynchospora-example.svg)
+
+Real-data example: 37 regions across three Rhynchospora genomes. The panels compare initial order, GENESPACE, our flip helper and full SynTangle. [Dataset, provenance and reproduction commands](examples/rhynchospora/README.md).
 
 ## Install
 
@@ -76,21 +78,21 @@ For the flip helper, replot with your original GENESPACE arguments and replace `
 
 ## Try it without GENESPACE or genome downloads
 
-From the repository directory, run the small bundled **synthetic** example:
+From the repository directory, run the bundled **Rhynchospora real-data example** (all 37 regions; no downsampling):
 
 ```bash
 syntangle flip-assist \
-  --chromosomes examples/quickstart/chromosomes.tsv \
-  --links examples/quickstart/links.tsv \
+  --chromosomes examples/rhynchospora/chromosomes.tsv \
+  --links examples/rhynchospora/links.tsv \
   --output results/example_flips --figure
 
 syntangle run \
-  --chromosomes examples/quickstart/chromosomes.tsv \
-  --links examples/quickstart/links.tsv \
-  --output results/example_full --seconds 10 --figure
+  --chromosomes examples/rhynchospora/chromosomes.tsv \
+  --links examples/rhynchospora/links.tsv \
+  --output results/example_full --seconds 20 --figure
 ```
 
-Output directories must be new or empty. The example's starting score is 10 crossings; our tested runs reached 8 with flip assistance and 0 with full optimization, retaining all 8 links. Search results can depend on the budget and software environment.
+Output directories must be new or empty. Starting from its GENESPACE layout, both workflows reach 9 crossings from 13, retaining all 37 links and 10 chromosomes. Full optimization closes its numerical crossing bound on this example. The illustrated sequence-order baseline has 55 crossings. This is our three-genome reanalysis, not the paper's full twenty-genome discovery. Search results can depend on the budget and software environment.
 
 ## How it works
 
