@@ -4,6 +4,10 @@
 
 # SynTangle
 
+[![Install and R checks](https://github.com/Hanliconius/SynTangle/actions/workflows/release-install.yml/badge.svg?branch=main)](https://github.com/Hanliconius/SynTangle/actions/workflows/release-install.yml)
+[![Core tests](https://github.com/Hanliconius/SynTangle/actions/workflows/core-tests.yml/badge.svg?branch=main)](https://github.com/Hanliconius/SynTangle/actions/workflows/core-tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 **Improve chromosome synteny plots while preserving every supplied link.**
 
 SynTangle changes the placement and orientation of whole chromosomes to reduce tangled synteny layouts. Internal coordinates and species row order stay fixed: chromosomes are never cut or rearranged internally.
@@ -32,7 +36,7 @@ Requirements: **Python 3.11+** and Git. For the R interface, also install **R 4.
 Run these commands in a terminal (the activation command shown is for Bash/Zsh):
 
 ```bash
-git clone --depth 1 --branch release-candidate-0.1 https://github.com/Hanliconius/SynTangle.git
+git clone --depth 1 --branch main https://github.com/Hanliconius/SynTangle.git
 cd SynTangle
 python3 -m venv .venv
 source .venv/bin/activate
@@ -48,7 +52,9 @@ R CMD INSTALL r/SynTangleR
 
 If RStudio cannot find the Python environment, pass `executable="/absolute/path/to/SynTangle/.venv/bin/syntangle"` to either R function. In a new terminal, reactivate the environment before using the CLI.
 
-**Release candidate:** Python `0.1.0rc1`, R interface `0.1.0`. Install from this repository; packages are not yet on PyPI, CRAN or Bioconda. Linux is tested in CI; other platforms are not yet validated. See [troubleshooting](docs/user-guide/troubleshooting.md) for installation help.
+**Early public preview:** Python `0.1.0rc1`, R interface `0.1.0`. Install from this repository; packages are not yet on PyPI, CRAN or Bioconda. Linux is tested in CI; other platforms are not yet validated. See [troubleshooting](docs/user-guide/troubleshooting.md) for installation help.
+
+Feedback and reproducible bug reports are welcome through [GitHub Issues](https://github.com/Hanliconius/SynTangle/issues/new?template=bug_report.md). Include your command or R call, software versions and a small shareable example. The R adapter targets the GENESPACE 1.3.1 data schema; native end-to-end validation across GENESPACE versions is still in progress.
 
 ## Use your existing GENESPACE results from R
 
