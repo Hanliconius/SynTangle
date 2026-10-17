@@ -20,6 +20,8 @@ from .visualize import write_layout_comparison_svg
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="syntangle")
+    from importlib.metadata import version
+    parser.add_argument('--version', action='version', version=version('syntangle'))
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     analyze = subparsers.add_parser(
@@ -64,11 +66,30 @@ def build_parser() -> argparse.ArgumentParser:
     ribbon.add_argument('--twist-metric', choices=('count', 'width'), default='width')
     ribbon.add_argument('--weight', type=float, default=1.0)
     ribbon.add_argument('--seconds', type=float, default=600)
+    for command, help_text in [('flip-assist','Whole-chromosome flips with fixed order'), ('run','Full chromosome ordering and orientation optimization')]:
+        public = subparsers.add_parser(command, help=help_text)
+        public.add_argument('--fixture')
+        public.add_argument('--chromosomes')
+        public.add_argument('--links')
+        public.add_argument('--layout')
+        public.add_argument('--output',required=True)
+        public.add_argument('--seconds',type=float,default=60 if command=='flip-assist' else 600)
+        public.add_argument('--figure',action='store_true')
+        public.add_argument('--seed',type=int,default=1)
+        if command=='run':
+            public.add_argument('--ribbon-objective',choices=('none','crossing-cap','combined'),default='none')
+            public.add_argument('--twist-metric',choices=('width','count'),default='width')
+            public.add_argument('--weight',type=float,default=1)
+            public.add_argument('--ribbon-seconds',type=float,default=600)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    if args.command in ('flip-assist','run'):
+        from .workflow import run
+        return run(args)
 
     if args.command == 'refine-ribbons':
         from .ribbon_objective import refine_ribbons
@@ -158,3 +179,14 @@ def main(argv: list[str] | None = None) -> int:
     output["audit"] = audit.to_dict()
     print(json.dumps(output, indent=2 if args.pretty else None, sort_keys=True))
     return 0
+
+
+def entrypoint():
+    import sys
+    try:
+        return main()
+    except (ValueError, FileNotFoundError, ImportError) as error:
+        print(f'syntangle: {error}',file=sys.stderr)
+        if isinstance(error, ImportError):
+            print('Install the optimization and plotting extras for the full workflow.',file=sys.stderr)
+        return 2

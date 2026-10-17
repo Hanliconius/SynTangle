@@ -1,0 +1,16 @@
+Package: SynTangleR
+Type: Package
+Title: Chromosome Layout Optimization for GENESPACE
+Version: 0.1.0
+Authors@R: person("Joseph", "Hanly", role = c("aut", "cre"), email = "43384926+Hanliconius@users.noreply.github.com")
+Description: Reduce midpoint crossings in existing GENESPACE riparian displays
+    using whole chromosome flips while preserving chromosome order, internal
+    coordinates and every supplied link. Export directed synteny tables for
+    full chromosome ordering with the SynTangle Python optimizer.
+SystemRequirements: Python (>= 3.11), syntangle Python package
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: utils, stats
+URL: https://github.com/Hanliconius/SynTangle
+BugReports: https://github.com/Hanliconius/SynTangle/issues

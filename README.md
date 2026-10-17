@@ -1,101 +1,114 @@
 # SynTangle
 
-SynTangle reduces crossings in multispecies chromosome-synteny layouts by changing
-whole-chromosome display order and orientation. It preserves the supplied homology
-links and within-chromosome coordinates.
+**Improve chromosome synteny layouts while preserving the underlying evidence.**
 
-**Development preview.** The command-line interface and input adapters are being
-stabilized for the first release. No stable release has been tagged.
+SynTangle reduces crossings by changing chromosome order and whole-chromosome orientation. Every supplied link and its within-chromosome coordinates remain fixed. It works with existing GENESPACE riparian results or explicit synteny tables.
+
+| Workflow | R function | Command line | Allowed changes |
+|---|---|---|---|
+| Standard flip assistance | `syntangle_flip_assist()` | `syntangle flip-assist` | Whole-chromosome flips; fixed order |
+| Full SynTangle | `syntangle_run()` | `syntangle run` | Chromosome permutations and whole-chromosome flips |
+
+Both workflows report before/after crossing counts, per-species-pair counts, the resulting layout, and retained link counts. Full SynTangle also reports a crossing lower bound and remaining optimality gap. Optional ribbon refinement accounts for twisted ribbons as well as midpoint crossings.
+
+**Release candidate:** Python `0.1.0rc1`, R interface `0.1.0`. Install from this repository. Packages are not yet published on PyPI, CRAN or Bioconda. Linux is tested in CI; other platforms are not yet validated.
 
 ## Install
 
-Python 3.11 or newer is required. From a checkout:
+Python 3.11 or newer is required. R users also need R 4.1 or newer and their existing GENESPACE installation.
 
 ```bash
-python -m pip install .
-syntangle --help
+git clone --depth 1 --branch pegasus-genespace-pilot https://github.com/Hanliconius/SynTangle.git
+cd SynTangle
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install '.[optimization,plotting]'
 ```
 
-For adaptive hybrid optimization, install the numerical solver extra:
+For the R interface, install the bundled package from the repository directory:
 
 ```bash
-python -m pip install '.[optimization]'
+R CMD INSTALL r/SynTangleR
 ```
 
-GENESPACE, R, aligners and genome-download tools are needed only for the respective
-integration/benchmark workflows, not for the core package or standalone flip mode.
-Those workflows have separate environment requirements.
+The R interface calls the same Python engine as the command line. If RStudio cannot find the activated environment, supply `executable="/absolute/path/to/SynTangle/.venv/bin/syntangle"` to either R function.
 
-## Try an example
+## Use from R with GENESPACE
+
+Keep the returned object from your existing `plot_riparian()` call. For example:
+
+```r
+library(GENESPACE)
+library(SynTangleR)
+
+rp <- plot_riparian(gsParam = gsParam, useRegions = TRUE, useOrder = FALSE)
+
+flipped <- syntangle_flip_assist(
+    rp, useOrder = FALSE, output = "results/flip_assist"
+)
+flipped$stats
+flipped$invertTheseChrs
+
+full <- syntangle_run(
+    rp, useOrder = FALSE, output = "results/syntangle", seconds = 600
+)
+full$stats
+full$layout
+full$pdf
+```
+
+`useOrder` must match the original GENESPACE plot. If that plot already uses `invertTheseChrs`, pass the same list to SynTangle. The returned inversion list is the **complete replacement list**, not an additional set of flips. See the [GENESPACE guide](docs/user-guide/genespace.md) for replotting, existing inversions, preserved chromosome order, and coordinate conventions.
+
+## Try a complete example
+
+The bundled example needs no genome downloads or GENESPACE installation:
 
 ```bash
-syntangle analyze-fixture examples/fixtures/layout_noise_only.json --pretty
-syntangle optimize-fixture examples/fixtures/layout_noise_only.json --solver local-search --pretty
+syntangle flip-assist \
+  --chromosomes examples/quickstart/chromosomes.tsv \
+  --links examples/quickstart/links.tsv \
+  --output results/example_flips --figure
+
+syntangle run \
+  --chromosomes examples/quickstart/chromosomes.tsv \
+  --links examples/quickstart/links.tsv \
+  --output results/example_full --seconds 10 --figure
 ```
 
-The canonical JSON input records species, chromosomes, full chromosome lengths,
-block occurrences and optional hard orientation constraints. See the
-[data model](docs/data_model.md), [example fixtures](examples/fixtures/README.md)
-and [problem definition](docs/problem_definition.md).
+Each output directory contains a layout, statistics, original evidence, a flip list, and a vector comparison PDF when `--figure` is requested. Output directories must be new or empty, preventing accidental replacement of prior results.
 
-## Refine a GENESPACE layout
+## Ribbon refinement
 
-Given fixed evidence in the canonical JSON format and a complete exported layout:
+Crossing counts use link midpoints. A wide ribbon can twist internally without changing that count. To improve ribbon appearance after the crossing search while keeping its crossing count from increasing:
 
-```bash
-syntangle refine-genespace blocks.fixture.json --layout genespace_layout.tsv --mode flips --seconds 60 --output assisted
-syntangle refine-genespace blocks.fixture.json --layout genespace_layout.tsv --mode full --seconds 600 --output optimized
+```r
+full <- syntangle_run(
+    rp, useOrder = FALSE, output = "results/ribbon_refined",
+    seconds = 600, ribbonObjective = "crossing-cap",
+    twistMetric = "width", ribbonSeconds = 300
+)
 ```
 
-Flip mode preserves chromosome order and changes only legal whole-chromosome
-orientations. Full mode optimizes both order and orientation. Output includes a
-layout TSV, crossing scores and an audit record. The TSV interface is explicit;
-a direct GENESPACE R-object adapter is not yet provided. See
-[GENESPACE integration](docs/integrations/GENESPACE.md) for the required columns,
-coordinate conventions, limitations and treatment of incomplete native layouts.
+The equivalent CLI options are `--ribbon-objective crossing-cap --twist-metric width --ribbon-seconds 300`. The optional `combined` objective permits a documented trade-off between crossings and twists. It is not the standard flip-assist objective.
 
-## What the score means
+## Documentation
 
-The current objective counts crossings between corresponding block midpoints on
-adjacent species rows. It is not ribbon-overlap area, rearrangement distance or an
-inference of the true evolutionary history. Whole-chromosome flips can change
-ribbon twists without changing midpoint crossings in the same way.
+- [GENESPACE and R workflows](docs/user-guide/genespace.md)
+- [Input tables and coordinate conventions](docs/user-guide/inputs.md)
+- [Commands, outputs and statistics](docs/user-guide/usage.md)
+- [Methods and optimality claims](docs/user-guide/methods.md)
+- [Troubleshooting](docs/user-guide/troubleshooting.md)
+- [Contributing and tests](CONTRIBUTING.md)
+- [Changes](CHANGELOG.md)
 
-A feasible layout supplies an upper bound. A valid global lower bound supplies a
-limit on possible improvement. Matching solver bounds are reported separately
-from independent certificate verification. Local/neighborhood optimality alone
-does not establish global optimality. Claims apply only to the fixed input,
-objective and allowed display states.
+## Interpretation
 
-No optimizer may split a chromosome, rearrange internal blocks or delete homology
-to improve the score. [RULES.md](RULES.md) defines these invariants. Directed
-endpoint-preservation tests protect the plotting transformations.
+SynTangle optimizes the supplied links and permitted chromosome moves. It does not infer biological rearrangements, repair assemblies, or establish that a published figure was biologically incorrect. A lower crossing count is a layout improvement under the chosen objective.
 
-## Reproducibility and development
+`solver_bound_closed` means the numerical solver's bound matches the observed crossing count for the encoded model. It is distinct from an independently checked mathematical certificate. Standard flip assistance is heuristic. See [Methods](docs/user-guide/methods.md) for the precise scope.
 
-- [Validation and benchmark workflows](validation/benchmark/README.md)
-- [GENESPACE integration and baseline policy](docs/integrations/GENESPACE.md)
-- [Release preparation and evidence status](docs/RELEASE_PREPARATION.md)
-- [Historical development overview](docs/development/README_before_release_cleanup.md)
-- [Benchmark history](docs/benchmark_history.md)
+## Support and citation
 
-```bash
-python -m pip install '.[test]'
-python -m unittest discover -s tests
-```
+Report reproducible problems through [GitHub Issues](https://github.com/Hanliconius/SynTangle/issues), including the version, command or R call, and a small shareable input. Use [CITATION.cff](CITATION.cff) to cite the software; cite GENESPACE and the original data sources separately when applicable.
 
-Large genome downloads and biological benchmark jobs are designed for an HPC
-scheduler. Reconstructed homology comparisons are labelled separately from exact
-reproductions of published evidence. Missing baseline results are not scored as
-wins. Experimental independent certification remains on the separate
-`exact-certification-experiment` branch.
-
-## License and citation
-
-SynTangle code is distributed under the [MIT license](LICENSE). Third-party
-software and source datasets retain their own terms. A versioned archival
-DOI/citation is a release prerequisite; no DOI is claimed here.
-
-### Ribbon-aware refinement
-
-Use `syntangle refine-ribbons` to reduce ribbon self-twists while retaining all fixed evidence. The default preserves the starting crossing count; `--objective combined` allows an explicit crossing/twist trade-off. See [Ribbon refinement](docs/RIBBON_REFINEMENT.md) for commands, metric definitions and solver-status limits.
+Copyright Joseph Hanly and contributors. Released under the [MIT license](LICENSE).

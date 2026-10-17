@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Please cite this software and the original sources of your synteny evidence."
+title: SynTangle
+type: software
+authors:
+  - family-names: Hanly
+    given-names: Joseph
+version: 0.1.0rc1
+license: MIT
+repository-code: https://github.com/Hanliconius/SynTangle
+url: https://github.com/Hanliconius/SynTangle
