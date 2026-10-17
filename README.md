@@ -1,97 +1,141 @@
+<p align="center">
+  <img src="docs/images/syntangle-logo.png" alt="SynTangle logo" width="280">
+</p>
+
 # SynTangle
 
-**SynTangle** is a framework for producing minimally tangled multispecies chromosome-synteny layouts without changing the biological order encoded by the input assemblies.
+[![Install and R checks](https://github.com/Hanliconius/SynTangle/actions/workflows/release-install.yml/badge.svg?branch=main)](https://github.com/Hanliconius/SynTangle/actions/workflows/release-install.yml)
+[![Core tests](https://github.com/Hanliconius/SynTangle/actions/workflows/core-tests.yml/badge.svg?branch=main)](https://github.com/Hanliconius/SynTangle/actions/workflows/core-tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> Intrinsic tangledness is biology. Layout tangledness is noise.
+**Improve chromosome synteny plots while preserving every supplied link.**
 
-SynTangle separates those two things. It treats whole chromosomes as the movable units, preserves true within-chromosome order exactly, decomposes the multispecies correspondence graph as far as possible, and optimizes only the unresolved legal ordering/orientation choices that remain.
+SynTangle changes the placement and orientation of whole chromosomes to reduce tangled synteny layouts. Internal coordinates and species row order stay fixed: chromosomes are never cut or rearranged internally.
 
-## Current status
+| Choose | What it does | R / command line |
+|---|---|---|
+| **GENESPACE flip helper** | Adds orientation improvement to an existing GENESPACE plot, keeping its chromosome order | `syntangle_flip_assist()` / `syntangle flip-assist` |
+| **Full SynTangle** | Independently optimizes chromosome order and orientation from supplied synteny evidence | `syntangle_run()` / `syntangle run` |
 
-SynTangle now has an executable exact/bounded solver stack: canonical fixture
-parsing, chromosome↔homology incidence components, GF(2) orientation
-propagation, recursive exact residual factor elimination, exact species-layer
-dynamic programming as an independent fallback, exact one-layer subset DP,
-monotone branch-and-bound, seeded local-search incumbents, and auditable
-initial-vs-optimized visualization. The original 27-case simulation benchmark
-is solved to proven optimum throughout.
+The flip helper is a SynTangle add-on for GENESPACE. Full SynTangle can use GENESPACE products or other supported inputs. Neither workflow repeats homology discovery.
 
-Structural projection, bridges/articulation points, 2-cores, biconnected
-blocks, and the fundamental cycle basis are still computed and visualized, but
-they are currently diagnostic rather than being allowed to prune the optimizer
-without a proof that the remaining crossing objective factorizes accordingly.
+**[Full user guide →](docs/user-guide/walkthrough.md)** — how the method works, allowed moves, ribbon refinement, and interpreting results.
 
-Current validation now includes controlled paired presentation tangles,
-historical chromosome-scale probes, a coupled high-complexity stress ladder,
-and an orthogonal biologically grounded benchmark that varies species count,
-chromosome count, and rearrangement burden separately. The orthogonal profile
-uses independent extant descendants from one hidden ancestor so increasing
-species count does not also increase cumulative rearrangement depth. Long
-benchmark runs checkpoint every completed case and can resume.
+![Rhynchospora initial sequence order and optimized layout](docs/images/rhynchospora-example.svg)
 
-Stage 18 introduced the explicit residual variable/factor graph and
-process-level parallelism across independent incidence components. Stage 20
-makes that residual graph active solver machinery: exact factor tables contract
-variables that prove irrelevant, primal-graph leaves are eliminated,
-disconnected residual pieces are solved separately, small articulation
-variables are conditioned, and min-fill elimination is used only for the
-irreducible remainder. No solver should contradict [RULES.md](RULES.md).
+**55 → 9 midpoint crossings: an 83.6% reduction.** All 37 links, all 10 chromosomes and their internal coordinates are retained. The numerical solver reports a lower bound of **9**, matching the final score (**gap 0**) for this crossing model. This is solver-bound closure, not an independently checked exact certificate.
 
-## Core formulation
+The left panel is the initial sequence-order display from our three-genome reanalysis; the right is the optimized layout. The initial order is not asserted to match the published figure exactly. The improvement and bound apply to **midpoint crossings**. [Data, provenance and reproduction commands](examples/rhynchospora/README.md).
 
-For each species, the legal display state is a constrained signed permutation of whole chromosomes:
+**Source paper:** Zhang et al. (2026), *Sex without crossovers mimics clonal reproduction in Rhynchospora tenuis*, Nature. [doi:10.1038/s41586-026-11057-7](https://doi.org/10.1038/s41586-026-11057-7). This example reanalyses the three species shown in Fig. 1a.
 
-```
-state = chromosome permutation + whole-chromosome orientation
+## Install
+
+Requirements: **Python 3.11+** and Git. For the R interface, also install **R 4.1+**. GENESPACE is needed only when using GENESPACE products. Python remains required when calling SynTangle from R.
+
+Run these commands in a terminal (the activation command shown is for Bash/Zsh):
+
+```bash
+git clone --depth 1 --branch main https://github.com/Hanliconius/SynTangle.git
+cd SynTangle
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install '.[optimization,plotting]'
+syntangle --version
 ```
 
-A chromosome may move as a whole or reverse as a whole. Its internal genomic order is immutable.
+To use SynTangle inside R, also run this from the repository directory:
 
-The current computational strategy is:
-
-```
-multispecies homology hypergraph
-    ↓ exact sparse incidence representation
-independent incidence components
-    ↓
-GF(2) orientation propagation + canonicalization
-    ↓
-residual order/orientation decision-factor graph
-    ↓
-contract → split → leaf-eliminate → condition separators → repeat
-    ↓
-exact min-fill elimination on surviving kernels
-    ↓ if configured residual caps are exceeded
-exact layer DP
-    ↓ otherwise
-monotone branch-and-bound with legal incumbents/bounds
-    ↓
-proven optimum OR explicit lower/upper-bound gap
-    ↓
-visual audit + complexity diagnostics
+```bash
+R CMD INSTALL r/SynTangleR
 ```
 
-Independent incidence components may be solved in separate worker processes.
-Disconnected residual-factor pieces and one-variable articulation separators
-are now active exact decomposition layers. Larger multi-variable separators are
-deferred until a surviving benchmark kernel demonstrates that they are needed.
+If RStudio cannot find the Python environment, pass `executable="/absolute/path/to/SynTangle/.venv/bin/syntangle"` to either R function. In a new terminal, reactivate the environment before using the CLI.
 
-## Repository map
+**Early public preview:** Python `0.1.0rc1`, R interface `0.1.0`. Install from this repository; packages are not yet on PyPI, CRAN or Bioconda. Linux is tested in CI; other platforms are not yet validated. See [troubleshooting](docs/user-guide/troubleshooting.md) for installation help.
 
-- **[RULES.md](RULES.md)** — normative invariants. These define the problem and are protected from casual modification.
-- **[RULES_CHANGELOG.md](RULES_CHANGELOG.md)** — explicit record of every approved change to the rule set.
-- **[docs/problem_definition.md](docs/problem_definition.md)** — formal statement of the optimization problem.
-- **[docs/data_model.md](docs/data_model.md)** — canonical input objects and representations.
-- **[docs/pipeline_manifest.md](docs/pipeline_manifest.md)** — stepwise computational plan.
-- **[docs/concepts.md](docs/concepts.md)** — mathematical concepts, with status and purpose.
-- **[docs/problem_algebra.md](docs/problem_algebra.md)** — emerging signed-permutation/GF(2)/factorized algebraic formulation.
-- **[docs/method_stage_audit.md](docs/method_stage_audit.md)** — which graph, DP, and search stages are active, diagnostic, preparatory, or deferred.
-- **[docs/verification_roadmap.tex](docs/verification_roadmap.tex)** — concise narrative of the minimum benchmark/validation chain needed to road-test the method.
-- **[validation/benchmark/README.md](validation/benchmark/README.md)** — historical, paired, and scaling benchmarks plus vector reports.
-- **[examples/README.md](examples/README.md)** — executable synthetic invariance fixtures.
-- **[validation/simulator/README.md](validation/simulator/README.md)** — forward chromosome-evolution simulator, deliberate display-tangle induction, and visual validation.
-- **[docs/secondary_ancestral_inference.md](docs/secondary_ancestral_inference.md)** — post-core benchmark plan for ancestral fusion/fission/inversion history inference.
+Feedback and reproducible bug reports are welcome through [GitHub Issues](https://github.com/Hanliconius/SynTangle/issues/new?template=bug_report.md). Include your command or R call, software versions and a small shareable example. The R adapter targets the GENESPACE 1.3.1 data schema; native end-to-end validation across GENESPACE versions is still in progress.
 
-## Design principle
+## Use your existing GENESPACE results from R
 
-A mathematical concept belongs in SynTangle only if it helps us **represent the data, remove impossible choices, solve the remaining legal choices, or quantify the result**. Interesting mathematics that does not improve one of those jobs remains experimental or deferred.
+Keep the object returned by `plot_riparian()`. Here, `gsParam` is your existing completed GENESPACE run:
+
+```r
+library(GENESPACE)
+library(SynTangleR)
+
+rp <- plot_riparian(gsParam = gsParam, useRegions = TRUE, useOrder = FALSE)
+
+# Helper: preserve GENESPACE's chromosome order, improve orientations.
+flipped <- syntangle_flip_assist(
+    rp, useOrder = FALSE, output = "results/flip_assist"
+)
+flipped$stats
+flipped$invertTheseChrs
+
+# Full optimizer: search chromosome order and orientations.
+full <- syntangle_run(
+    rp, useOrder = FALSE, output = "results/syntangle", seconds = 600
+)
+full$stats
+full$layout
+full$pdf
+```
+
+For the flip helper, replot with your original GENESPACE arguments and replace `invertTheseChrs` with `flipped$invertTheseChrs`. Keep all ordering arguments unchanged. For **full SynTangle**, use its PDF or complete layout: applying only its flips in GENESPACE will not apply the optimized chromosome order.
+
+`useOrder` must match the original plot. If it already used inversions, pass that original list into SynTangle too; the returned list replaces it rather than being appended. See the [GENESPACE/R guide](docs/user-guide/genespace.md) for complete replotting examples.
+
+## Try it without GENESPACE or genome downloads
+
+From the repository directory, run the bundled **Rhynchospora real-data example** (all 37 regions; no downsampling):
+
+```bash
+syntangle flip-assist \
+  --chromosomes examples/rhynchospora/chromosomes.tsv \
+  --links examples/rhynchospora/links.tsv \
+  --output results/example_flips --figure
+
+syntangle run \
+  --chromosomes examples/rhynchospora/chromosomes.tsv \
+  --links examples/rhynchospora/links.tsv \
+  --output results/example_full --seconds 20 --figure
+```
+
+Output directories must be new or empty. Starting from its GENESPACE layout, both workflows reach 9 crossings from 13, retaining all 37 links and 10 chromosomes. Full optimization closes its numerical crossing bound on this example. The illustrated sequence-order baseline has 55 crossings. This is our three-genome reanalysis, not the paper's full twenty-genome discovery. Search results can depend on the budget and software environment.
+
+## How it works
+
+Treat a chromosome as a rigid strip: move it as a whole, or turn the entire strip around. A flip maps every coordinate x to L-x on a chromosome of length L. Every link remains attached to its original interval.
+
+The standard score counts pairs of links whose **midpoint order reverses** between adjacent species rows. The flip helper repeatedly accepts improving orientation changes. Full SynTangle combines local neighborhood searches with mixed-integer optimization over chromosome order and orientation, retaining a feasible layout and a lower bound.
+
+A ribbon can still twist even with few midpoint crossings. Full SynTangle offers optional `ribbonObjective="crossing-cap"` refinement to reduce twists without increasing the crossing score reached by the initial search. `"combined"` permits a trade-off between crossings and twists. These options are separate from standard flip assistance; see [ribbon refinement](docs/user-guide/walkthrough.md#why-a-low-crossing-score-can-still-look-tangled).
+
+## What you get
+
+| Output | Purpose |
+|---|---|
+| Vector comparison PDF | Inspect the starting and final layouts |
+| `layout.tsv`, `flips.tsv` | Final chromosome ranks/orientations and flips relative to the input |
+| `stats.json`, `summary.tsv` | Before/after crossings, twists, retained counts, runtime and optimality status |
+| `pair_stats.tsv` | Check improvements or trade-offs for each adjacent species pair |
+| `fixture.json`, `input_layout.tsv` | Preserve the supplied evidence and starting layout |
+
+R also returns these results and saves `syntangle_result.rds`. Full-search diagnostics are saved separately. See the [complete output reference](docs/user-guide/usage.md#outputs).
+
+**Reading the scores:** smaller crossing counts are better for the crossing objective. If the final score is U and the lower bound is L, the remaining gap is U-L. For example, U=300 and L=280 leave at most 20 crossings of possible improvement, subject to the bound's validity. Flip assistance is heuristic and provides no optimality certificate. `solver_bound_closed` means a matching numerical solver bound, **not an independently verified exact proof**. These are layout statistics, not p-values or estimates of evolutionary rearrangements.
+
+## Inputs and further help
+
+Canonical chromosome/link tables work independently of GENESPACE. **JCVI six-column `.simple` blocks with BED** and **minimap2 PAF** have experimental importers: synthetic tests pass, but real-data validation is outstanding.
+
+- **[Full user guide](docs/user-guide/walkthrough.md)**
+- [GENESPACE and R workflows](docs/user-guide/genespace.md)
+- [Input tables](docs/user-guide/inputs.md) and [experimental importers](docs/user-guide/importers.md)
+- [Commands and statistics](docs/user-guide/usage.md), [methods](docs/user-guide/methods.md) and [troubleshooting](docs/user-guide/troubleshooting.md)
+- [Contributing and tests](CONTRIBUTING.md) · [Changes](CHANGELOG.md)
+
+Report reproducible problems through [GitHub Issues](https://github.com/Hanliconius/SynTangle/issues). Cite the software using [CITATION.cff](CITATION.cff), and cite GENESPACE and original data sources separately where applicable.
+
+Copyright Joseph Hanly and contributors. Released under the [MIT license](LICENSE).

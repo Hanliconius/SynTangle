@@ -1,0 +1,18 @@
+{
+  "paper": "https://doi.org/10.1038/s41586-026-11057-7",
+  "paper_figure": "1a",
+  "scope": "Deposited T/A annotations; transferred B annotation; three-genome discovery rather than the original twenty genomes.",
+  "source_archive": "SynTangle_rhynchospora_endpoint_checked.zip",
+  "source_archive_sha256": "88e5b13834081b86eb6b78a265fcabff3c8fe9faa5b20b1d9f63a69ad66c4f4e",
+  "source_fixture_sha256": "70ddcde91ec23a831ac0baf4f47ddbadda63fd29b7e959cdd805609ad2500a17",
+  "downsampled": false,
+  "chromosomes": 10,
+  "links": 37,
+  "coordinate_transform": "No change; directed endpoints recovered from saved interval strand",
+  "starting_layout": "Archived native GENESPACE display; 13 midpoint crossings",
+  "source_note": "Complete supplied three-genome region fixture, not all genomes from the paper",
+  "table_sha256": {
+    "chromosomes.tsv": "4beb8f34fc6c6b3b50ca8dc676c9b4a43bc2388b5cec0a023ddc27fb78920f09",
+    "links.tsv": "fa0459cda77eeb5c4e702dec1788aead85113522bb90d9e813b1c78ed89b0f89"
+  }
+}

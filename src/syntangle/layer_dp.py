@@ -52,13 +52,8 @@ class LayerDPResult:
 
 def _component_data(fixture: Fixture):
     graph = build_incidence_graph(fixture)
-    components = graph.connected_components()
-    component_of: dict[ChromosomeRef, int] = {}
-
-    for component_id, nodes in enumerate(components):
-        for ref in fixture.chromosome_refs:
-            if chromosome_node_id(ref) in nodes:
-                component_of[ref] = component_id
+    from .component_space import optimization_component_map
+    components, component_of = optimization_component_map(fixture)
 
     return graph, components, component_of
 

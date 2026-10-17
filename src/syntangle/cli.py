@@ -20,6 +20,10 @@ from .visualize import write_layout_comparison_svg
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="syntangle")
+    from importlib.metadata import version, PackageNotFoundError
+    try: package_version = version('syntangle')
+    except PackageNotFoundError: package_version = 'source-checkout'
+    parser.add_argument('--version', action='version', version=package_version)
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     analyze = subparsers.add_parser(
@@ -50,11 +54,69 @@ def build_parser() -> argparse.ArgumentParser:
     optimize.add_argument("--audit-json")
     optimize.add_argument("--svg")
     optimize.add_argument("--pretty", action="store_true")
+    refine = subparsers.add_parser('refine-genespace', help='Refine a complete exported layout on fixed block evidence')
+    refine.add_argument('fixture')
+    refine.add_argument('--layout', required=True, help='TSV: species, chromosome, rank, orientation')
+    refine.add_argument('--output', required=True)
+    refine.add_argument('--mode', choices=('flips','full'), default='flips')
+    refine.add_argument('--seconds', type=float, default=60)
+    ribbon = subparsers.add_parser('refine-ribbons', help='Refine whole-chromosome layout with explicit ribbon-twist objective')
+    ribbon.add_argument('fixture')
+    ribbon.add_argument('--layout', required=True, help='Complete TSV: species, chromosome, rank, orientation')
+    ribbon.add_argument('--output', required=True)
+    ribbon.add_argument('--objective', choices=('crossing-cap', 'combined'), default='crossing-cap')
+    ribbon.add_argument('--twist-metric', choices=('count', 'width'), default='width')
+    ribbon.add_argument('--weight', type=float, default=1.0)
+    ribbon.add_argument('--seconds', type=float, default=600)
+    for command, help_text in [('flip-assist','Whole-chromosome flips with fixed order'), ('run','Full chromosome ordering and orientation optimization')]:
+        public = subparsers.add_parser(command, help=help_text)
+        public.add_argument('--fixture')
+        public.add_argument('--chromosomes')
+        public.add_argument('--links')
+        public.add_argument('--layout')
+        public.add_argument('--output',required=True)
+        public.add_argument('--seconds',type=float,default=60 if command=='flip-assist' else 600)
+        public.add_argument('--figure',action='store_true')
+        public.add_argument('--seed',type=int,default=1)
+        if command=='run':
+            public.add_argument('--ribbon-objective',choices=('none','crossing-cap','combined'),default='none')
+            public.add_argument('--twist-metric',choices=('width','count'),default='width')
+            public.add_argument('--weight',type=float,default=1)
+            public.add_argument('--ribbon-seconds',type=float,default=600)
+    for command in ('import-paf','import-jcvi'):
+        importer = subparsers.add_parser(command, help='Experimental external-format conversion; not validated on real datasets')
+        for name in ('query-species','target-species','query-sizes','target-sizes','output'):
+            importer.add_argument('--'+name,required=True)
+        if command=='import-paf':
+            importer.add_argument('--paf',required=True)
+            importer.add_argument('--min-mapq',type=int,default=0)
+            importer.add_argument('--min-alignment-length',type=int,default=0)
+        else:
+            importer.add_argument('--simple',required=True,help='JCVI six-column .simple blocks')
+            importer.add_argument('--query-bed',required=True)
+            importer.add_argument('--target-bed',required=True)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    if args.command in ('import-paf','import-jcvi'):
+        from .importers import run_import
+        return run_import(args)
+
+    if args.command in ('flip-assist','run'):
+        from .workflow import run
+        return run(args)
+
+    if args.command == 'refine-ribbons':
+        from .ribbon_objective import refine_ribbons
+        return refine_ribbons(args)
+
+    if args.command == 'refine-genespace':
+        if args.seconds <= 0:raise ValueError('--seconds must be positive')
+        from .genespace import refine
+        return refine(args)
 
     if args.command == "analyze-fixture":
         fixture = load_fixture(args.fixture)
@@ -135,3 +197,14 @@ def main(argv: list[str] | None = None) -> int:
     output["audit"] = audit.to_dict()
     print(json.dumps(output, indent=2 if args.pretty else None, sort_keys=True))
     return 0
+
+
+def entrypoint():
+    import sys
+    try:
+        return main()
+    except (ValueError, FileNotFoundError, ImportError) as error:
+        print(f'syntangle: {error}',file=sys.stderr)
+        if isinstance(error, ImportError):
+            print('Install the optimization and plotting extras for the full workflow.',file=sys.stderr)
+        return 2

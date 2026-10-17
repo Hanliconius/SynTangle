@@ -1,0 +1,65 @@
+{
+  "paper": "https://www.nature.com/articles/s41586-026-11057-7",
+  "assets": [
+    {
+      "doi": "10.17617/3.IXRT5Y",
+      "id": 333744,
+      "filename": "Rhync_austrobrasiliensis_6344D.hic.hap1.chr.fasta",
+      "bytes": 1072267540,
+      "restricted": false,
+      "checksum": {
+        "type": "MD5",
+        "value": "a7ab48319e0219084d636a54e0376e15"
+      }
+    },
+    {
+      "doi": "10.17617/3.IXRT5Y",
+      "id": 333741,
+      "filename": "Rhync_austrobrasiliensis_6344D.hic.hap1.chr.helixer.gff3",
+      "bytes": 184722025,
+      "restricted": false,
+      "checksum": {
+        "type": "MD5",
+        "value": "78b99dc5de097ee449aed54440d597c8"
+      }
+    },
+    {
+      "doi": "10.17617/3.IXRT5Y",
+      "id": 333736,
+      "filename": "Rhync_tenuis_REC.hap1.chr.fasta",
+      "bytes": 352510622,
+      "restricted": false,
+      "checksum": {
+        "type": "MD5",
+        "value": "0da3446aef8444c6d2c620be3b05e14c"
+      }
+    },
+    {
+      "doi": "10.17617/3.IXRT5Y",
+      "id": 333735,
+      "filename": "Rhync_tenuis_REC.hap1.chr.helixer.gff3",
+      "bytes": 53399896,
+      "restricted": false,
+      "checksum": {
+        "type": "MD5",
+        "value": "61bc60f5e727f5d46f387cda7893b77f"
+      }
+    },
+    {
+      "doi": "10.17617/3.DGOJRQ",
+      "id": 336260,
+      "filename": "Rhync_breviuscula.hap1.chr.fasta",
+      "bytes": 373433825,
+      "restricted": false,
+      "checksum": {
+        "type": "MD5",
+        "value": "6f16c38d4853e9bc02a60f1dfd727de5"
+      }
+    }
+  ],
+  "expected_published_bars": {
+    "R_tenuis_REC_h1": 2,
+    "R_austrobrasiliensis_paper_deposit": 3,
+    "R_breviuscula_companion_h1": 5
+  }
+}

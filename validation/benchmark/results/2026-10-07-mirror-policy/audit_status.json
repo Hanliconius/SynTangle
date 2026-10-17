@@ -1,0 +1,38 @@
+[
+  {
+    "case": "stress_6sp_20chr_5ev_mild",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  },
+  {
+    "case": "stress_6sp_20chr_5ev_strong",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  },
+  {
+    "case": "stress_6sp_20chr_5ev_random",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  },
+  {
+    "case": "stress_8sp_30chr_8ev_mild",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  },
+  {
+    "case": "stress_8sp_30chr_8ev_strong",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  },
+  {
+    "case": "stress_8sp_30chr_8ev_random",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  },
+  {
+    "case": "stress_10sp_40chr_12ev_mild",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  },
+  {
+    "case": "stress_10sp_40chr_12ev_strong",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  },
+  {
+    "case": "stress_10sp_40chr_12ev_random",
+    "collector_outcome": "strict-improvement infeasibility verified"
+  }
+]
