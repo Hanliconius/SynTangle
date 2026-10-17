@@ -37,6 +37,15 @@ if (nzchar(exe)) {
     tableInput <- syntangle_read_tables(file.path(root,'export'))
     d <- syntangle_flip_assist(tableInput,output=file.path(root,'from tables'),executable=exe,figure=FALSE)
     stopifnot(d$stats$output_crossings==0,d$stats$links==2)
+    # Shipped real-data tables exercise the installed R/Python path too.
+    real <- syntangle_read_tables('examples/rhynchospora')
+    for (workflow in c('flips','full')) {
+        fun <- if (workflow=='flips') syntangle_flip_assist else syntangle_run
+        result <- fun(real,output=file.path(root,paste0('rhynchospora_',workflow)),
+                      executable=exe,seconds=20,figure=TRUE)
+        stopifnot(result$stats$input_crossings==13,result$stats$output_crossings==9,
+                  result$stats$links==37,nrow(result$layout)==10,file.exists(result$pdf))
+    }
     print(a);print(c)
 }
 stopifnot(identical(serialize(rp,NULL),original))
