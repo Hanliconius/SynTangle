@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/syntangle-logo.png" alt="SynTangle logo" width="280">
+</p>
+
 # SynTangle
 
 **Improve chromosome synteny plots while preserving every supplied link.**
