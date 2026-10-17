@@ -39,13 +39,13 @@ full$pdf
 
 ![Archived Rhynchospora layouts using identical regions](../../docs/images/rhynchospora-example.svg)
 
-The two displayed layouts score 13 and 9 (30.8% fewer crossings), with a numerical lower bound of 9 and gap 0 for the optimized layout. The optimized panel flips *R. breviuscula* Chr2_h1 as a whole relative to the baseline; it does not reverse individual regions. All four historical layouts remain archived in `reference_layouts.json` with scores 55, 13, 9 and 9. The flip helper and full search tie here.
+The two displayed layouts are the original top-left (initial sequence order) and bottom-right (full SynTangle) panels. They score 55 and 9 (83.6% fewer crossings), with a numerical lower bound of 9 and gap 0 for the optimized layout. The optimized panel changes whole-chromosome order and orientation relative to the initial sequence-order display; it does not reverse individual regions. All four historical layouts remain archived in `reference_layouts.json` with scores 55, 13, 9 and 9. The flip helper and full search tie here.
 
 This is also a useful illustration of the distinction between crossings and twists. From the GENESPACE baseline, midpoint crossings fall from 13 to 9, while twisted ribbons increase from 11 to 12. That is permitted by the standard midpoint objective. The wide orange ribbon retains its direction in all panels. Optional ribbon refinement optimizes a different objective; see the [user guide](../../docs/user-guide/walkthrough.md).
 
 The documentation figure preserves the archived reference-chromosome colors. The public CLI renderer uses its standard per-link palette, so its colors differ while the evidence and scores agree. Multiple equivalent optimal layouts may exist.
 
-To regenerate the documentation SVG and vector PDF from the archived baseline and optimized layouts:
+To regenerate the documentation SVG and vector PDF from the archived initial sequence-order and optimized layouts:
 
 ```bash
 python examples/rhynchospora/render_example.py

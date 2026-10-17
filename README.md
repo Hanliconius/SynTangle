@@ -17,11 +17,11 @@ The flip helper is a SynTangle add-on for GENESPACE. Full SynTangle can use GENE
 
 **[Full user guide →](docs/user-guide/walkthrough.md)** — how the method works, allowed moves, ribbon refinement, and interpreting results.
 
-![Rhynchospora GENESPACE baseline and optimized layout](docs/images/rhynchospora-example.svg)
+![Rhynchospora initial sequence order and optimized layout](docs/images/rhynchospora-example.svg)
 
-**13 → 9 midpoint crossings: a 30.8% reduction.** All 37 links, all 10 chromosomes and their internal coordinates are retained. The numerical solver reports a lower bound of **9**, matching the final score (**gap 0**) for this crossing model. This is solver-bound closure, not an independently checked exact certificate.
+**55 → 9 midpoint crossings: an 83.6% reduction.** All 37 links, all 10 chromosomes and their internal coordinates are retained. The numerical solver reports a lower bound of **9**, matching the final score (**gap 0**) for this crossing model. This is solver-bound closure, not an independently checked exact certificate.
 
-The baseline is our three-genome GENESPACE reanalysis associated with the paper, not a verified copy of the published figure. Twisted ribbons increase from 11 to 12: the improvement and bound apply to **midpoint crossings**. [Data, provenance and reproduction commands](examples/rhynchospora/README.md).
+The left panel is the initial sequence-order display from our three-genome reanalysis; the right is the optimized layout. The initial order is not asserted to match the published figure exactly. The improvement and bound apply to **midpoint crossings**. [Data, provenance and reproduction commands](examples/rhynchospora/README.md).
 
 ## Install
 

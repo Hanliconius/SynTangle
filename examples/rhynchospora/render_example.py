@@ -26,8 +26,8 @@ links=[(i,link) for i,(a,b) in enumerate(zip(fixture.species_ids,fixture.species
 assert len(links)==37
 plt.rcParams['svg.fonttype']='none'
 fig,axes=plt.subplots(1,2,figsize=(14,4.8))
-titles=['GENESPACE baseline (reanalysis)','SynTangle optimized']
-panels=[audit['panels'][1],audit['panels'][3]]
+titles=['Initial sequence order','SynTangle optimized']
+panels=[audit['panels'][0],audit['panels'][3]]
 for ax,panel,title in zip(axes.flat,panels,titles):
  state=decode_saved_layout(fixture,panel['state']);validate_saved_layout(fixture,state,basis)
  score=metrics(fixture,state);assert score['crossings']==panel['crossings']
@@ -53,9 +53,9 @@ for ax,panel,title in zip(axes.flat,panels,titles):
  ax.set_xticks([]);ax.tick_params(length=0)
  for spine in ax.spines.values():spine.set_visible(False)
 fig.suptitle('Rhynchospora: fewer crossings, identical evidence',fontsize=16)
-fig.text(.5,.025,'13 → 9 crossings (30.8% reduction) · numerical lower bound 9 · crossing gap 0\n37/37 links and 10/10 chromosomes retained · whole-chromosome moves only\nTwisted ribbons: 11 → 12; crossing optimality does not imply minimum ribbon twisting.',ha='center',fontsize=9)
+fig.text(.5,.025,'55 → 9 crossings (83.6% reduction) · numerical lower bound 9 · crossing gap 0\n37/37 links and 10/10 chromosomes retained · whole-chromosome moves only\nCrossing optimality applies to midpoint crossings, not ribbon twisting.',ha='center',fontsize=9)
 fig.tight_layout(rect=(0,.17,1,.93))
 out=base.parents[1]/'docs/images';out.mkdir(parents=True,exist_ok=True)
 for ext in ['svg','pdf']:fig.savefig(out/f'rhynchospora-example.{ext}')
 plt.close(fig)
-print('Verified and rendered archived baseline and optimized layouts: 13, 9 crossings')
+print('Verified and rendered archived baseline and optimized layouts: 55, 9 crossings')
