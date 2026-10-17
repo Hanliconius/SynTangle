@@ -86,6 +86,7 @@ syntangle_export_genespace <- function(riparian, output, useOrder,
     } else {
         tables <- syntangle_export_genespace(riparian,output,useOrder,invertTheseChrs)
     }
+    output <- normalizePath(output)
     resultDir <- file.path(output,'result')
     args <- c(mode,'--chromosomes',shQuote(file.path(output,'chromosomes.tsv')),
         '--links',shQuote(file.path(output,'links.tsv')),'--output',shQuote(resultDir),

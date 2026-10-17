@@ -22,7 +22,7 @@ Optional full-search refinement:
 | `layout.tsv` | Final chromosome ranks and signs |
 | `input_layout.tsv` | Starting ranks and signs |
 | `fixture.json` | Fixed normalized input evidence |
-| `stats.json` | Before/after metrics, bounds, gap, runtime, hashes and preservation checks |
+| `stats.json` | Before/after metrics, bounds, gap, runtime, parameters, dependency versions, hashes and preservation checks |
 | `summary.tsv` | Compact statistics, also returned to R |
 | `pair_stats.tsv` | Crossings for each adjacent species pair |
 | `flips.tsv` | Chromosomes flipped relative to the supplied starting display |

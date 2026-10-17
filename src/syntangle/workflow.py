@@ -102,7 +102,12 @@ def run(args):
     status = 'heuristic_no_certificate' if lower is None else ('solver_bound_closed' if lower==after['crossings'] else 'bounded_best_known')
     try: software_version = version('syntangle')
     except PackageNotFoundError: software_version = 'source-checkout'
-    stats = dict(schema_version=1,software_version=software_version,mode=args.command,
+    dependencies = {}
+    for package in ('numpy','scipy','highspy','matplotlib'):
+        try: dependencies[package] = version(package)
+        except PackageNotFoundError: pass
+    stats = dict(schema_version=1,software_version=software_version,dependency_versions=dependencies,mode=args.command,
+        parameters={name:getattr(args,name) for name in ('seconds','seed','ribbon_seconds','twist_metric','weight') if hasattr(args,name)},
         crossing_objective='Strict inversions of link midpoints between adjacent species; ties excluded',
         ribbon_objective=getattr(args,'ribbon_objective','none'),input=before,output=after,
         crossing_lower_bound=lower,crossing_gap=None if lower is None else after['crossings']-lower,
@@ -128,8 +133,8 @@ def run(args):
             writer.writerow([a['species1'],a['species2'],a['crossings'],b['crossings']])
     with (out/'summary.tsv').open('w') as handle:
         writer=csv.writer(handle,delimiter='\t')
-        writer.writerow(['input_crossings','output_crossings','links','chromosomes','lower_bound','gap','status'])
-        writer.writerow([before['crossings'],after['crossings'],after['link_count'],len(fixture.chromosomes),lower,stats['crossing_gap'],status])
+        writer.writerow(['input_crossings','output_crossings','links','chromosomes','lower_bound','gap','status','input_twists','output_twists','input_width_weighted_twists','output_width_weighted_twists'])
+        writer.writerow([before['crossings'],after['crossings'],after['link_count'],len(fixture.chromosomes),lower,stats['crossing_gap'],status,before['twists'],after['twists'],before['width_weighted_twists'],after['width_weighted_twists']])
     if args.figure: plot_comparison(fixture,start,final,out/(args.command.replace('-','_')+'_comparison.pdf'))
     print(f'{args.command}: {before["crossings"]} -> {after["crossings"]} crossings; {status}; {out.resolve()}')
     return 0
