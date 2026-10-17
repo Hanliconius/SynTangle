@@ -90,7 +90,20 @@ syntangle_export_genespace <- function(riparian, output, useOrder,
     args <- c(mode,'--chromosomes',shQuote(file.path(output,'chromosomes.tsv')),
         '--links',shQuote(file.path(output,'links.tsv')),'--output',shQuote(resultDir),
         '--seconds',as.character(seconds),if (figure) '--figure',extra)
-    status <- system2(executable,args)
+    # R prepends its own shared-library directories to LD_LIBRARY_PATH.
+    # Prefer the selected Python interpreter's lib directory (including venv
+    # symlink resolution), so an unrelated system libpython cannot replace it.
+    childEnv <- character()
+    if (.Platform$OS.type=='unix') {
+        launcher <- if (file.exists(executable)) executable else Sys.which(executable)
+        launcher <- normalizePath(launcher)
+        first <- readLines(launcher,n=1L,warn=FALSE)
+        python <- if (length(first) && grepl('^#!.*[/]python[0-9.]*$',first)) sub('^#!','',first) else ''
+        prefix <- if (nzchar(python) && file.exists(python)) dirname(dirname(normalizePath(python))) else dirname(dirname(launcher))
+        lib <- file.path(prefix,'lib')
+        if (dir.exists(lib)) childEnv <- paste0('LD_LIBRARY_PATH=',shQuote(paste(lib,Sys.getenv('LD_LIBRARY_PATH'),sep=':')))
+    }
+    status <- system2(executable,args,env=childEnv)
     if (status!=0) stop('SynTangle failed with exit status ',status,'; exported inputs retained in ',output)
     layout <- read.delim(file.path(resultDir,'layout.tsv'),colClasses='character',check.names=FALSE)
     negative <- layout$orientation=='-1'

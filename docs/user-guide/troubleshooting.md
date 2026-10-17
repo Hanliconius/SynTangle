@@ -2,6 +2,8 @@
 
 **R cannot find `syntangle`.** Install the Python package into a virtual environment and pass the absolute executable path, for example `executable="/home/me/SynTangle/.venv/bin/syntangle"`. RStudio need not inherit the environment activated in another terminal.
 
+**Python works in the terminal but fails inside R.** Supply the absolute virtual-environment executable path. The R launcher prioritizes that interpreter's shared-library directory to avoid loading an unrelated system Python runtime through R's library search path. Include both Python and R versions if the problem persists.
+
 **Missing source-data columns.** Confirm the input is the return value of `plot_riparian()`, not only its ggplot object or `gsParam`. Report the GENESPACE version and `names(rp$plotData$sourceData$blocks)`.
 
 **Missing displayed chromosomes.** The source blocks reference chromosomes absent from the GENESPACE display. Correct the original display and its ordering/filtering arguments. The public adapter rejects this mismatch rather than inventing an order or dropping links.
