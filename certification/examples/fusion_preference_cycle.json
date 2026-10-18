@@ -1,0 +1,166 @@
+{
+  "fixture_version": 1,
+  "id": "fusion",
+  "species": [
+    {
+      "id": "A",
+      "chromosomes": [
+        {
+          "id": "center",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "ca0",
+              "homology_id": "a0",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "ca1",
+              "homology_id": "a1",
+              "start": 8,
+              "end": 9,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "ca2",
+              "homology_id": "a2",
+              "start": 18,
+              "end": 19,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "cb0",
+              "homology_id": "b0",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "cb1",
+              "homology_id": "b1",
+              "start": 12,
+              "end": 13,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "cb2",
+              "homology_id": "b2",
+              "start": 16,
+              "end": 17,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "cc0",
+              "homology_id": "c0",
+              "start": 6,
+              "end": 7,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "cc1",
+              "homology_id": "c1",
+              "start": 10,
+              "end": 11,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "cc2",
+              "homology_id": "c2",
+              "start": 14,
+              "end": 15,
+              "strand": "+"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "chromosomes": [
+        {
+          "id": "a",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "la0",
+              "homology_id": "a0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "la1",
+              "homology_id": "a1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "la2",
+              "homology_id": "a2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "b",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "lb0",
+              "homology_id": "b0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "lb1",
+              "homology_id": "b1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "lb2",
+              "homology_id": "b2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "c",
+          "length": 100,
+          "blocks": [
+            {
+              "occurrence_id": "lc0",
+              "homology_id": "c0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "lc1",
+              "homology_id": "c1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "lc2",
+              "homology_id": "c2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

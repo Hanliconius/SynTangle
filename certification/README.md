@@ -21,6 +21,11 @@ Python 3.10+; no Python dependencies. No images or large benchmarks are generate
 * [Structural lower-bound theorems](STRUCTURAL_THEOREM.md), exact cycle witnesses,
   and a constructive graph class. `structural.py` can certify positive optima
   without enumeration when a candidate attains its independently computed bound.
+* [Fusion/fission-shaped exact families](FUSION_FISSION_THEOREMS.md): a necessary
+  and sufficient condition for pairwise-bound attainment in two-row star forests,
+  closed-form two-partner cases, a three-partner counterexample, and a bounded
+  partner-count exact recurrence. `fusion_theorem.py` constructs these layouts
+  using integer arithmetic; this does not change the production optimizer.
 
 ## What is not yet implemented
 
