@@ -1,0 +1,128 @@
+[
+  {
+    "example": "species3_order_conflict",
+    "status": "EXACT_SPECIES_CHAIN_RECURRENCE",
+    "upper": 1,
+    "lower": 1,
+    "row_state_counts": [
+      2,
+      48,
+      2
+    ],
+    "transitions": 192,
+    "interface_minimum_sum": 0,
+    "compatibility_penalty": 1
+  },
+  {
+    "example": "species4_order_conflict",
+    "status": "EXACT_SPECIES_CHAIN_RECURRENCE",
+    "upper": 1,
+    "lower": 1,
+    "row_state_counts": [
+      2,
+      48,
+      2,
+      2
+    ],
+    "transitions": 196,
+    "interface_minimum_sum": 0,
+    "compatibility_penalty": 1
+  },
+  {
+    "example": "species3_orientation_conflict",
+    "status": "EXACT_SPECIES_CHAIN_RECURRENCE",
+    "upper": 1,
+    "lower": 1,
+    "row_state_counts": [
+      2,
+      8,
+      2
+    ],
+    "transitions": 32,
+    "interface_minimum_sum": 0,
+    "compatibility_penalty": 1
+  },
+  {
+    "example": "fusion_100_partners",
+    "status": "EXACT_FUSION_STAR_CONSTRUCTION",
+    "upper": 13,
+    "lower": 13,
+    "partners": 100,
+    "largest_cyclic_group": 3,
+    "subset_entries": 202
+  },
+  {
+    "example": "fifty_species_width_one",
+    "upper": 72,
+    "row_state_counts": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "transitions": 196
+  },
+  {
+    "example": "species4_wide_endpoints",
+    "upper": 27,
+    "lower": 27,
+    "chromosomes": 202,
+    "row_widths": [
+      100,
+      1,
+      1,
+      100
+    ],
+    "piece_optima": [
+      13,
+      1,
+      13
+    ]
+  }
+]

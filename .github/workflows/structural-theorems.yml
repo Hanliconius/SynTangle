@@ -1,0 +1,22 @@
+name: Structural theorem examples
+on:
+  push:
+    paths: ['certification/**', '.github/workflows/structural-theorems.yml']
+  pull_request:
+    paths: ['certification/**', '.github/workflows/structural-theorems.yml']
+jobs:
+  exact-constructions:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Exact structural constructions and counterexamples
+        run: |
+          python -m unittest discover -s certification -p 'test_fusion*.py' -v
+          python -m unittest discover -s certification -p 'test_species_chain.py' -v
+          python -m unittest discover -s certification -p 'test_structural.py' -v

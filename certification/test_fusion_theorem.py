@@ -45,9 +45,9 @@ class FusionTheoremTests(unittest.TestCase):
         item = result['components'][0]
         self.assertEqual(item['pair_lower'], 12)
         self.assertEqual(result['upper'], 13)
-        self.assertEqual(item['method'], 'EXACT_SUBSET_RECURRENCE')
+        self.assertEqual(item['method'], 'SCC_SUBSET_RECURRENCE')
         declined = construct(Evidence(star({'a': [2, 4, 9], 'b': [1, 6, 8], 'c': [3, 5, 7]})), 2)
-        self.assertEqual(declined['status'], 'UNRESOLVED_CYCLIC_DEGREE_LIMIT')
+        self.assertEqual(declined['status'], 'UNRESOLVED_CYCLIC_COMPONENT_LIMIT')
 
     def test_tied_midpoints_are_not_crossings(self):
         result = self.check_exhaustive(star({'a': [1, 3], 'b': [1, 2]}))

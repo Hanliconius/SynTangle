@@ -26,6 +26,12 @@ Python 3.10+; no Python dependencies. No images or large benchmarks are generate
   closed-form two-partner cases, a three-partner counterexample, and a bounded
   partner-count exact recurrence. `fusion_theorem.py` constructs these layouts
   using integer arithmetic; this does not change the production optimizer.
+* [Species-count and element-count extensions](SPECIES_AND_SIZE_THEOREMS.md):
+  exact row-state recurrence for any number of species at bounded row width,
+  lossless singleton-row separators, explicit three/four-species compatibility
+  obstructions, and fusion stars with bounded cyclic preference groups even
+  when total partner count is large. `species_chain.py` and the SCC extension
+  of `fusion_theorem.py` are standard-library experimental constructions.
 
 ## What is not yet implemented
 

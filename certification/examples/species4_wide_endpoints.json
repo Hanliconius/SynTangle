@@ -1,0 +1,4248 @@
+{
+  "fixture_version": 1,
+  "id": "wide_endpoints",
+  "species": [
+    {
+      "id": "A",
+      "chromosomes": [
+        {
+          "id": "a",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftla0",
+              "homology_id": "lefta0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftla1",
+              "homology_id": "lefta1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftla2",
+              "homology_id": "lefta2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "b",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlb0",
+              "homology_id": "leftb0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftlb1",
+              "homology_id": "leftb1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftlb2",
+              "homology_id": "leftb2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "c",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlc0",
+              "homology_id": "leftc0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftlc1",
+              "homology_id": "leftc1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftlc2",
+              "homology_id": "leftc2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z000",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0000",
+              "homology_id": "leftz0000",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z001",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0010",
+              "homology_id": "leftz0010",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z002",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0020",
+              "homology_id": "leftz0020",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z003",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0030",
+              "homology_id": "leftz0030",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z004",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0040",
+              "homology_id": "leftz0040",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z005",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0050",
+              "homology_id": "leftz0050",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z006",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0060",
+              "homology_id": "leftz0060",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z007",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0070",
+              "homology_id": "leftz0070",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z008",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0080",
+              "homology_id": "leftz0080",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z009",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0090",
+              "homology_id": "leftz0090",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z010",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0100",
+              "homology_id": "leftz0100",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z011",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0110",
+              "homology_id": "leftz0110",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z012",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0120",
+              "homology_id": "leftz0120",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z013",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0130",
+              "homology_id": "leftz0130",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z014",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0140",
+              "homology_id": "leftz0140",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z015",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0150",
+              "homology_id": "leftz0150",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z016",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0160",
+              "homology_id": "leftz0160",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z017",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0170",
+              "homology_id": "leftz0170",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z018",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0180",
+              "homology_id": "leftz0180",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z019",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0190",
+              "homology_id": "leftz0190",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z020",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0200",
+              "homology_id": "leftz0200",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z021",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0210",
+              "homology_id": "leftz0210",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z022",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0220",
+              "homology_id": "leftz0220",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z023",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0230",
+              "homology_id": "leftz0230",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z024",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0240",
+              "homology_id": "leftz0240",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z025",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0250",
+              "homology_id": "leftz0250",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z026",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0260",
+              "homology_id": "leftz0260",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z027",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0270",
+              "homology_id": "leftz0270",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z028",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0280",
+              "homology_id": "leftz0280",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z029",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0290",
+              "homology_id": "leftz0290",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z030",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0300",
+              "homology_id": "leftz0300",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z031",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0310",
+              "homology_id": "leftz0310",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z032",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0320",
+              "homology_id": "leftz0320",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z033",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0330",
+              "homology_id": "leftz0330",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z034",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0340",
+              "homology_id": "leftz0340",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z035",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0350",
+              "homology_id": "leftz0350",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z036",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0360",
+              "homology_id": "leftz0360",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z037",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0370",
+              "homology_id": "leftz0370",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z038",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0380",
+              "homology_id": "leftz0380",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z039",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0390",
+              "homology_id": "leftz0390",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z040",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0400",
+              "homology_id": "leftz0400",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z041",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0410",
+              "homology_id": "leftz0410",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z042",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0420",
+              "homology_id": "leftz0420",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z043",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0430",
+              "homology_id": "leftz0430",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z044",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0440",
+              "homology_id": "leftz0440",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z045",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0450",
+              "homology_id": "leftz0450",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z046",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0460",
+              "homology_id": "leftz0460",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z047",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0470",
+              "homology_id": "leftz0470",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z048",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0480",
+              "homology_id": "leftz0480",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z049",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0490",
+              "homology_id": "leftz0490",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z050",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0500",
+              "homology_id": "leftz0500",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z051",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0510",
+              "homology_id": "leftz0510",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z052",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0520",
+              "homology_id": "leftz0520",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z053",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0530",
+              "homology_id": "leftz0530",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z054",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0540",
+              "homology_id": "leftz0540",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z055",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0550",
+              "homology_id": "leftz0550",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z056",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0560",
+              "homology_id": "leftz0560",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z057",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0570",
+              "homology_id": "leftz0570",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z058",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0580",
+              "homology_id": "leftz0580",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z059",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0590",
+              "homology_id": "leftz0590",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z060",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0600",
+              "homology_id": "leftz0600",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z061",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0610",
+              "homology_id": "leftz0610",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z062",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0620",
+              "homology_id": "leftz0620",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z063",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0630",
+              "homology_id": "leftz0630",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z064",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0640",
+              "homology_id": "leftz0640",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z065",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0650",
+              "homology_id": "leftz0650",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z066",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0660",
+              "homology_id": "leftz0660",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z067",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0670",
+              "homology_id": "leftz0670",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z068",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0680",
+              "homology_id": "leftz0680",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z069",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0690",
+              "homology_id": "leftz0690",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z070",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0700",
+              "homology_id": "leftz0700",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z071",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0710",
+              "homology_id": "leftz0710",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z072",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0720",
+              "homology_id": "leftz0720",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z073",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0730",
+              "homology_id": "leftz0730",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z074",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0740",
+              "homology_id": "leftz0740",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z075",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0750",
+              "homology_id": "leftz0750",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z076",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0760",
+              "homology_id": "leftz0760",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z077",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0770",
+              "homology_id": "leftz0770",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z078",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0780",
+              "homology_id": "leftz0780",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z079",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0790",
+              "homology_id": "leftz0790",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z080",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0800",
+              "homology_id": "leftz0800",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z081",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0810",
+              "homology_id": "leftz0810",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z082",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0820",
+              "homology_id": "leftz0820",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z083",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0830",
+              "homology_id": "leftz0830",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z084",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0840",
+              "homology_id": "leftz0840",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z085",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0850",
+              "homology_id": "leftz0850",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z086",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0860",
+              "homology_id": "leftz0860",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z087",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0870",
+              "homology_id": "leftz0870",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z088",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0880",
+              "homology_id": "leftz0880",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z089",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0890",
+              "homology_id": "leftz0890",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z090",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0900",
+              "homology_id": "leftz0900",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z091",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0910",
+              "homology_id": "leftz0910",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z092",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0920",
+              "homology_id": "leftz0920",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z093",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0930",
+              "homology_id": "leftz0930",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z094",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0940",
+              "homology_id": "leftz0940",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z095",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0950",
+              "homology_id": "leftz0950",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z096",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftlz0960",
+              "homology_id": "leftz0960",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "chromosomes": [
+        {
+          "id": "center",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "leftca0",
+              "homology_id": "lefta0",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftca1",
+              "homology_id": "lefta1",
+              "start": 8,
+              "end": 9,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftca2",
+              "homology_id": "lefta2",
+              "start": 18,
+              "end": 19,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcb0",
+              "homology_id": "leftb0",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcb1",
+              "homology_id": "leftb1",
+              "start": 12,
+              "end": 13,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcb2",
+              "homology_id": "leftb2",
+              "start": 16,
+              "end": 17,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcc0",
+              "homology_id": "leftc0",
+              "start": 6,
+              "end": 7,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcc1",
+              "homology_id": "leftc1",
+              "start": 10,
+              "end": 11,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcc2",
+              "homology_id": "leftc2",
+              "start": 14,
+              "end": 15,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0000",
+              "homology_id": "leftz0000",
+              "start": 20,
+              "end": 21,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0010",
+              "homology_id": "leftz0010",
+              "start": 22,
+              "end": 23,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0020",
+              "homology_id": "leftz0020",
+              "start": 24,
+              "end": 25,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0030",
+              "homology_id": "leftz0030",
+              "start": 26,
+              "end": 27,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0040",
+              "homology_id": "leftz0040",
+              "start": 28,
+              "end": 29,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0050",
+              "homology_id": "leftz0050",
+              "start": 30,
+              "end": 31,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0060",
+              "homology_id": "leftz0060",
+              "start": 32,
+              "end": 33,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0070",
+              "homology_id": "leftz0070",
+              "start": 34,
+              "end": 35,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0080",
+              "homology_id": "leftz0080",
+              "start": 36,
+              "end": 37,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0090",
+              "homology_id": "leftz0090",
+              "start": 38,
+              "end": 39,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0100",
+              "homology_id": "leftz0100",
+              "start": 40,
+              "end": 41,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0110",
+              "homology_id": "leftz0110",
+              "start": 42,
+              "end": 43,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0120",
+              "homology_id": "leftz0120",
+              "start": 44,
+              "end": 45,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0130",
+              "homology_id": "leftz0130",
+              "start": 46,
+              "end": 47,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0140",
+              "homology_id": "leftz0140",
+              "start": 48,
+              "end": 49,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0150",
+              "homology_id": "leftz0150",
+              "start": 50,
+              "end": 51,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0160",
+              "homology_id": "leftz0160",
+              "start": 52,
+              "end": 53,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0170",
+              "homology_id": "leftz0170",
+              "start": 54,
+              "end": 55,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0180",
+              "homology_id": "leftz0180",
+              "start": 56,
+              "end": 57,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0190",
+              "homology_id": "leftz0190",
+              "start": 58,
+              "end": 59,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0200",
+              "homology_id": "leftz0200",
+              "start": 60,
+              "end": 61,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0210",
+              "homology_id": "leftz0210",
+              "start": 62,
+              "end": 63,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0220",
+              "homology_id": "leftz0220",
+              "start": 64,
+              "end": 65,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0230",
+              "homology_id": "leftz0230",
+              "start": 66,
+              "end": 67,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0240",
+              "homology_id": "leftz0240",
+              "start": 68,
+              "end": 69,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0250",
+              "homology_id": "leftz0250",
+              "start": 70,
+              "end": 71,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0260",
+              "homology_id": "leftz0260",
+              "start": 72,
+              "end": 73,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0270",
+              "homology_id": "leftz0270",
+              "start": 74,
+              "end": 75,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0280",
+              "homology_id": "leftz0280",
+              "start": 76,
+              "end": 77,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0290",
+              "homology_id": "leftz0290",
+              "start": 78,
+              "end": 79,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0300",
+              "homology_id": "leftz0300",
+              "start": 80,
+              "end": 81,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0310",
+              "homology_id": "leftz0310",
+              "start": 82,
+              "end": 83,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0320",
+              "homology_id": "leftz0320",
+              "start": 84,
+              "end": 85,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0330",
+              "homology_id": "leftz0330",
+              "start": 86,
+              "end": 87,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0340",
+              "homology_id": "leftz0340",
+              "start": 88,
+              "end": 89,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0350",
+              "homology_id": "leftz0350",
+              "start": 90,
+              "end": 91,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0360",
+              "homology_id": "leftz0360",
+              "start": 92,
+              "end": 93,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0370",
+              "homology_id": "leftz0370",
+              "start": 94,
+              "end": 95,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0380",
+              "homology_id": "leftz0380",
+              "start": 96,
+              "end": 97,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0390",
+              "homology_id": "leftz0390",
+              "start": 98,
+              "end": 99,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0400",
+              "homology_id": "leftz0400",
+              "start": 100,
+              "end": 101,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0410",
+              "homology_id": "leftz0410",
+              "start": 102,
+              "end": 103,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0420",
+              "homology_id": "leftz0420",
+              "start": 104,
+              "end": 105,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0430",
+              "homology_id": "leftz0430",
+              "start": 106,
+              "end": 107,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0440",
+              "homology_id": "leftz0440",
+              "start": 108,
+              "end": 109,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0450",
+              "homology_id": "leftz0450",
+              "start": 110,
+              "end": 111,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0460",
+              "homology_id": "leftz0460",
+              "start": 112,
+              "end": 113,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0470",
+              "homology_id": "leftz0470",
+              "start": 114,
+              "end": 115,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0480",
+              "homology_id": "leftz0480",
+              "start": 116,
+              "end": 117,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0490",
+              "homology_id": "leftz0490",
+              "start": 118,
+              "end": 119,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0500",
+              "homology_id": "leftz0500",
+              "start": 120,
+              "end": 121,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0510",
+              "homology_id": "leftz0510",
+              "start": 122,
+              "end": 123,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0520",
+              "homology_id": "leftz0520",
+              "start": 124,
+              "end": 125,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0530",
+              "homology_id": "leftz0530",
+              "start": 126,
+              "end": 127,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0540",
+              "homology_id": "leftz0540",
+              "start": 128,
+              "end": 129,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0550",
+              "homology_id": "leftz0550",
+              "start": 130,
+              "end": 131,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0560",
+              "homology_id": "leftz0560",
+              "start": 132,
+              "end": 133,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0570",
+              "homology_id": "leftz0570",
+              "start": 134,
+              "end": 135,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0580",
+              "homology_id": "leftz0580",
+              "start": 136,
+              "end": 137,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0590",
+              "homology_id": "leftz0590",
+              "start": 138,
+              "end": 139,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0600",
+              "homology_id": "leftz0600",
+              "start": 140,
+              "end": 141,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0610",
+              "homology_id": "leftz0610",
+              "start": 142,
+              "end": 143,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0620",
+              "homology_id": "leftz0620",
+              "start": 144,
+              "end": 145,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0630",
+              "homology_id": "leftz0630",
+              "start": 146,
+              "end": 147,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0640",
+              "homology_id": "leftz0640",
+              "start": 148,
+              "end": 149,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0650",
+              "homology_id": "leftz0650",
+              "start": 150,
+              "end": 151,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0660",
+              "homology_id": "leftz0660",
+              "start": 152,
+              "end": 153,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0670",
+              "homology_id": "leftz0670",
+              "start": 154,
+              "end": 155,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0680",
+              "homology_id": "leftz0680",
+              "start": 156,
+              "end": 157,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0690",
+              "homology_id": "leftz0690",
+              "start": 158,
+              "end": 159,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0700",
+              "homology_id": "leftz0700",
+              "start": 160,
+              "end": 161,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0710",
+              "homology_id": "leftz0710",
+              "start": 162,
+              "end": 163,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0720",
+              "homology_id": "leftz0720",
+              "start": 164,
+              "end": 165,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0730",
+              "homology_id": "leftz0730",
+              "start": 166,
+              "end": 167,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0740",
+              "homology_id": "leftz0740",
+              "start": 168,
+              "end": 169,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0750",
+              "homology_id": "leftz0750",
+              "start": 170,
+              "end": 171,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0760",
+              "homology_id": "leftz0760",
+              "start": 172,
+              "end": 173,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0770",
+              "homology_id": "leftz0770",
+              "start": 174,
+              "end": 175,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0780",
+              "homology_id": "leftz0780",
+              "start": 176,
+              "end": 177,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0790",
+              "homology_id": "leftz0790",
+              "start": 178,
+              "end": 179,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0800",
+              "homology_id": "leftz0800",
+              "start": 180,
+              "end": 181,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0810",
+              "homology_id": "leftz0810",
+              "start": 182,
+              "end": 183,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0820",
+              "homology_id": "leftz0820",
+              "start": 184,
+              "end": 185,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0830",
+              "homology_id": "leftz0830",
+              "start": 186,
+              "end": 187,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0840",
+              "homology_id": "leftz0840",
+              "start": 188,
+              "end": 189,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0850",
+              "homology_id": "leftz0850",
+              "start": 190,
+              "end": 191,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0860",
+              "homology_id": "leftz0860",
+              "start": 192,
+              "end": 193,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0870",
+              "homology_id": "leftz0870",
+              "start": 194,
+              "end": 195,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0880",
+              "homology_id": "leftz0880",
+              "start": 196,
+              "end": 197,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0890",
+              "homology_id": "leftz0890",
+              "start": 198,
+              "end": 199,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0900",
+              "homology_id": "leftz0900",
+              "start": 200,
+              "end": 201,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0910",
+              "homology_id": "leftz0910",
+              "start": 202,
+              "end": 203,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0920",
+              "homology_id": "leftz0920",
+              "start": 204,
+              "end": 205,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0930",
+              "homology_id": "leftz0930",
+              "start": 206,
+              "end": 207,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0940",
+              "homology_id": "leftz0940",
+              "start": 208,
+              "end": 209,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0950",
+              "homology_id": "leftz0950",
+              "start": 210,
+              "end": 211,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "leftcz0960",
+              "homology_id": "leftz0960",
+              "start": 212,
+              "end": 213,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "B0",
+              "homology_id": "middle0",
+              "start": 400,
+              "end": 401,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "B1",
+              "homology_id": "middle1",
+              "start": 410,
+              "end": 411,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "B2",
+              "homology_id": "middle2",
+              "start": 420,
+              "end": 421,
+              "strand": "+"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "chromosomes": [
+        {
+          "id": "center",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightca0",
+              "homology_id": "righta0",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightca1",
+              "homology_id": "righta1",
+              "start": 8,
+              "end": 9,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightca2",
+              "homology_id": "righta2",
+              "start": 18,
+              "end": 19,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcb0",
+              "homology_id": "rightb0",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcb1",
+              "homology_id": "rightb1",
+              "start": 12,
+              "end": 13,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcb2",
+              "homology_id": "rightb2",
+              "start": 16,
+              "end": 17,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcc0",
+              "homology_id": "rightc0",
+              "start": 6,
+              "end": 7,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcc1",
+              "homology_id": "rightc1",
+              "start": 10,
+              "end": 11,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcc2",
+              "homology_id": "rightc2",
+              "start": 14,
+              "end": 15,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0000",
+              "homology_id": "rightz0000",
+              "start": 20,
+              "end": 21,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0010",
+              "homology_id": "rightz0010",
+              "start": 22,
+              "end": 23,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0020",
+              "homology_id": "rightz0020",
+              "start": 24,
+              "end": 25,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0030",
+              "homology_id": "rightz0030",
+              "start": 26,
+              "end": 27,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0040",
+              "homology_id": "rightz0040",
+              "start": 28,
+              "end": 29,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0050",
+              "homology_id": "rightz0050",
+              "start": 30,
+              "end": 31,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0060",
+              "homology_id": "rightz0060",
+              "start": 32,
+              "end": 33,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0070",
+              "homology_id": "rightz0070",
+              "start": 34,
+              "end": 35,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0080",
+              "homology_id": "rightz0080",
+              "start": 36,
+              "end": 37,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0090",
+              "homology_id": "rightz0090",
+              "start": 38,
+              "end": 39,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0100",
+              "homology_id": "rightz0100",
+              "start": 40,
+              "end": 41,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0110",
+              "homology_id": "rightz0110",
+              "start": 42,
+              "end": 43,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0120",
+              "homology_id": "rightz0120",
+              "start": 44,
+              "end": 45,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0130",
+              "homology_id": "rightz0130",
+              "start": 46,
+              "end": 47,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0140",
+              "homology_id": "rightz0140",
+              "start": 48,
+              "end": 49,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0150",
+              "homology_id": "rightz0150",
+              "start": 50,
+              "end": 51,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0160",
+              "homology_id": "rightz0160",
+              "start": 52,
+              "end": 53,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0170",
+              "homology_id": "rightz0170",
+              "start": 54,
+              "end": 55,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0180",
+              "homology_id": "rightz0180",
+              "start": 56,
+              "end": 57,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0190",
+              "homology_id": "rightz0190",
+              "start": 58,
+              "end": 59,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0200",
+              "homology_id": "rightz0200",
+              "start": 60,
+              "end": 61,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0210",
+              "homology_id": "rightz0210",
+              "start": 62,
+              "end": 63,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0220",
+              "homology_id": "rightz0220",
+              "start": 64,
+              "end": 65,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0230",
+              "homology_id": "rightz0230",
+              "start": 66,
+              "end": 67,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0240",
+              "homology_id": "rightz0240",
+              "start": 68,
+              "end": 69,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0250",
+              "homology_id": "rightz0250",
+              "start": 70,
+              "end": 71,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0260",
+              "homology_id": "rightz0260",
+              "start": 72,
+              "end": 73,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0270",
+              "homology_id": "rightz0270",
+              "start": 74,
+              "end": 75,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0280",
+              "homology_id": "rightz0280",
+              "start": 76,
+              "end": 77,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0290",
+              "homology_id": "rightz0290",
+              "start": 78,
+              "end": 79,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0300",
+              "homology_id": "rightz0300",
+              "start": 80,
+              "end": 81,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0310",
+              "homology_id": "rightz0310",
+              "start": 82,
+              "end": 83,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0320",
+              "homology_id": "rightz0320",
+              "start": 84,
+              "end": 85,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0330",
+              "homology_id": "rightz0330",
+              "start": 86,
+              "end": 87,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0340",
+              "homology_id": "rightz0340",
+              "start": 88,
+              "end": 89,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0350",
+              "homology_id": "rightz0350",
+              "start": 90,
+              "end": 91,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0360",
+              "homology_id": "rightz0360",
+              "start": 92,
+              "end": 93,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0370",
+              "homology_id": "rightz0370",
+              "start": 94,
+              "end": 95,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0380",
+              "homology_id": "rightz0380",
+              "start": 96,
+              "end": 97,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0390",
+              "homology_id": "rightz0390",
+              "start": 98,
+              "end": 99,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0400",
+              "homology_id": "rightz0400",
+              "start": 100,
+              "end": 101,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0410",
+              "homology_id": "rightz0410",
+              "start": 102,
+              "end": 103,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0420",
+              "homology_id": "rightz0420",
+              "start": 104,
+              "end": 105,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0430",
+              "homology_id": "rightz0430",
+              "start": 106,
+              "end": 107,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0440",
+              "homology_id": "rightz0440",
+              "start": 108,
+              "end": 109,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0450",
+              "homology_id": "rightz0450",
+              "start": 110,
+              "end": 111,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0460",
+              "homology_id": "rightz0460",
+              "start": 112,
+              "end": 113,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0470",
+              "homology_id": "rightz0470",
+              "start": 114,
+              "end": 115,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0480",
+              "homology_id": "rightz0480",
+              "start": 116,
+              "end": 117,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0490",
+              "homology_id": "rightz0490",
+              "start": 118,
+              "end": 119,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0500",
+              "homology_id": "rightz0500",
+              "start": 120,
+              "end": 121,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0510",
+              "homology_id": "rightz0510",
+              "start": 122,
+              "end": 123,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0520",
+              "homology_id": "rightz0520",
+              "start": 124,
+              "end": 125,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0530",
+              "homology_id": "rightz0530",
+              "start": 126,
+              "end": 127,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0540",
+              "homology_id": "rightz0540",
+              "start": 128,
+              "end": 129,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0550",
+              "homology_id": "rightz0550",
+              "start": 130,
+              "end": 131,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0560",
+              "homology_id": "rightz0560",
+              "start": 132,
+              "end": 133,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0570",
+              "homology_id": "rightz0570",
+              "start": 134,
+              "end": 135,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0580",
+              "homology_id": "rightz0580",
+              "start": 136,
+              "end": 137,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0590",
+              "homology_id": "rightz0590",
+              "start": 138,
+              "end": 139,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0600",
+              "homology_id": "rightz0600",
+              "start": 140,
+              "end": 141,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0610",
+              "homology_id": "rightz0610",
+              "start": 142,
+              "end": 143,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0620",
+              "homology_id": "rightz0620",
+              "start": 144,
+              "end": 145,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0630",
+              "homology_id": "rightz0630",
+              "start": 146,
+              "end": 147,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0640",
+              "homology_id": "rightz0640",
+              "start": 148,
+              "end": 149,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0650",
+              "homology_id": "rightz0650",
+              "start": 150,
+              "end": 151,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0660",
+              "homology_id": "rightz0660",
+              "start": 152,
+              "end": 153,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0670",
+              "homology_id": "rightz0670",
+              "start": 154,
+              "end": 155,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0680",
+              "homology_id": "rightz0680",
+              "start": 156,
+              "end": 157,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0690",
+              "homology_id": "rightz0690",
+              "start": 158,
+              "end": 159,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0700",
+              "homology_id": "rightz0700",
+              "start": 160,
+              "end": 161,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0710",
+              "homology_id": "rightz0710",
+              "start": 162,
+              "end": 163,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0720",
+              "homology_id": "rightz0720",
+              "start": 164,
+              "end": 165,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0730",
+              "homology_id": "rightz0730",
+              "start": 166,
+              "end": 167,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0740",
+              "homology_id": "rightz0740",
+              "start": 168,
+              "end": 169,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0750",
+              "homology_id": "rightz0750",
+              "start": 170,
+              "end": 171,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0760",
+              "homology_id": "rightz0760",
+              "start": 172,
+              "end": 173,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0770",
+              "homology_id": "rightz0770",
+              "start": 174,
+              "end": 175,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0780",
+              "homology_id": "rightz0780",
+              "start": 176,
+              "end": 177,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0790",
+              "homology_id": "rightz0790",
+              "start": 178,
+              "end": 179,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0800",
+              "homology_id": "rightz0800",
+              "start": 180,
+              "end": 181,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0810",
+              "homology_id": "rightz0810",
+              "start": 182,
+              "end": 183,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0820",
+              "homology_id": "rightz0820",
+              "start": 184,
+              "end": 185,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0830",
+              "homology_id": "rightz0830",
+              "start": 186,
+              "end": 187,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0840",
+              "homology_id": "rightz0840",
+              "start": 188,
+              "end": 189,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0850",
+              "homology_id": "rightz0850",
+              "start": 190,
+              "end": 191,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0860",
+              "homology_id": "rightz0860",
+              "start": 192,
+              "end": 193,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0870",
+              "homology_id": "rightz0870",
+              "start": 194,
+              "end": 195,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0880",
+              "homology_id": "rightz0880",
+              "start": 196,
+              "end": 197,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0890",
+              "homology_id": "rightz0890",
+              "start": 198,
+              "end": 199,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0900",
+              "homology_id": "rightz0900",
+              "start": 200,
+              "end": 201,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0910",
+              "homology_id": "rightz0910",
+              "start": 202,
+              "end": 203,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0920",
+              "homology_id": "rightz0920",
+              "start": 204,
+              "end": 205,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0930",
+              "homology_id": "rightz0930",
+              "start": 206,
+              "end": 207,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0940",
+              "homology_id": "rightz0940",
+              "start": 208,
+              "end": 209,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0950",
+              "homology_id": "rightz0950",
+              "start": 210,
+              "end": 211,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightcz0960",
+              "homology_id": "rightz0960",
+              "start": 212,
+              "end": 213,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "C0",
+              "homology_id": "middle0",
+              "start": 410,
+              "end": 411,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "C1",
+              "homology_id": "middle1",
+              "start": 420,
+              "end": 421,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "C2",
+              "homology_id": "middle2",
+              "start": 400,
+              "end": 401,
+              "strand": "+"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "chromosomes": [
+        {
+          "id": "a",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightla0",
+              "homology_id": "righta0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightla1",
+              "homology_id": "righta1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightla2",
+              "homology_id": "righta2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "b",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlb0",
+              "homology_id": "rightb0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightlb1",
+              "homology_id": "rightb1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightlb2",
+              "homology_id": "rightb2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "c",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlc0",
+              "homology_id": "rightc0",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightlc1",
+              "homology_id": "rightc1",
+              "start": 2,
+              "end": 3,
+              "strand": "+"
+            },
+            {
+              "occurrence_id": "rightlc2",
+              "homology_id": "rightc2",
+              "start": 4,
+              "end": 5,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z000",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0000",
+              "homology_id": "rightz0000",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z001",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0010",
+              "homology_id": "rightz0010",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z002",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0020",
+              "homology_id": "rightz0020",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z003",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0030",
+              "homology_id": "rightz0030",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z004",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0040",
+              "homology_id": "rightz0040",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z005",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0050",
+              "homology_id": "rightz0050",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z006",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0060",
+              "homology_id": "rightz0060",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z007",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0070",
+              "homology_id": "rightz0070",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z008",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0080",
+              "homology_id": "rightz0080",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z009",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0090",
+              "homology_id": "rightz0090",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z010",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0100",
+              "homology_id": "rightz0100",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z011",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0110",
+              "homology_id": "rightz0110",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z012",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0120",
+              "homology_id": "rightz0120",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z013",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0130",
+              "homology_id": "rightz0130",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z014",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0140",
+              "homology_id": "rightz0140",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z015",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0150",
+              "homology_id": "rightz0150",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z016",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0160",
+              "homology_id": "rightz0160",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z017",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0170",
+              "homology_id": "rightz0170",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z018",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0180",
+              "homology_id": "rightz0180",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z019",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0190",
+              "homology_id": "rightz0190",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z020",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0200",
+              "homology_id": "rightz0200",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z021",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0210",
+              "homology_id": "rightz0210",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z022",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0220",
+              "homology_id": "rightz0220",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z023",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0230",
+              "homology_id": "rightz0230",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z024",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0240",
+              "homology_id": "rightz0240",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z025",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0250",
+              "homology_id": "rightz0250",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z026",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0260",
+              "homology_id": "rightz0260",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z027",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0270",
+              "homology_id": "rightz0270",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z028",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0280",
+              "homology_id": "rightz0280",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z029",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0290",
+              "homology_id": "rightz0290",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z030",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0300",
+              "homology_id": "rightz0300",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z031",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0310",
+              "homology_id": "rightz0310",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z032",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0320",
+              "homology_id": "rightz0320",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z033",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0330",
+              "homology_id": "rightz0330",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z034",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0340",
+              "homology_id": "rightz0340",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z035",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0350",
+              "homology_id": "rightz0350",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z036",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0360",
+              "homology_id": "rightz0360",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z037",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0370",
+              "homology_id": "rightz0370",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z038",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0380",
+              "homology_id": "rightz0380",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z039",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0390",
+              "homology_id": "rightz0390",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z040",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0400",
+              "homology_id": "rightz0400",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z041",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0410",
+              "homology_id": "rightz0410",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z042",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0420",
+              "homology_id": "rightz0420",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z043",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0430",
+              "homology_id": "rightz0430",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z044",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0440",
+              "homology_id": "rightz0440",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z045",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0450",
+              "homology_id": "rightz0450",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z046",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0460",
+              "homology_id": "rightz0460",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z047",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0470",
+              "homology_id": "rightz0470",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z048",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0480",
+              "homology_id": "rightz0480",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z049",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0490",
+              "homology_id": "rightz0490",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z050",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0500",
+              "homology_id": "rightz0500",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z051",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0510",
+              "homology_id": "rightz0510",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z052",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0520",
+              "homology_id": "rightz0520",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z053",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0530",
+              "homology_id": "rightz0530",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z054",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0540",
+              "homology_id": "rightz0540",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z055",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0550",
+              "homology_id": "rightz0550",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z056",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0560",
+              "homology_id": "rightz0560",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z057",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0570",
+              "homology_id": "rightz0570",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z058",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0580",
+              "homology_id": "rightz0580",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z059",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0590",
+              "homology_id": "rightz0590",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z060",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0600",
+              "homology_id": "rightz0600",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z061",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0610",
+              "homology_id": "rightz0610",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z062",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0620",
+              "homology_id": "rightz0620",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z063",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0630",
+              "homology_id": "rightz0630",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z064",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0640",
+              "homology_id": "rightz0640",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z065",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0650",
+              "homology_id": "rightz0650",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z066",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0660",
+              "homology_id": "rightz0660",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z067",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0670",
+              "homology_id": "rightz0670",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z068",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0680",
+              "homology_id": "rightz0680",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z069",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0690",
+              "homology_id": "rightz0690",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z070",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0700",
+              "homology_id": "rightz0700",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z071",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0710",
+              "homology_id": "rightz0710",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z072",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0720",
+              "homology_id": "rightz0720",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z073",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0730",
+              "homology_id": "rightz0730",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z074",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0740",
+              "homology_id": "rightz0740",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z075",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0750",
+              "homology_id": "rightz0750",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z076",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0760",
+              "homology_id": "rightz0760",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z077",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0770",
+              "homology_id": "rightz0770",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z078",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0780",
+              "homology_id": "rightz0780",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z079",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0790",
+              "homology_id": "rightz0790",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z080",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0800",
+              "homology_id": "rightz0800",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z081",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0810",
+              "homology_id": "rightz0810",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z082",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0820",
+              "homology_id": "rightz0820",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z083",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0830",
+              "homology_id": "rightz0830",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z084",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0840",
+              "homology_id": "rightz0840",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z085",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0850",
+              "homology_id": "rightz0850",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z086",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0860",
+              "homology_id": "rightz0860",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z087",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0870",
+              "homology_id": "rightz0870",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z088",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0880",
+              "homology_id": "rightz0880",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z089",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0890",
+              "homology_id": "rightz0890",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z090",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0900",
+              "homology_id": "rightz0900",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z091",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0910",
+              "homology_id": "rightz0910",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z092",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0920",
+              "homology_id": "rightz0920",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z093",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0930",
+              "homology_id": "rightz0930",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z094",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0940",
+              "homology_id": "rightz0940",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z095",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0950",
+              "homology_id": "rightz0950",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        },
+        {
+          "id": "z096",
+          "length": 1000,
+          "blocks": [
+            {
+              "occurrence_id": "rightlz0960",
+              "homology_id": "rightz0960",
+              "start": 0,
+              "end": 1,
+              "strand": "+"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

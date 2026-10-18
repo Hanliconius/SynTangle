@@ -6,6 +6,12 @@ formalized in a proof assistant. These are applications of standard ordering and
 dynamic-programming arguments; no novelty in those general techniques is claimed.
 This work belongs to the separate certification experiment, not production.
 
+Continuation: [species-count and element-count extensions](SPECIES_AND_SIZE_THEOREMS.md)
+prove a stronger cap based on cyclic preference groups, plus multispecies
+recurrences and singleton separators. The implementation's `--max-cyclic-size`
+now caps an SCC rather than the total number of partners (`--max-degree` is a
+compatibility alias).
+
 ## Scope and definitions
 
 Use the exact unweighted strict block-midpoint crossing model in

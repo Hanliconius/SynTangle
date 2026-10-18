@@ -106,6 +106,46 @@ def _subset_dp(costs):
     return order[::-1], table
 
 
+def _ordered_sccs(costs):
+    """Kosaraju's algorithm; components returned in preference topological order."""
+    n = len(costs)
+    forward = [[j for j in range(n) if costs[i][j] < costs[j][i]] for i in range(n)]
+    backward = [[] for _ in range(n)]
+    for i, neighbors in enumerate(forward):
+        for j in neighbors:
+            backward[j].append(i)
+    seen, finish = set(), []
+    for root in range(n):
+        if root in seen:
+            continue
+        seen.add(root)
+        stack = [(root, iter(forward[root]))]
+        while stack:
+            v, neighbors = stack[-1]
+            u = next(neighbors, None)
+            if u is None:
+                finish.append(v)
+                stack.pop()
+            elif u not in seen:
+                seen.add(u)
+                stack.append((u, iter(forward[u])))
+    seen, components = set(), []
+    for root in reversed(finish):
+        if root in seen:
+            continue
+        component, todo = [], [root]
+        seen.add(root)
+        while todo:
+            v = todo.pop()
+            component.append(v)
+            for u in backward[v]:
+                if u not in seen:
+                    seen.add(u)
+                    todo.append(u)
+        components.append(sorted(component))
+    return components
+
+
 def construct(evidence, max_degree=12):
     if len(evidence.rows) != 2:
         return {'status': 'OUTSIDE_TWO_ROW_CLASS'}
@@ -131,15 +171,24 @@ def construct(evidence, max_degree=12):
         pair_lower = sum(min(costs[i][j], costs[j][i])
                          for i, j in itertools.combinations(range(len(leaves)), 2))
         permutation = _topological(costs)
-        table = None
+        parts = []
         if permutation is not None:
             value, method = pair_lower, 'ACYCLIC_PAIR_PREFERENCES'
-        elif len(leaves) <= max_degree:
-            permutation, table = _subset_dp(costs)
-            value, method = table[-1], 'EXACT_SUBSET_RECURRENCE'
         else:
-            return {'status': 'UNRESOLVED_CYCLIC_DEGREE_LIMIT',
-                    'center': center, 'degree': len(leaves), 'limit': max_degree}
+            components = _ordered_sccs(costs)
+            largest = max(map(len, components))
+            if largest > max_degree:
+                return {'status': 'UNRESOLVED_CYCLIC_COMPONENT_LIMIT',
+                        'center': center, 'degree': len(leaves),
+                        'largest_cyclic_component': largest, 'limit': max_degree}
+            permutation = []
+            for vertices in components:
+                local = [[costs[i][j] for j in vertices] for i in vertices]
+                chosen, table = _subset_dp(local)
+                permutation.extend(vertices[i] for i in chosen)
+                parts.append(dict(vertices=vertices, subset_table=table, local_optimum=table[-1]))
+            value = sum(costs[i][j] for k, i in enumerate(permutation) for j in permutation[k+1:])
+            method = 'SCC_SUBSET_RECURRENCE'
         lower += value
         native_order = [leaves[i] for i in permutation]
         actual_order = native_order if flips[center] == 1 else native_order[::-1]
@@ -149,7 +198,7 @@ def construct(evidence, max_degree=12):
         witnesses.append(dict(center=center, leaves=leaves, costs=costs,
                               native_leaf_order=native_order, method=method,
                               pair_lower=pair_lower, exact_between_bundle_cost=value,
-                              subset_table=table))
+                              ordering_parts=parts))
     layout = dict(chromosome_order=order, chromosome_orientation=flips)
     upper = evidence.score(layout)
     if upper != lower:
@@ -162,11 +211,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('fixture', type=Path)
     parser.add_argument('output', type=Path)
-    parser.add_argument('--max-degree', type=int, default=12,
-                        help='Subset DP cap for cyclic preferences; acyclic stars have no cap')
+    parser.add_argument('--max-cyclic-size', '--max-degree', dest='max_degree', type=int, default=12,
+                        help='Largest strongly connected preference group sent to subset DP')
     args = parser.parse_args()
     if args.max_degree < 0:
-        parser.error('--max-degree must be nonnegative')
+        parser.error('--max-cyclic-size must be nonnegative')
     result = construct(Evidence(read_json(args.fixture)), args.max_degree)
     args.output.write_text(json.dumps(result, indent=2) + '\n')
     print(result['status'], 'U=', result.get('upper'), 'L=', result.get('lower'))
