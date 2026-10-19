@@ -1,0 +1,4 @@
+# Python 3.12. Direct dependency versions verified from Pegasus job 138496210.
+-r benchmark/global_methods_requirements.txt
+-r benchmark/hybrid_methods_requirements.txt
+matplotlib==3.11.2
