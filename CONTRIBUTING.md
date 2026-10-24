@@ -2,6 +2,8 @@
 
 Please open an issue describing a reproducible problem or proposed improvement. Include the installed version and the smallest shareable example.
 
+Read [AGENTS.md](AGENTS.md) for the project's development principles: reuse existing code, make the smallest complete change, and retain scientific validation.
+
 ## Development setup
 
 ```bash
