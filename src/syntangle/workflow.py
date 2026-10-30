@@ -87,7 +87,8 @@ def run(args):
         assert final.chromosome_order == start.chromosome_order
     else:
         from .hybrid_experiment import run_hybrid
-        solver = run_hybrid(fixture,start,'hybrid_adaptive',args.seconds,seed=args.seed)
+        solver = run_hybrid(fixture,start,'hybrid_adaptive',args.seconds,seed=args.seed,
+                            component_presolve=getattr(args,'component_presolve',False))
         final = decode_saved_layout(fixture,solver['optimized_state'])
         lower = solver['lower_bound']
         if args.ribbon_objective != 'none':
@@ -107,7 +108,7 @@ def run(args):
         try: dependencies[package] = version(package)
         except PackageNotFoundError: pass
     stats = dict(schema_version=1,software_version=software_version,dependency_versions=dependencies,mode=args.command,
-        parameters={name:getattr(args,name) for name in ('seconds','seed','ribbon_seconds','twist_metric','weight') if hasattr(args,name)},
+        parameters={name:getattr(args,name) for name in ('seconds','seed','ribbon_seconds','twist_metric','weight','component_presolve') if hasattr(args,name)},
         crossing_objective='Strict inversions of link midpoints between adjacent species; ties excluded',
         ribbon_objective=getattr(args,'ribbon_objective','none'),input=before,output=after,
         crossing_lower_bound=lower,crossing_gap=None if lower is None else after['crossings']-lower,
@@ -138,3 +139,4 @@ def run(args):
     if args.figure: plot_comparison(fixture,start,final,out/(args.command.replace('-','_')+'_comparison.pdf'))
     print(f'{args.command}: {before["crossings"]} -> {after["crossings"]} crossings; {status}; {out.resolve()}')
     return 0
+

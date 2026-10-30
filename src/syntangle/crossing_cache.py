@@ -26,25 +26,35 @@ def _decision(a, b):
 
 
 class CrossingCostCache:
-    def __init__(self, fixture):
-        index = _occurrences_by_species_homology(fixture)
-        tables = {}
-        for left, right in zip(fixture.species_ids, fixture.species_ids[1:]):
-            homologies = sorted(set(index.get(left, {})) & set(index.get(right, {})))
-            links = []
-            for homology in homologies:
-                a, b = index[left][homology], index[right][homology]
-                if len(a) != 1 or len(b) != 1:
-                    raise AmbiguousHomologyError(f"Homology {homology!r} is not one-to-one between {left} and {right}")
-                links.append((a[0], b[0]))
-            # Precompute side comparisons once for each chromosome/anchor pair.
-            for a, b in combinations(links, 2):
-                dl, rl = _decision(a[0], b[0])
-                dr, rr = _decision(a[1], b[1])
-                costs = tables.setdefault((dl, dr), [0, 0, 0, 0])
-                for x in (0, 1):
-                    for y in (0, 1):
-                        costs[2*x+y] += int(rl[x] * rr[y] < 0)
+    def __init__(self, fixture, *, cell_aggregation=False, preparation_deadline=None):
+        if cell_aggregation:
+            from .cell_costs import iter_cell_costs
+            from .incidence import chromosome_node_id
+            tables = {}
+            nodes = {chromosome_node_id(r) for r in fixture.chromosome_refs}
+            for a, b, costs in iter_cell_costs(fixture, nodes, preparation_deadline):
+                target = tables.setdefault((a, b), [0, 0, 0, 0])
+                for i, value in enumerate(costs):
+                    target[i] += value
+        else:
+            index = _occurrences_by_species_homology(fixture)
+            tables = {}
+            for left, right in zip(fixture.species_ids, fixture.species_ids[1:]):
+                homologies = sorted(set(index.get(left, {})) & set(index.get(right, {})))
+                links = []
+                for homology in homologies:
+                    a, b = index[left][homology], index[right][homology]
+                    if len(a) != 1 or len(b) != 1:
+                        raise AmbiguousHomologyError(f"Homology {homology!r} is not one-to-one between {left} and {right}")
+                    links.append((a[0], b[0]))
+                # Precompute side comparisons once for each chromosome/anchor pair.
+                for a, b in combinations(links, 2):
+                    dl, rl = _decision(a[0], b[0])
+                    dr, rr = _decision(a[1], b[1])
+                    costs = tables.setdefault((dl, dr), [0, 0, 0, 0])
+                    for x in (0, 1):
+                        for y in (0, 1):
+                            costs[2*x+y] += int(rl[x] * rr[y] < 0)
         self.constant = 0
         self.terms = []
         self.by_decision = {}
@@ -98,3 +108,4 @@ class CrossingCostCache:
             a, b, costs = self.terms[i]
             delta += costs[2*changed.get(a, self.values[a])+changed.get(b, self.values[b])] - self.costs[i]
         return self.total + delta
+

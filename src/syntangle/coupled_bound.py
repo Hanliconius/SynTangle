@@ -74,7 +74,7 @@ def bucket_tables(factors, size):
 
 
 class CoupledCrossingBound:
-    def __init__(self, fixture, nodes, independent, size=6, *, prepare_tables=True):
+    def __init__(self, fixture, nodes, independent, size=6, *, prepare_tables=True, cell_aggregation=False, preparation_deadline=None):
         if not 1 <= size <= 8:
             raise ValueError('Coupled bound size must be 1..8')
         self.independent = independent
@@ -83,35 +83,57 @@ class CoupledCrossingBound:
         next_variable = len(self.basis.free_flip_groups)
         index = _occurrences_by_species_homology(fixture)
         aggregate = {}
-        for left,right in zip(fixture.species_ids,fixture.species_ids[1:]):
-            links=[]
-            for homology in sorted(set(index.get(left,{})) & set(index.get(right,{}))):
-                a,b=index[left][homology],index[right][homology]
-                if len(a)!=1 or len(b)!=1:
-                    raise AmbiguousHomologyError('Coupled bound requires one-to-one homology')
-                if all(chromosome_node_id(occ[0].ref) in nodes for occ in (a[0],b[0])):
-                    links.append((a[0],b[0]))
-            for a,b in combinations(links,2):
-                decisions=[]
-                for endpoint in (0,1):
-                    decision,relations=_decision(a[endpoint],b[endpoint])
-                    if len(decision)==1:
-                        ref=decision[0]
-                        variable=independent.group_index_by_ref[ref]
-                        if self.basis.base_assignment[ref]==-1:
-                            relations=tuple(reversed(relations))
+        if cell_aggregation:
+            from .cell_costs import iter_cell_costs
+            for dl, dr, costs in iter_cell_costs(fixture, nodes, preparation_deadline):
+                decisions = []
+                for decision in (dl, dr):
+                    if len(decision) == 1:
+                        ref = decision[0]
+                        variable = independent.group_index_by_ref[ref]
+                        base_flip = int(self.basis.base_assignment[ref] == -1)
                     else:
                         if decision not in self.order_variables:
-                            self.order_variables[decision]=next_variable
-                            next_variable+=1
-                        variable=self.order_variables[decision]
-                    decisions.append((variable,relations))
-                (va,ra),(vb,rb)=decisions
-                scope=tuple(sorted({va,vb}))
-                table=aggregate.setdefault(scope,{bits:0 for bits in product((0,1),repeat=len(scope))})
+                            self.order_variables[decision] = next_variable
+                            next_variable += 1
+                        variable, base_flip = self.order_variables[decision], 0
+                    decisions.append((variable, base_flip))
+                (va, fa), (vb, fb) = decisions
+                scope = tuple(sorted({va, vb}))
+                table = aggregate.setdefault(scope, {bits: 0 for bits in product((0, 1), repeat=len(scope))})
                 for bits in table:
-                    assignment=dict(zip(scope,bits))
-                    table[bits]+=int(ra[assignment[va]]*rb[assignment[vb]]<0)
+                    assignment = dict(zip(scope, bits))
+                    table[bits] += costs[2*(assignment[va]^fa)+(assignment[vb]^fb)]
+        else:
+            for left,right in zip(fixture.species_ids,fixture.species_ids[1:]):
+                links=[]
+                for homology in sorted(set(index.get(left,{})) & set(index.get(right,{}))):
+                    a,b=index[left][homology],index[right][homology]
+                    if len(a)!=1 or len(b)!=1:
+                        raise AmbiguousHomologyError('Coupled bound requires one-to-one homology')
+                    if all(chromosome_node_id(occ[0].ref) in nodes for occ in (a[0],b[0])):
+                        links.append((a[0],b[0]))
+                for a,b in combinations(links,2):
+                    decisions=[]
+                    for endpoint in (0,1):
+                        decision,relations=_decision(a[endpoint],b[endpoint])
+                        if len(decision)==1:
+                            ref=decision[0]
+                            variable=independent.group_index_by_ref[ref]
+                            if self.basis.base_assignment[ref]==-1:
+                                relations=tuple(reversed(relations))
+                        else:
+                            if decision not in self.order_variables:
+                                self.order_variables[decision]=next_variable
+                                next_variable+=1
+                            variable=self.order_variables[decision]
+                        decisions.append((variable,relations))
+                    (va,ra),(vb,rb)=decisions
+                    scope=tuple(sorted({va,vb}))
+                    table=aggregate.setdefault(scope,{bits:0 for bits in product((0,1),repeat=len(scope))})
+                    for bits in table:
+                        assignment=dict(zip(scope,bits))
+                        table[bits]+=int(ra[assignment[va]]*rb[assignment[vb]]<0)
         self.variable_count=next_variable
         self.factor_count=len(aggregate)
         self.constant=sum(next(iter(values.values())) for values in aggregate.values()
@@ -136,3 +158,4 @@ class CoupledCrossingBound:
         bits=tuple(int(orientation[group[0]]!=self.basis.base_assignment[group[0]])
                    for group in self.basis.free_flip_groups)
         return self.lower_bound(bits,orders)
+
