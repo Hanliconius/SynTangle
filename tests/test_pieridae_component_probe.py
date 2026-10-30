@@ -15,6 +15,42 @@ from syntangle.workflow import write_layout
 
 
 class ProbeTests(unittest.TestCase):
+    def test_nested_poppler_validation_only_preserves_solve(self):
+        repo = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            run = root/'component_test.one/component_test.two'
+            (run/'code/plotter').mkdir(parents=True)
+            (run/'optimization').mkdir()
+            (run/'pdfs').mkdir()
+            (root/'tables').mkdir()
+            (run/'tables').symlink_to(root/'tables',target_is_directory=True)
+            tools = root/'pdf_tools/bin'
+            tools.mkdir(parents=True)
+            for name in ('pdftotext','pdfinfo'):
+                p = tools/name
+                p.write_text('#!/bin/sh\nexit 0\n')
+                p.chmod(0o755)
+            saved = run/'optimization/COMPLETE.json'
+            saved.write_text('saved solve must not change')
+            (run/'audit.json').write_text('{}')
+            (run/'code/plotter/analyse.py').write_text(
+                "def validate(out):\n    (out/'pdfs/validated').write_text('yes')\n"
+                "def plot(out):\n    raise RuntimeError('must not replot')\n")
+            env = dict(os.environ,PATH='/nonexistent',PYTHONPATH=str(repo/'src'))
+            env.pop('SCT_PDF_TOOLS',None)
+            cmd = [sys.executable,str(repo/'validation/real_data/probe_pieridae_components.py'),
+                   str(run),str(run),'--validate-figures']
+            subprocess.run(cmd,check=True,env=env,capture_output=True,text=True)
+            self.assertEqual(saved.read_text(),'saved solve must not change')
+            self.assertTrue((run/'pdfs/validated').exists())
+            recorded = json.loads((run/'pdfs/poppler_tools.json').read_text())
+            self.assertEqual(recorded['pdftotext'],str(tools/'pdftotext'))
+            (tools/'pdftotext').unlink()
+            failed = subprocess.run(cmd,env=env,capture_output=True,text=True)
+            self.assertNotEqual(failed.returncode,0)
+            self.assertIn('Missing Poppler pdftotext',failed.stderr)
+
     def test_audit_solve_and_frozen_worker(self):
         repo = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as temporary:

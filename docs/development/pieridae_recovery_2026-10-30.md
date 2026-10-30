@@ -80,3 +80,16 @@ monotonicity, hard constraints, move replay, unchanged fixture fingerprints,
 and frozen references. Graph tests cover bridge edges and tied partners. The
 probe exercises audit, ordinary solve, recovery and the frozen submission worker.
 Large Pieridae performance and the real PDF rendering are checked on Pegasus.
+
+## PDF-validation repair
+
+Job 138662941 completed recovery (12,915,397 to 7,835,196; lower bound
+334,567; 193 accepted moves) but failed afterward because the nested run did
+not inherit the original view's Poppler tools directory. The submission wrapper
+now accepts `--validate-figures` as its third argument. It submits a 15-minute,
+one-core nano job using the existing frozen plotter's `validate` function;
+no optimization or rendering is repeated. Solver files remain untouched.
+Poppler is discovered through the resolved tables directory and ancestor views,
+or an explicit `SCT_PDF_TOOLS` bin directory. New rendered solve jobs test both
+Poppler executables before optimization. Validation-only repairs record their
+script hash/commit and resolved executables, and retain original job logs.

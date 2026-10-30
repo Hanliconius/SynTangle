@@ -5,6 +5,8 @@ import csv
 import hashlib
 import importlib.util
 import json
+import os
+import subprocess
 from collections import Counter
 from pathlib import Path
 import shutil
@@ -49,6 +51,33 @@ def write(path, rows, columns):
         writer.writerows(rows)
 
 
+def configure_poppler(source):
+    """Recover tools from the original view even through nested component runs."""
+    roots = [source, (source/'tables').resolve().parent, *source.parents]
+    candidates = ([Path(os.environ['SCT_PDF_TOOLS'])] if os.environ.get('SCT_PDF_TOOLS') else [])
+    candidates += [root/'pdf_tools/bin' for root in roots]
+    for directory in reversed(candidates):
+        if directory.is_dir():
+            os.environ['PATH'] = str(directory)+os.pathsep+os.environ.get('PATH','')
+    tools = {}
+    for name in ('pdftotext','pdfinfo'):
+        executable = shutil.which(name)
+        if not executable:
+            raise ValueError('Missing Poppler '+name+'; set SCT_PDF_TOOLS to its bin directory')
+        subprocess.run([executable,'-v'],check=True,capture_output=True,text=True)
+        tools[name] = executable
+    return tools
+
+
+def load_plotter(out):
+    plotter = out/'code/plotter/analyse.py'
+    sys.path.insert(0,str(plotter.parent))
+    spec = importlib.util.spec_from_file_location('pieridae_plotter',plotter)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('source', type=Path)
@@ -57,8 +86,19 @@ def main():
     parser.add_argument('--audit-only', action='store_true')
     parser.add_argument('--render', action='store_true')
     parser.add_argument('--recover', action='store_true')
+    parser.add_argument('--validate-figures', action='store_true')
     args = parser.parse_args()
     source, out = args.source.resolve(), args.output.resolve()
+    if args.validate_figures:
+        if source != out:
+            raise ValueError('Validation-only mode requires the existing run as both paths')
+        tools = configure_poppler(out)
+        load_plotter(out).validate(out)
+        dump(out/'pdfs/poppler_tools.json', tools)
+        print('VALIDATION_REPAIR_COMPLETE',str(out),flush=True)
+        return
+    if args.render:
+        configure_poppler(source)  # Fail before spending the search budget.
     out.mkdir(parents=True, exist_ok=True)
     if (out/'audit.json').exists():
         raise ValueError('Audit already exists; do not overwrite a scientific run')
@@ -178,11 +218,7 @@ def main():
         config.update(comparison_input_label='Best supplied all-link layout',
                       comparison_output_label=('Full-evidence recovery' if args.recover else 'Component-first SynTangle; all links'))
         dump(out/'config.json',config)
-        plotter = out/'code/plotter/analyse.py'
-        sys.path.insert(0,str(plotter.parent))
-        spec = importlib.util.spec_from_file_location('pieridae_plotter',plotter)
-        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
-        module.plot(out)
+        load_plotter(out).plot(out)
     print('COMPONENT_TEST_COMPLETE',after.crossings,'L',result['lower_bound'],str(out),flush=True)
 
 

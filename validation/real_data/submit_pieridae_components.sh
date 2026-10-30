@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-source_run=${1:?Usage: submit_pieridae_components.sh EXISTING_TOPOLOGY_VIEW [SECONDS] [--audit-only|--recover]}
+source_run=${1:?Usage: submit_pieridae_components.sh EXISTING_TOPOLOGY_VIEW [SECONDS] [--audit-only|--recover|--validate-figures]}
 seconds=${2:-600}
 mode=${3:---solve}
-[[ $mode == --solve || $mode == --audit-only || $mode == --recover ]] || { echo 'Invalid mode' >&2; exit 2; }
+[[ $mode == --solve || $mode == --audit-only || $mode == --recover || $mode == --validate-figures ]] || { echo 'Invalid mode' >&2; exit 2; }
 [[ $seconds =~ ^[1-9][0-9]*$ ]] || { echo 'Seconds must be a positive integer' >&2; exit 2; }
 source_run=$(cd "$source_run" && pwd)
 here=$(cd "$(dirname "$0")" && pwd)
@@ -13,6 +13,23 @@ for name in tables/chromosomes.tsv tables/links.tsv optimization/COMPLETE.json o
 done
 python=${SCT_PYTHON:-$source_run/envs/syntangle/bin/python}
 [[ -x $python ]] || { echo "Missing Python: $python; set SCT_PYTHON to the existing SynTangle environment" >&2; exit 2; }
+if [[ $mode == --validate-figures ]]; then
+  [[ -s "$source_run/code/plotter/analyse.py" ]] || { echo 'Missing frozen plotter' >&2; exit 2; }
+  repair=$(mktemp -d "$source_run/validation_repair.XXXXXX")
+  cp "$here/probe_pieridae_components.py" "$repair/"
+  git -C "$repo" rev-parse HEAD > "$repair/code_commit.txt"
+  sha256sum "$repair/probe_pieridae_components.py" > "$repair/code_sha256.txt"
+  cat > "$repair/worker.sh" <<'VALIDATE'
+#!/usr/bin/env bash
+set -euo pipefail
+run=$1; repair=$2; python=$3
+export PYTHONPATH="$run/code/src"
+export PATH="$(dirname "$python"):$PATH"
+"$python" "$repair/probe_pieridae_components.py" "$run" "$run" --validate-figures
+VALIDATE
+  job=$(sbatch --parsable --partition=nano --cpus-per-task=1 --mem=4G --time=15 --job-name=st_pdf_check --output="$repair/check.%j.out" --error="$repair/check.%j.err" "$repair/worker.sh" "$source_run" "$repair" "$python")
+  printf 'Validation-only job: %s\nLogs: %s/check.%s.{out,err}\n' "$job" "$repair" "${job%%;*}"
+else
 out=$(mktemp -d "$source_run/component_test.XXXXXX")
 mkdir -p "$out/code/src" "$out/logs"
 cp -R "$repo/src/syntangle" "$out/code/src/"
@@ -48,3 +65,5 @@ job=$(sbatch --parsable --partition=cpu --cpus-per-task=1 --mem=16G --time="$wal
 job=${job%%;*}
 printf 'stage\tjob_id\ncomponent_test\t%s\n' "$job" > "$out/jobs.tsv"
 printf 'Component test: %s\nResults: %s\nRead: tail -n 12 %s/logs/components.%s.{out,err}\n' "$job" "$out" "$out" "$job"
+
+fi
