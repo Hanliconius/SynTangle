@@ -138,20 +138,11 @@ def _cell_internal_crossings(
     left_orientation: int,
     right_orientation: int,
 ) -> int:
-    count = 0
-    transformed = tuple(
-        (
-            _oriented_fraction(left, left_orientation),
-            _oriented_fraction(right, right_orientation),
-        )
-        for left, right in anchors
-    )
-    for (left1, right1), (left2, right2) in combinations(transformed, 2):
-        if (left1 < left2 and right1 > right2) or (
-            left1 > left2 and right1 < right2
-        ):
-            count += 1
-    return count
+    from .layout import _strict_inversion_count
+    return _strict_inversion_count([
+        ((0, _oriented_fraction(left, left_orientation)),
+         (0, _oriented_fraction(right, right_orientation)))
+        for left, right in anchors])
 
 
 def _pairwise_interleave_minimum(
@@ -160,19 +151,9 @@ def _pairwise_interleave_minimum(
     *,
     coordinate: int,
 ) -> int:
-    first_before_second = 0
-    second_before_first = 0
-
-    for anchor_a in first:
-        for anchor_b in second:
-            value_a = anchor_a[coordinate]
-            value_b = anchor_b[coordinate]
-            if value_a > value_b:
-                first_before_second += 1
-            elif value_b > value_a:
-                second_before_first += 1
-
-    return min(first_before_second, second_before_first)
+    from .cell_costs import relation_counts
+    return min(relation_counts([a[coordinate] for a in first],
+                               [a[coordinate] for a in second]))
 
 
 def build_relaxed_crossing_bound(
@@ -311,3 +292,4 @@ def build_relaxed_crossing_bound(
         constant_interleaving_lower_bound=constant_interleaving,
         group_index_by_ref=group_index_by_ref,
     )
+

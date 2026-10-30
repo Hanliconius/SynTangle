@@ -48,7 +48,7 @@ def improve_neighborhoods(model, state, seconds, adaptive=False, progress=None, 
 
 def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, *, scheduling="weighted", backend="highs",
                mirror_symmetry=False, neighborhood_min_decisions=128, neighborhood_fraction=.25,
-               neighborhood_max_seconds=60, deduplicate_neighborhoods=False):
+               neighborhood_max_seconds=60, deduplicate_neighborhoods=False, component_presolve=False):
     if method not in ('milp_reclaim','milp_hint','hybrid_3','hybrid_adaptive'):
         raise ValueError(method)
     if scheduling not in ("weighted", "equal") or backend not in ("highs", "scipy"):
@@ -64,7 +64,24 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, 
     state=canonicalize_component_order(fixture,starting_state)
     components,component_of=_component_map(fixture)
     models=[];records=[];lower=0
+    presolve_records = []
+    if component_presolve:
+        from .component_presolve import presolve_components
+        state, presolve_records = presolve_components(
+            fixture, state, components, component_of, progress)
+        records = [r for r in presolve_records if r['frozen']]
+        lower = sum(r['component_lower'] for r in records)
+        frozen = {r['component'] for r in records}
+        if progress: progress(state)
     for i,nodes in enumerate(components):
+        if component_presolve:
+            if i not in frozen:
+                refs = tuple(r for r in fixture.chromosome_refs if component_of[r] == i)
+                # Cheap scheduling only. Do not build every quadratic model before
+                # the first component can solve and checkpoint its result.
+                estimate = max(1, len(refs)**2 + sum(len(c.blocks) for c in fixture.chromosomes if c.ref in refs))
+                models.append((i, None, estimate))
+            continue
         if time.perf_counter()>=deadline:
             records.extend(dict(component=j,status='preparation deadline unstarted',component_lower=0)
                            for j in range(i,len(components)))
@@ -78,12 +95,27 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, 
         model_started=time.perf_counter()
         model=JointModel(fixture,nodes,refs)
         model.graph_preparation_seconds=time.perf_counter()-model_started
-        models.append((i,model))
+        models.append((i,model,max(1,model.n+len(model.quadratic))))
     preparation=time.perf_counter()-started
     # Easy components first: their unused time flows directly to larger ones.
-    models.sort(key=lambda item:(item[1].n+len(item[1].quadratic),item[0]))
-    weights=[max(1,m.n+len(m.quadratic)) if scheduling=="weighted" else 1 for _,m in models]
-    for position,(i,model) in enumerate(models):
+    models.sort(key=lambda item:(item[2],item[0]))
+    weights=[weight if scheduling=="weighted" else 1 for _,_,weight in models]
+    for position,(i,model,_) in enumerate(models):
+        if model is None:
+            if time.perf_counter() >= deadline:
+                records.append(dict(component=i, status='deadline unstarted', component_lower=0))
+                continue
+            refs=tuple(r for r in fixture.chromosome_refs if component_of[r]==i)
+            model_started=time.perf_counter()
+            from .cell_costs import PreparationDeadline
+            try:
+                model=JointModel(fixture,components[i],refs, cell_aggregation=True,
+                                 preparation_deadline=deadline)
+            except PreparationDeadline:
+                records.append(dict(component=i, status='preparation deadline; incumbent retained',
+                                    component_lower=0, search_started=False))
+                continue
+            model.graph_preparation_seconds=time.perf_counter()-model_started
         record=dict(component=i,decision_variables=model.n,crossing_factors=model.graph.factor_count,
             hard_orientation_groups=[[r.label for r in g] for g in model.basis.free_flip_groups],
             graph_preparation_seconds=model.graph_preparation_seconds)
@@ -127,10 +159,12 @@ def run_hybrid(fixture, starting_state, method, seconds, seed=1, progress=None, 
         requested_mirror_symmetry=mirror_symmetry,
         neighborhood_policy=dict(min_decisions=neighborhood_min_decisions,fraction=neighborhood_fraction,
             max_seconds=neighborhood_max_seconds,deduplicate=deduplicate_neighborhoods),
-        component_diagnostics=records,
+        component_diagnostics=records, component_presolve=component_presolve,
+        presolve_diagnostics=presolve_records,
         whole_chromosome_order_changes={sp:[r.chromosome_id for r in state.chromosome_order[sp]]
             for sp in fixture.species_ids if state.chromosome_order[sp]!=starting_state.chromosome_order[sp]},
         whole_chromosome_flips=[r.label for r in fixture.chromosome_refs
             if state.chromosome_orientation[r]!=starting_state.chromosome_orientation[r]],
         reduction_policy='shared immutable graph/GF2/model; conditional neighborhoods then one global exact solve',
         global_search_restarts=0)
+

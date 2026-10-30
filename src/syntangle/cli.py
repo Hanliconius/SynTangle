@@ -79,6 +79,7 @@ def build_parser() -> argparse.ArgumentParser:
         public.add_argument('--figure',action='store_true')
         public.add_argument('--seed',type=int,default=1)
         if command=='run':
+            public.add_argument('--component-presolve', action='store_true', help='Experimental exact strand/zero component presolve before joint search')
             public.add_argument('--ribbon-objective',choices=('none','crossing-cap','combined'),default='none')
             public.add_argument('--twist-metric',choices=('width','count'),default='width')
             public.add_argument('--weight',type=float,default=1)
@@ -208,3 +209,4 @@ def entrypoint():
         if isinstance(error, ImportError):
             print('Install the optimization and plotting extras for the full workflow.',file=sys.stderr)
         return 2
+

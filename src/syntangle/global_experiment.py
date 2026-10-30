@@ -18,11 +18,12 @@ from .saved_layout import validate_saved_layout
 
 
 class JointModel:
-    def __init__(self, fixture, nodes, refs):
+    def __init__(self, fixture, nodes, refs, *, cell_aggregation=False, preparation_deadline=None):
         self.fixture, self.nodes = fixture, nodes
         self.basis = orientation_basis(fixture, tuple(sorted(refs)))
         independent = build_relaxed_crossing_bound(fixture, nodes, self.basis)
-        self.graph = CoupledCrossingBound(fixture, nodes, independent, prepare_tables=False)
+        self.graph = CoupledCrossingBound(fixture, nodes, independent, prepare_tables=False,
+            cell_aggregation=cell_aggregation, preparation_deadline=preparation_deadline)
         self.orders = dict(self.graph.order_variables)
         self.rows = {sp: tuple(sorted(r for r in refs if r.species_id == sp))
                      for sp in fixture.species_ids}
@@ -387,3 +388,4 @@ def run_experiment(fixture, starting_state, method, seconds, seed=1, progress=No
         whole_chromosome_flips=[r.label for r in fixture.chromosome_refs
             if state.chromosome_orientation[r]!=starting_state.chromosome_orientation[r]],
         reduction_policy='shared graph/GF2 preprocessing; independent experiment, no search-ledger restart')
+
