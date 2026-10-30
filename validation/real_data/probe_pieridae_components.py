@@ -11,6 +11,7 @@ import shutil
 import sys
 import time
 
+from syntangle.recovery import connection_audit, recover_layout
 from syntangle.component_space import optimization_component_map
 from syntangle.component_presolve import presolve_components
 from syntangle.genespace import import_layout
@@ -55,6 +56,7 @@ def main():
     parser.add_argument('--seconds', type=float, default=600)
     parser.add_argument('--audit-only', action='store_true')
     parser.add_argument('--render', action='store_true')
+    parser.add_argument('--recover', action='store_true')
     args = parser.parse_args()
     source, out = args.source.resolve(), args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -96,12 +98,30 @@ def main():
         cells.setdefault(interface,set()).add((r['chromosome1'],r['chromosome2']))
     write(out/'chromosome_pair_support.tsv', [dict(species1=a,chromosome1=b,species2=c,chromosome2=d,links=n)
         for (a,b,c,d),n in sorted(support.items())], ['species1','chromosome1','species2','chromosome2','links'])
+    edges, chains = connection_audit(read(source/'tables/links.tsv'), labels)
+    if edges:
+        write(out/'labelled_connections.tsv', edges, list(edges[0]))
+        write(out/'z_incident_connections.tsv', [r for r in edges if r['explicit_z_incident']], list(edges[0]))
+        write(out/'graph_bridges.tsv', [r for r in edges if r['graph_bridge']], list(edges[0]))
+    dump(out/'proposal_chains.json', dict(groups=chains,
+        scope='Reciprocal uniquely strongest partners; proposals only, not biological identities or independent components'))
+    z_chain_nodes = {tuple(x) for group in chains for x in group
+                     if any(labels.get(tuple(y), y[1]).lower() in ('z','chrz','chr_z') for y in group)}
+    z_boundary = [r for r in read(source/'tables/links.tsv')
+                  if ((r['species1'],r['chromosome1']) in z_chain_nodes) !=
+                     ((r['species2'],r['chromosome2']) in z_chain_nodes)]
+    link_rows = read(source/'tables/links.tsv')
+    if link_rows:
+        write(out/'z_candidate_chain_boundary_links.tsv', z_boundary, list(link_rows[0]))
     z_components = sorted({component_of[r] for r in f.chromosome_refs
                            if labels[r.species_id,r.chromosome_id].lower() in ('z','chrz','chr_z')})
     audit = dict(source=str(source), input_sha256=hashes, selected_start=selected,
         candidate_scores=[dict(file=n,crossings=v) for v,n,_ in candidates],
         input=before.to_dict(), presolved=normalized.to_dict(), components=records,
         component_count=len(components), frozen_components=sum(r['frozen'] for r in records),
+        recovery_diagnostics=dict(graph_bridges=sum(r['graph_bridge'] for r in edges),
+            candidate_chains=len(chains), z_candidate_chain_nodes=len(z_chain_nodes),
+            z_candidate_boundary_links=len(z_boundary)),
         explicit_z_label_components=z_components,
         z_note='Includes only explicit Z labels; chromosome 1 is never assumed to be Z. Inspect all members and partner counts.',
         interfaces=[dict(species1=a,species2=b,links=n,old_link_pairs=n*(n-1)//2,
@@ -123,8 +143,21 @@ def main():
     checkpoint(state)
     # Start from the original incumbent so all exact presolve bounds are retained
     # in the package's final result. This is a fresh experiment, not a resumed frontier.
-    result = run_hybrid(f,start,'hybrid_adaptive',args.seconds,component_presolve=True,progress=checkpoint)
-    final = decode_saved_layout(f,result['optimized_state'])
+    if args.recover:
+        frozen = {r['component'] for r in records if r['frozen']}
+        active = {ref for ref in f.chromosome_refs if component_of[ref] not in frozen}
+        final, recovery = recover_layout(f,state,chains,args.seconds,progress=checkpoint,active_refs=active)
+        lower = max(sum(r['component_lower'] for r in records), int(receipt.get('lower_bound') or 0), recovery['factor_lower_bound'])
+        upper = score_crossings(f,final).crossings
+        if lower > upper:
+            raise ValueError('Inherited lower bound exceeds recovered layout score')
+        result = dict(optimized_state=final.to_dict(), lower_bound=lower,
+                      upper_bound=upper, optimality_gap=upper-lower, recovery=recovery)
+        dump(out/'recovery.json', recovery)
+        print('RECOVERY',before.crossings,'->',upper,'L',lower,'moves',len(recovery['accepted_moves']), recovery['status'],flush=True)
+    else:
+        result = run_hybrid(f,start,'hybrid_adaptive',args.seconds,component_presolve=True,progress=checkpoint)
+        final = decode_saved_layout(f,result['optimized_state'])
     validate_saved_layout(f,final,basis)
     after = score_crossings(f,final)
     if after.crossings > before.crossings or after.link_count != before.link_count:
@@ -143,7 +176,7 @@ def main():
             if (source/name).exists():shutil.copy2(source/name,out/name)
         config = json.loads((source/'config.json').read_text())
         config.update(comparison_input_label='Best supplied all-link layout',
-                      comparison_output_label='Component-first SynTangle; all links')
+                      comparison_output_label=('Full-evidence recovery' if args.recover else 'Component-first SynTangle; all links'))
         dump(out/'config.json',config)
         plotter = out/'code/plotter/analyse.py'
         sys.path.insert(0,str(plotter.parent))

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-source_run=${1:?Usage: submit_pieridae_components.sh EXISTING_TOPOLOGY_VIEW [SECONDS] [--audit-only]}
+source_run=${1:?Usage: submit_pieridae_components.sh EXISTING_TOPOLOGY_VIEW [SECONDS] [--audit-only|--recover]}
 seconds=${2:-600}
 mode=${3:---solve}
-[[ $mode == --solve || $mode == --audit-only ]] || { echo 'Invalid mode' >&2; exit 2; }
+[[ $mode == --solve || $mode == --audit-only || $mode == --recover ]] || { echo 'Invalid mode' >&2; exit 2; }
 [[ $seconds =~ ^[1-9][0-9]*$ ]] || { echo 'Seconds must be a positive integer' >&2; exit 2; }
 source_run=$(cd "$source_run" && pwd)
 here=$(cd "$(dirname "$0")" && pwd)
@@ -18,9 +18,11 @@ mkdir -p "$out/code/src" "$out/logs"
 cp -R "$repo/src/syntangle" "$out/code/src/"
 cp "$here/probe_pieridae_components.py" "$out/code/"
 render=no
-if [[ -s "$source_run/code/analyse.py" && -s "$source_run/code/prepare.py" ]]; then
+plotter="$source_run/code"
+if [[ -s "$source_run/code/plotter/analyse.py" ]]; then plotter="$source_run/code/plotter"; fi
+if [[ -s "$plotter/analyse.py" && -s "$plotter/prepare.py" ]]; then
   mkdir -p "$out/code/plotter"
-  cp "$source_run/code/analyse.py" "$source_run/code/prepare.py" "$out/code/plotter/"
+  cp "$plotter/analyse.py" "$plotter/prepare.py" "$out/code/plotter/"
   render=yes
 fi
 git -C "$repo" rev-parse HEAD > "$out/code_commit.txt"
@@ -36,7 +38,8 @@ export PATH="$(dirname "$python"):$PATH"
 if [[ -d "$source_run/pdf_tools/bin" ]]; then export PATH="$source_run/pdf_tools/bin:$PATH"; fi
 args=("$source_run" "$out" --seconds "$seconds")
 if [[ $mode == --audit-only ]]; then args+=(--audit-only); fi
-if [[ $render == yes && $mode == --solve ]]; then args+=(--render); fi
+if [[ $mode == --recover ]]; then args+=(--recover); fi
+if [[ $render == yes && $mode != --audit-only ]]; then args+=(--render); fi
 "$python" "$out/code/probe_pieridae_components.py" "${args[@]}"
 WORKER
 bash -n "$out/code/worker.sh"

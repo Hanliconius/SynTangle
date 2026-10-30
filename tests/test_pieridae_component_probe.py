@@ -32,10 +32,11 @@ class ProbeTests(unittest.TestCase):
                 tables_sha256={n:sha(source/'tables'/n) for n in ('chromosomes.tsv','links.tsv')},
                 layout_sha256=sha(source/'optimization/layout.tsv'))))
             env = dict(os.environ,PYTHONPATH=str(repo/'src'))
-            for mode in ('audit','solve'):
+            for mode in ('audit','solve','recover'):
                 cmd = [sys.executable,str(repo/'validation/real_data/probe_pieridae_components.py'),
                        str(source),str(base/mode),'--seconds','2']
                 if mode=='audit':cmd.append('--audit-only')
+                if mode=='recover':cmd.append('--recover')
                 subprocess.run(cmd,check=True,env=env,capture_output=True,text=True)
                 audit = json.loads((base/mode/'audit.json').read_text())
                 self.assertEqual(audit['presolved']['crossings'],0)
